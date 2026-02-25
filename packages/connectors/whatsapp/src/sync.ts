@@ -30,9 +30,15 @@ function extractText(msg: any): string {
   );
 }
 
-/** Extract phone number from a WhatsApp JID, stripping @suffix and :device */
+/** Extract phone number from a JID, stripping @suffix and :device */
 function phoneFromJid(jid: string): string {
+  if (!jid) return '';
   return jid.split('@')[0]?.split(':')[0] || '';
+}
+
+/** Check if a JID is a LID (Linked ID) rather than a phone-based JID */
+function isLid(jid: string): boolean {
+  return jid.endsWith('@lid');
 }
 
 const MAX_SYNC_MS = 5 * 60_000;
@@ -63,6 +69,41 @@ async function createSyncSocket(sessionDir: string): Promise<WaSock> {
   return sock;
 }
 
+/**
+ * Resolves a JID (which may be a LID or phone-based) to { phone, name }.
+ */
+function resolveIdentity(
+  jid: string,
+  lidToPhone: Map<string, string>,
+  phoneToName: Map<string, string>,
+  lidToName: Map<string, string>,
+): { phone: string; name: string } {
+  if (!jid) return { phone: '', name: '' };
+
+  const lidKey = phoneFromJid(jid); // strip @lid or @s.whatsapp.net
+
+  if (isLid(jid)) {
+    // LID — try to map to phone number
+    const phone = lidToPhone.get(lidKey) || '';
+    const name = lidToName.get(lidKey) || (phone ? phoneToName.get(phone) || '' : '');
+    return { phone, name };
+  }
+
+  // Phone-based JID
+  const phone = lidKey;
+  const name = phoneToName.get(phone) || '';
+  return { phone, name };
+}
+
+/**
+ * Extract mentioned JIDs from the message's context info.
+ */
+function extractMentions(msg: any): string[] {
+  const ctx = msg.message?.extendedTextMessage?.contextInfo ||
+    msg.message?.conversation?.contextInfo;
+  return ctx?.mentionedJid || [];
+}
+
 export async function syncWhatsApp(
   ctx: SyncContext,
   emit: (event: ConnectorDataEvent) => void,
@@ -87,7 +128,6 @@ export async function syncWhatsApp(
     });
   }
 
-  // The user's own phone number and JID
   const selfJid = (sock as any).user?.id || '';
   const selfPhone = phoneFromJid(selfJid);
   ctx.logger.info(`WhatsApp connected as ${selfPhone}, waiting for history sync...`);
@@ -95,9 +135,18 @@ export async function syncWhatsApp(
   let processed = 0;
   let historyBatches = 0;
 
-  // Build a lookup of chat names and contact names from history sync data
-  const chatNames = new Map<string, string>();  // chatJid → name
-  const contactNames = new Map<string, string>(); // phoneNumber → name
+  // Identity resolution maps
+  const lidToPhone = new Map<string, string>();   // LID number → phone number
+  const phoneToName = new Map<string, string>();   // phone → display name
+  const lidToName = new Map<string, string>();     // LID number → display name
+  const chatNames = new Map<string, string>();     // chatJid → group name
+
+  // Listen for LID → phone mappings
+  sock.ev.on('chats.phoneNumberShare' as any, (data: any) => {
+    if (data.lid && data.jid) {
+      lidToPhone.set(phoneFromJid(data.lid), phoneFromJid(data.jid));
+    }
+  });
 
   await new Promise<void>((resolve) => {
     let idleTimer: ReturnType<typeof setTimeout>;
@@ -133,48 +182,74 @@ export async function syncWhatsApp(
       if (!text) return;
 
       const remoteJid = msg.key?.remoteJid || '';
-      const participant = msg.key?.participant || '';
+      // Baileys history uses top-level participant (LID format)
+      const participantJid = msg.key?.participant || msg.participant || '';
       const isGroup = remoteJid.endsWith('@g.us');
       const fromMe = msg.key?.fromMe ?? false;
 
-      // Determine sender phone and name
+      // Resolve sender identity
       let senderPhone: string;
       let senderName: string;
+
       if (fromMe) {
         senderPhone = selfPhone;
-        senderName = 'me';
-      } else if (isGroup) {
-        senderPhone = phoneFromJid(participant);
-        senderName = msg.pushName || contactNames.get(senderPhone) || senderPhone;
+        senderName = phoneToName.get(selfPhone) || 'Me';
+      } else if (participantJid) {
+        const identity = resolveIdentity(participantJid, lidToPhone, phoneToName, lidToName);
+        senderPhone = identity.phone;
+        senderName = identity.name || msg.pushName || '';
+      } else if (!isGroup) {
+        // DM — the other person is the remoteJid
+        const identity = resolveIdentity(remoteJid, lidToPhone, phoneToName, lidToName);
+        senderPhone = identity.phone;
+        senderName = identity.name || msg.pushName || '';
       } else {
-        senderPhone = phoneFromJid(remoteJid);
-        senderName = msg.pushName || contactNames.get(senderPhone) || senderPhone;
+        senderPhone = '';
+        senderName = msg.pushName || '';
       }
 
-      // Track contact names for future lookups
+      // Track names from pushName (real-time messages have this)
       if (msg.pushName && senderPhone) {
-        contactNames.set(senderPhone, msg.pushName);
+        phoneToName.set(senderPhone, msg.pushName);
       }
 
-      // Build chat context
-      const chatName = chatNames.get(remoteJid) || (isGroup ? remoteJid : senderName);
+      // Resolve mentions
+      const mentionJids = extractMentions(msg);
+      const mentions: Array<{ phone: string; name: string }> = [];
+      for (const mJid of mentionJids) {
+        const m = resolveIdentity(mJid, lidToPhone, phoneToName, lidToName);
+        if (m.phone || m.name) mentions.push(m);
+      }
 
-      // Format the sender label: "Name (+phone)" or just phone if no name
-      const senderLabel = senderName && senderName !== senderPhone && senderName !== 'me'
-        ? `${senderName} (+${senderPhone})`
-        : `+${senderPhone}`;
+      // Build contextual text
+      const chatName = chatNames.get(remoteJid) || '';
+      const senderLabel = buildSenderLabel(senderName, senderPhone);
 
-      // Build contextual message text:
-      // Group: "[GroupName] SenderName (+phone): message"
-      // DM:   "SenderName (+phone): message"
       let contextualText: string;
-      if (isGroup) {
+      if (isGroup && chatName) {
         contextualText = `[${chatName}] ${senderLabel}: ${text}`;
+      } else if (isGroup) {
+        contextualText = `${senderLabel}: ${text}`;
       } else {
         contextualText = `${senderLabel}: ${text}`;
       }
 
-      const participants: string[] = [senderPhone];
+      // Replace @mentions in text with resolved names
+      // WhatsApp uses @<lid-number> or @<phone> in the text
+      for (const m of mentions) {
+        const mLabel = m.name ? `${m.name} (+${m.phone})` : `+${m.phone}`;
+        if (m.phone) {
+          // Replace @<phone> patterns
+          contextualText = contextualText.replace(
+            new RegExp(`@${m.phone}\\b`, 'g'),
+            `@${mLabel}`,
+          );
+        }
+      }
+
+      // Build participants list (phone numbers for contact resolution)
+      const participants: string[] = [];
+      if (senderPhone) participants.push(senderPhone);
 
       emit({
         sourceType: 'message',
@@ -195,13 +270,14 @@ export async function syncWhatsApp(
             isGroup,
             source,
             selfPhone,
+            mentions: mentions.length > 0 ? mentions : undefined,
           },
         },
       });
       processed++;
     };
 
-    // History sync — bulk data from WhatsApp servers
+    // History sync
     sock.ev.on('messaging-history.set', (data: any) => {
       historyBatches++;
       const messages = data.messages || [];
@@ -210,23 +286,36 @@ export async function syncWhatsApp(
       const progress = data.progress ?? null;
       const isLatest = data.isLatest ?? false;
 
-      // Index chat names (group names, contact names)
+      // Index contacts: build LID→phone and phone→name mappings
+      for (const contact of contacts) {
+        const contactId = contact.id || '';
+        const contactLid = contact.lid || '';
+        const name = contact.notify || contact.name || contact.verifiedName || '';
+
+        if (!isLid(contactId)) {
+          // contactId is phone-based (e.g. 971501234567@s.whatsapp.net)
+          const phone = phoneFromJid(contactId);
+          if (phone && name) phoneToName.set(phone, name);
+          if (phone && contactLid) {
+            lidToPhone.set(phoneFromJid(contactLid), phone);
+            if (name) lidToName.set(phoneFromJid(contactLid), name);
+          }
+        } else {
+          // contactId is LID-based
+          const lidNum = phoneFromJid(contactId);
+          if (name) lidToName.set(lidNum, name);
+        }
+      }
+
+      // Index chat names
       for (const chat of chats) {
         if (chat.id && chat.name) {
           chatNames.set(chat.id, chat.name);
         }
       }
 
-      // Index contact names from the contacts array
-      for (const contact of contacts) {
-        const phone = phoneFromJid(contact.id || '');
-        const name = contact.notify || contact.name || '';
-        if (phone && name) {
-          contactNames.set(phone, name);
-        }
-      }
-
       ctx.logger.info(`History batch #${historyBatches}: ${messages.length} msgs, ${chats.length} chats, ${contacts.length} contacts (progress: ${progress}, isLatest: ${isLatest})`);
+      ctx.logger.info(`Identity maps: ${lidToPhone.size} lid→phone, ${phoneToName.size} phone→name, ${lidToName.size} lid→name, ${chatNames.size} chats`);
 
       for (const msg of messages) {
         processMessage(msg, 'history');
@@ -254,6 +343,19 @@ export async function syncWhatsApp(
 
   try { sock.ws?.close(); } catch { /* ignore */ }
 
-  ctx.logger.info(`Synced ${processed} WhatsApp messages from ${historyBatches} history batches (${chatNames.size} chats, ${contactNames.size} contacts indexed)`);
+  ctx.logger.info(`Synced ${processed} WhatsApp messages from ${historyBatches} history batches (${lidToPhone.size} lid→phone, ${phoneToName.size} phone→name, ${chatNames.size} chats)`);
   return { cursor: null, hasMore: false, processed };
+}
+
+function buildSenderLabel(name: string, phone: string): string {
+  if (name && phone && name !== phone) {
+    return `${name} (+${phone})`;
+  }
+  if (phone) {
+    return `+${phone}`;
+  }
+  if (name) {
+    return name;
+  }
+  return 'Unknown';
 }
