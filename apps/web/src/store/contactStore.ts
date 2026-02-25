@@ -1,0 +1,168 @@
+import { create } from 'zustand';
+import { api } from '../lib/api';
+
+interface Contact {
+  id: string;
+  displayName: string;
+  avatars: Array<{ url: string; source: string }>;
+  identifiers: Array<{ id: string; type: string; value: string; isPrimary: boolean }>;
+  connectorSources: string[];
+  memoryCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface MergeSuggestion {
+  contact1: Contact;
+  contact2: Contact;
+  reason: string;
+}
+
+interface ContactState {
+  contacts: Contact[];
+  total: number;
+  suggestions: MergeSuggestion[];
+  selectedId: string | null;
+  searchQuery: string;
+  loading: boolean;
+  loadContacts: () => Promise<void>;
+  searchContacts: (query: string) => Promise<void>;
+  setSearchQuery: (q: string) => void;
+  loadSuggestions: () => Promise<void>;
+  selectContact: (id: string | null) => void;
+  updateContact: (id: string, data: { displayName?: string }) => Promise<void>;
+  mergeContacts: (targetId: string, sourceId: string) => Promise<void>;
+  deleteContact: (id: string) => Promise<void>;
+  dismissSuggestion: (contactId1: string, contactId2: string) => Promise<void>;
+}
+
+function parseContact(raw: any): Contact {
+  return {
+    id: raw.id,
+    displayName: raw.displayName || '',
+    avatars: typeof raw.avatars === 'string' ? JSON.parse(raw.avatars) : (raw.avatars || []),
+    identifiers: raw.identifiers || [],
+    connectorSources: raw.connectorSources || [],
+    memoryCount: raw.memoryCount || 0,
+    createdAt: raw.createdAt || '',
+    updatedAt: raw.updatedAt || '',
+  };
+}
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+export const useContactStore = create<ContactState>((set, get) => ({
+  contacts: [],
+  total: 0,
+  suggestions: [],
+  selectedId: null,
+  searchQuery: '',
+  loading: false,
+
+  loadContacts: async () => {
+    set({ loading: true });
+    try {
+      const result = await api.listContacts({ limit: 200 });
+      const contacts = result.items.map(parseContact);
+      set({ contacts, total: result.total, loading: false });
+    } catch (err) {
+      console.error('Failed to load contacts:', err);
+      set({ loading: false });
+    }
+  },
+
+  searchContacts: async (query: string) => {
+    set({ loading: true });
+    try {
+      const results = await api.searchContacts(query);
+      const contacts = results.map(parseContact);
+      set({ contacts, total: contacts.length, loading: false });
+    } catch (err) {
+      console.error('Failed to search contacts:', err);
+      set({ loading: false });
+    }
+  },
+
+  setSearchQuery: (query) => {
+    set({ searchQuery: query });
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      if (query.trim()) {
+        get().searchContacts(query);
+      } else {
+        get().loadContacts();
+      }
+    }, 300);
+  },
+
+  loadSuggestions: async () => {
+    try {
+      const suggestions = await api.getMergeSuggestions();
+      set({
+        suggestions: suggestions.map((s) => ({
+          contact1: parseContact(s.contact1),
+          contact2: parseContact(s.contact2),
+          reason: s.reason,
+        })),
+      });
+    } catch (err) {
+      console.error('Failed to load suggestions:', err);
+    }
+  },
+
+  selectContact: (id) => set({ selectedId: id }),
+
+  updateContact: async (id, data) => {
+    try {
+      const updated = await api.updateContact(id, data);
+      const parsed = parseContact(updated);
+      set((state) => ({
+        contacts: state.contacts.map((c) => (c.id === id ? parsed : c)),
+      }));
+    } catch (err) {
+      console.error('Failed to update contact:', err);
+    }
+  },
+
+  mergeContacts: async (targetId, sourceId) => {
+    try {
+      await api.mergeContacts(targetId, sourceId);
+      await get().loadContacts();
+      await get().loadSuggestions();
+      const { selectedId } = get();
+      if (selectedId === sourceId) set({ selectedId: targetId });
+    } catch (err) {
+      console.error('Failed to merge contacts:', err);
+    }
+  },
+
+  deleteContact: async (id) => {
+    try {
+      await api.deleteContact(id);
+      set((state) => ({
+        contacts: state.contacts.filter((c) => c.id !== id),
+        total: state.total - 1,
+        selectedId: state.selectedId === id ? null : state.selectedId,
+      }));
+    } catch (err) {
+      console.error('Failed to delete contact:', err);
+    }
+  },
+
+  dismissSuggestion: async (contactId1, contactId2) => {
+    try {
+      await api.dismissSuggestion(contactId1, contactId2);
+      set((state) => ({
+        suggestions: state.suggestions.filter(
+          (s) =>
+            !(
+              (s.contact1.id === contactId1 && s.contact2.id === contactId2) ||
+              (s.contact1.id === contactId2 && s.contact2.id === contactId1)
+            )
+        ),
+      }));
+    } catch (err) {
+      console.error('Failed to dismiss suggestion:', err);
+    }
+  },
+}));
