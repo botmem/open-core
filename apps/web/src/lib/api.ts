@@ -90,6 +90,16 @@ export const api = {
   getContactMemories: (id: string) => request<any[]>(`/contacts/${id}/memories`),
   searchContacts: (query: string) =>
     request<any[]>('/contacts/search', { method: 'POST', body: JSON.stringify({ query }) }),
+  updateContact: (id: string, data: { displayName?: string; avatars?: Array<{ url: string; source: string }>; metadata?: Record<string, unknown> }) =>
+    request<any>(`/contacts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  mergeContacts: (targetId: string, sourceId: string) =>
+    request<any>(`/contacts/${targetId}/merge`, { method: 'POST', body: JSON.stringify({ sourceId }) }),
+  deleteContact: (id: string) =>
+    request<any>(`/contacts/${id}`, { method: 'DELETE' }),
+  getMergeSuggestions: () =>
+    request<Array<{ contact1: any; contact2: any; reason: string }>>('/contacts/suggestions'),
+  dismissSuggestion: (contactId1: string, contactId2: string) =>
+    request<any>('/contacts/suggestions/dismiss', { method: 'POST', body: JSON.stringify({ contactId1, contactId2 }) }),
 };
 
 // WebSocket connection

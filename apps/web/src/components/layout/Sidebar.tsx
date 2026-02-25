@@ -7,6 +7,7 @@ const navItems = [
   { to: '/dashboard', label: 'DASHBOARD', icon: '◈' },
   { to: '/connectors', label: 'CONNECTORS', icon: '⚡' },
   { to: '/memories', label: 'MEMORIES', icon: '◉' },
+  { to: '/contacts', label: 'CONTACTS', icon: '◎' },
 ];
 
 export function Sidebar() {
