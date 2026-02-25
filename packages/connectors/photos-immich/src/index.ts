@@ -164,7 +164,7 @@ export class ImmichConnector extends BaseConnector {
       const timestamp = asset.fileCreatedAt || asset.localDateTime || asset.createdAt;
 
       this.emitData({
-        sourceType: 'photo',
+        sourceType: 'file',
         sourceId: asset.id,
         timestamp,
         content: {
@@ -177,6 +177,9 @@ export class ImmichConnector extends BaseConnector {
             mimeType: asset.originalMimeType ?? 'image/jpeg',
           }],
           metadata: {
+            fileUrl: `${host}/api/assets/${asset.id}/thumbnail?size=preview`,
+            mimetype: asset.originalMimeType ?? 'image/jpeg',
+            fileName: asset.originalFileName,
             originalFileName: asset.originalFileName,
             isFavorite: asset.isFavorite,
             // EXIF

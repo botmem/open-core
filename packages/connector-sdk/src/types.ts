@@ -40,7 +40,7 @@ export interface SyncContext {
 }
 
 export interface ConnectorDataEvent {
-  sourceType: 'email' | 'message' | 'photo' | 'location';
+  sourceType: 'email' | 'message' | 'photo' | 'location' | 'file';
   sourceId: string;
   timestamp: string;
   content: {
