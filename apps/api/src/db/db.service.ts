@@ -113,7 +113,7 @@ export class DbService implements OnModuleInit {
       CREATE TABLE IF NOT EXISTS contacts (
         id TEXT PRIMARY KEY,
         display_name TEXT NOT NULL,
-        avatar_url TEXT,
+        avatars TEXT NOT NULL DEFAULT '[]',
         metadata TEXT NOT NULL DEFAULT '{}',
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
@@ -135,6 +135,18 @@ export class DbService implements OnModuleInit {
         contact_id TEXT NOT NULL REFERENCES contacts(id),
         role TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS merge_dismissals (
+        id TEXT PRIMARY KEY,
+        contact_id_1 TEXT NOT NULL REFERENCES contacts(id),
+        contact_id_2 TEXT NOT NULL REFERENCES contacts(id),
+        created_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
     `);
 
     // Migrations for existing databases
@@ -142,6 +154,19 @@ export class DbService implements OnModuleInit {
       this.sqlite.exec(`ALTER TABLE logs ADD COLUMN stage TEXT`);
     } catch {
       // Column already exists
+    }
+    try {
+      this.sqlite.exec(`ALTER TABLE contacts ADD COLUMN avatars TEXT NOT NULL DEFAULT '[]'`);
+    } catch {
+      // Column already exists
+    }
+    try {
+      this.sqlite.exec(`
+        UPDATE contacts SET avatars = json_array(json_object('url', avatar_url, 'source', 'unknown'))
+        WHERE avatar_url IS NOT NULL AND avatar_url != '' AND (avatars = '[]' OR avatars IS NULL)
+      `);
+    } catch {
+      // Migration already applied or avatar_url doesn't exist
     }
   }
 }
