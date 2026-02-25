@@ -62,7 +62,7 @@ export interface LogEntry {
   message: string;
 }
 
-export type SourceType = 'email' | 'message' | 'photo' | 'location';
+export type SourceType = 'email' | 'message' | 'photo' | 'location' | 'file';
 
 export type FactualityLabel = 'FACT' | 'UNVERIFIED' | 'FICTION';
 
