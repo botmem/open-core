@@ -93,7 +93,7 @@ export const memoryLinks = sqliteTable('memory_links', {
 export const contacts = sqliteTable('contacts', {
   id: text('id').primaryKey(),
   displayName: text('display_name').notNull(),
-  avatarUrl: text('avatar_url'),
+  avatars: text('avatars').notNull().default('[]'),
   metadata: text('metadata').notNull().default('{}'), // JSON
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
@@ -114,4 +114,18 @@ export const memoryContacts = sqliteTable('memory_contacts', {
   memoryId: text('memory_id').notNull().references(() => memories.id),
   contactId: text('contact_id').notNull().references(() => contacts.id),
   role: text('role').notNull(), // sender | recipient | mentioned | participant
+});
+
+export const mergeDismissals = sqliteTable('merge_dismissals', {
+  id: text('id').primaryKey(),
+  contactId1: text('contact_id_1').notNull().references(() => contacts.id),
+  contactId2: text('contact_id_2').notNull().references(() => contacts.id),
+  createdAt: text('created_at').notNull(),
+});
+
+// --- Settings table ---
+
+export const settings = sqliteTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
 });
