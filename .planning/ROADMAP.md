@@ -101,11 +101,11 @@ Plans:
   2. Clicking and scrolling on pages produces autocapture events including rageclicks, and UTM/referrer data is captured on page views
   3. A deliberately thrown JS error appears as a captured exception in PostHog, and an unhandled backend exception is sent as a server-side error
   4. After page load, PostHog identifies the session with a stable user ID and sets connectors_count and memories_count as person properties
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md -- Enable session replay, autocapture, heatmaps, error tracking, network recording, and backend exception filter
+- [ ] 05-02-PLAN.md -- User identification with stable ID and person properties
 
 ### Phase 6: Verification and Dashboards
 **Goal**: PostHog dashboards provide actionable insights on Botmem usage patterns
@@ -133,5 +133,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Operational Maturity | v1.0 | 2/2 | Complete | 2026-03-07 |
 | 3. Extensibility | v1.0 | 2/2 | Complete | 2026-03-07 |
 | 4. PostHog Activation | v1.1 | 2/2 | Complete | 2026-03-07 |
-| 5. SDK Feature Enablement | v1.2 | 0/? | Not started | - |
+| 5. SDK Feature Enablement | v1.2 | 0/2 | Not started | - |
 | 6. Verification and Dashboards | v1.2 | 0/? | Not started | - |
