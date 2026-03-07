@@ -5,14 +5,17 @@ import { AccountsService } from '../../accounts/accounts.service';
 import { JobsService } from '../../jobs/jobs.service';
 import { EventsService } from '../../events/events.service';
 import { DbService } from '../../db/db.service';
+import { AnalyticsService } from '../../analytics/analytics.service';
 
 function createMockDeps() {
-  const mockConnector = {
+  const { EventEmitter } = require('events');
+  const mockConnector = Object.assign(new EventEmitter(), {
     manifest: { id: 'test', authType: 'api-key' },
     initiateAuth: vi.fn(),
     completeAuth: vi.fn(),
     validateAuth: vi.fn().mockResolvedValue(true),
-  };
+    removeAllListeners: vi.fn(),
+  });
 
   const connectors = {
     get: vi.fn().mockReturnValue(mockConnector),
@@ -21,6 +24,8 @@ function createMockDeps() {
   const accountsService = {
     create: vi.fn().mockResolvedValue({ id: 'a1', connectorType: 'test', identifier: 'test' }),
     update: vi.fn().mockResolvedValue({ id: 'a1', connectorType: 'test', identifier: 'test', status: 'connected' }),
+    findByTypeAndIdentifier: vi.fn().mockResolvedValue(null),
+    getById: vi.fn().mockResolvedValue({ id: 'a1', connectorType: 'test', identifier: 'test' }),
   } as unknown as AccountsService;
 
   const jobsService = {
@@ -48,19 +53,23 @@ function createMockDeps() {
     },
   } as unknown as DbService;
 
-  return { connectors, accountsService, jobsService, events, dbService, mockConnector };
+  const analytics = {
+    capture: vi.fn(),
+  } as unknown as AnalyticsService;
+
+  return { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector };
 }
 
 describe('AuthService', () => {
   describe('initiate', () => {
     it('handles complete auth type', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.initiateAuth.mockResolvedValue({
         type: 'complete',
         auth: { accessToken: 'tok' },
       });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       const result = await service.initiate('test', { identifier: 'user1' });
 
       expect(result.type).toBe('complete');
@@ -73,13 +82,13 @@ describe('AuthService', () => {
     });
 
     it('handles redirect auth type', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.initiateAuth.mockResolvedValue({
         type: 'redirect',
         url: 'https://oauth.example.com',
       });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       const result = await service.initiate('test', {});
 
       expect(result.type).toBe('redirect');
@@ -88,14 +97,14 @@ describe('AuthService', () => {
     });
 
     it('stores pending config for redirect auth', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.initiateAuth.mockResolvedValue({
         type: 'redirect',
         url: 'https://oauth.example.com',
       });
       mockConnector.completeAuth.mockResolvedValue({ accessToken: 'tok' });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       await service.initiate('test', { clientId: 'cid', clientSecret: 'csec', returnTo: '/onboarding' });
 
       const result = await service.handleCallback('test', { code: 'abc' });
@@ -110,27 +119,27 @@ describe('AuthService', () => {
     });
 
     it('strips returnTo from config passed to connector', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.initiateAuth.mockResolvedValue({
         type: 'redirect',
         url: 'https://oauth.example.com',
       });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       await service.initiate('test', { clientId: 'cid', returnTo: '/onboarding' });
 
       expect(mockConnector.initiateAuth).toHaveBeenCalledWith({ clientId: 'cid' });
     });
 
     it('handles qr-code auth type', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.initiateAuth.mockResolvedValue({
         type: 'qr-code',
         qrData: 'data:image/png',
         wsChannel: 'auth:session-1',
       });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       const result = await service.initiate('test', {});
 
       expect(result.type).toBe('qr-code');
@@ -141,14 +150,14 @@ describe('AuthService', () => {
 
   describe('getSavedCredentials', () => {
     it('returns null when no credentials saved', async () => {
-      const { connectors, accountsService, jobsService, events, dbService } = createMockDeps();
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const { connectors, accountsService, jobsService, events, dbService, analytics } = createMockDeps();
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       const result = await service.getSavedCredentials('test');
       expect(result).toBeNull();
     });
 
     it('returns parsed credentials when saved', async () => {
-      const { connectors, accountsService, jobsService, events, dbService } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics } = createMockDeps();
       (dbService.db.select as any).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
@@ -159,7 +168,7 @@ describe('AuthService', () => {
           }),
         }),
       });
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       const result = await service.getSavedCredentials('gmail');
       expect(result).toEqual({ clientId: 'cid', clientSecret: 'csec' });
     });
@@ -167,10 +176,10 @@ describe('AuthService', () => {
 
   describe('handleCallback', () => {
     it('completes auth and creates account', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.completeAuth.mockResolvedValue({ accessToken: 'callback-tok' });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       const result = await service.handleCallback('test', { code: 'abc', identifier: 'user1' });
 
       expect(mockConnector.completeAuth).toHaveBeenCalledWith({ code: 'abc', identifier: 'user1' });
@@ -181,11 +190,11 @@ describe('AuthService', () => {
     });
 
     it('cleans up pending config after callback', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.initiateAuth.mockResolvedValue({ type: 'redirect', url: 'https://oauth.example.com' });
       mockConnector.completeAuth.mockResolvedValue({ accessToken: 'tok' });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       await service.initiate('test', { clientId: 'cid', clientSecret: 'csec' });
       await service.handleCallback('test', { code: 'abc' });
 
@@ -198,10 +207,10 @@ describe('AuthService', () => {
 
   describe('complete', () => {
     it('creates new account when no accountId', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.completeAuth.mockResolvedValue({ accessToken: 'new-tok' });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       await service.complete('test', { params: { code: 'xyz' } });
 
       expect(accountsService.create).toHaveBeenCalled();
@@ -210,10 +219,10 @@ describe('AuthService', () => {
     });
 
     it('updates existing account when accountId provided', async () => {
-      const { connectors, accountsService, jobsService, events, dbService, mockConnector } = createMockDeps();
+      const { connectors, accountsService, jobsService, events, dbService, analytics, mockConnector } = createMockDeps();
       mockConnector.completeAuth.mockResolvedValue({ accessToken: 'updated-tok' });
 
-      const service = new AuthService(connectors, accountsService, jobsService, events, dbService);
+      const service = new AuthService(connectors, accountsService, jobsService, events, dbService, analytics);
       await service.complete('test', { accountId: 'a1', params: { code: 'xyz' } });
 
       expect(accountsService.update).toHaveBeenCalledWith('a1', {

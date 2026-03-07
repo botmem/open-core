@@ -42,6 +42,7 @@ export function createTestDb(): BetterSQLite3Database<typeof schema> {
       job_id TEXT,
       connector_type TEXT NOT NULL,
       account_id TEXT,
+      stage TEXT,
       level TEXT NOT NULL,
       message TEXT NOT NULL,
       timestamp TEXT NOT NULL
@@ -60,6 +61,7 @@ export function createTestDb(): BetterSQLite3Database<typeof schema> {
       source_id TEXT NOT NULL,
       source_type TEXT NOT NULL,
       payload TEXT NOT NULL,
+      cleaned_text TEXT,
       timestamp TEXT NOT NULL,
       job_id TEXT,
       created_at TEXT NOT NULL
@@ -80,6 +82,8 @@ export function createTestDb(): BetterSQLite3Database<typeof schema> {
       claims TEXT NOT NULL DEFAULT '[]',
       metadata TEXT NOT NULL DEFAULT '{}',
       embedding_status TEXT NOT NULL DEFAULT 'pending',
+      pinned INTEGER NOT NULL DEFAULT 0,
+      recall_count INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL
     );
 
@@ -95,6 +99,7 @@ export function createTestDb(): BetterSQLite3Database<typeof schema> {
     CREATE TABLE IF NOT EXISTS contacts (
       id TEXT PRIMARY KEY,
       display_name TEXT NOT NULL,
+      entity_type TEXT NOT NULL DEFAULT 'person',
       avatars TEXT NOT NULL DEFAULT '[]',
       metadata TEXT NOT NULL DEFAULT '{}',
       created_at TEXT NOT NULL,
@@ -123,6 +128,11 @@ export function createTestDb(): BetterSQLite3Database<typeof schema> {
       contact_id_1 TEXT NOT NULL REFERENCES contacts(id),
       contact_id_2 TEXT NOT NULL REFERENCES contacts(id),
       created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
     );
   `);
 
