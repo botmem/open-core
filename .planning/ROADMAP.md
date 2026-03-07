@@ -2,8 +2,9 @@
 
 ## Milestones
 
-- **v1.0 MVP** - Phases 1-3 (shipped 2026-03-07)
-- **v1.1 PostHog Analytics Activation** - Phase 4 (in progress)
+- v1.0 MVP - Phases 1-3 (shipped 2026-03-07)
+- v1.1 PostHog Analytics Activation - Phase 4 (shipped 2026-03-07)
+- v1.2 PostHog Deep Analytics - Phases 5-6 (in progress)
 
 ## Phases
 
@@ -33,7 +34,7 @@ Plans:
 
 ### Phase 2: Operational Maturity
 **Goal**: The system maintains accurate scores over time through automated decay, and usage is tracked via PostHog so search and sync patterns are observable
-**Depends on**: Phase 1 (decay job needs recallCount and pinned columns from Phase 1; analytics needs improved search to measure)
+**Depends on**: Phase 1
 **Requirements**: OPS-01, OPS-02, OPS-03, OPS-04, OPS-05
 **Success Criteria** (what must be TRUE):
   1. Old unpinned memories naturally rank lower over time without manual intervention
@@ -48,7 +49,7 @@ Plans:
 
 ### Phase 3: Extensibility
 **Goal**: Users can drop plugin files into the plugins directory to add custom connectors, scorers, or lifecycle hooks without modifying core code
-**Depends on**: Phase 2 (stable system before opening extension points)
+**Depends on**: Phase 2
 **Requirements**: EXT-01, EXT-02, EXT-03, EXT-04
 **Success Criteria** (what must be TRUE):
   1. A sample enricher plugin in the plugins directory runs automatically during the enrich pipeline
@@ -62,37 +63,75 @@ Plans:
 
 </details>
 
-### v1.1 PostHog Analytics Activation (In Progress)
-
-**Milestone Goal:** Configure PostHog cloud with real API keys, verify events flow end-to-end across frontend and backend, and fill tracking coverage gaps so product usage is fully observable.
-
-- [x] **Phase 4: PostHog Analytics Activation** - Configure keys, verify event flow end-to-end, add missing tracking events (completed 2026-03-07)
-
-## Phase Details
+<details>
+<summary>v1.1 PostHog Analytics Activation (Phase 4) - SHIPPED 2026-03-07</summary>
 
 ### Phase 4: PostHog Analytics Activation
 **Goal**: PostHog receives real analytics events from both frontend and backend, with comprehensive product tracking across all key user actions
-**Depends on**: Phase 3 (PostHog SDK integration exists from v1.0 Phase 2)
+**Depends on**: Phase 3
 **Requirements**: CFG-01, CFG-02, VER-01, VER-02, VER-03, VER-04, VER-05, COV-01, COV-02
 **Success Criteria** (what must be TRUE):
   1. PostHog dashboard shows pageview events when user navigates between pages in the web app
-  2. PostHog dashboard shows search, pin/unpin, sync_complete, and sync_error events with correct properties (query_length, result_count, connector type, action)
-  3. Connector setup completions and graph view interactions appear as tracked events in PostHog with appropriate metadata
+  2. PostHog dashboard shows search, pin/unpin, sync_complete, and sync_error events with correct properties
+  3. Connector setup completions and graph view interactions appear as tracked events in PostHog
   4. Removing API keys from environment variables causes zero errors and zero network calls to PostHog
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Config + coverage gaps (CFG-02, COV-01, COV-02)
-- [ ] 04-02-PLAN.md -- API key setup + end-to-end verification (CFG-01, VER-01, VER-02, VER-03, VER-04, VER-05)
+- [x] 04-01: Config + coverage gaps (CFG-02, COV-01, COV-02)
+- [x] 04-02: API key setup + end-to-end verification (CFG-01, VER-01, VER-02, VER-03, VER-04, VER-05)
+
+</details>
+
+## v1.2 PostHog Deep Analytics
+
+**Milestone Goal:** Enable all valuable free PostHog features -- session replay, heatmaps, error tracking, web analytics, and product analytics dashboards -- for comprehensive Botmem usage insights.
+
+- [ ] **Phase 5: SDK Feature Enablement** - Configure posthog-js and backend SDK to enable replay, heatmaps, autocapture, error tracking, and user identification
+- [ ] **Phase 6: Verification and Dashboards** - Verify data flows into PostHog and build product analytics dashboards
+
+## Phase Details
+
+### Phase 5: SDK Feature Enablement
+**Goal**: All PostHog deep analytics features are actively capturing data from Botmem sessions
+**Depends on**: Phase 4 (PostHog SDK already integrated and sending events)
+**Requirements**: REPLAY-01, REPLAY-03, HEAT-01, HEAT-03, ERR-01, ERR-03, WEB-03, ID-01, ID-02
+**Success Criteria** (what must be TRUE):
+  1. Browsing Botmem generates session replay recordings with text inputs masked and network requests captured (auth headers redacted)
+  2. Clicking and scrolling on pages produces autocapture events including rageclicks, and UTM/referrer data is captured on page views
+  3. A deliberately thrown JS error appears as a captured exception in PostHog, and an unhandled backend exception is sent as a server-side error
+  4. After page load, PostHog identifies the session with a stable user ID and sets connectors_count and memories_count as person properties
+**Plans**: TBD
+
+Plans:
+- [ ] 05-01: TBD
+- [ ] 05-02: TBD
+
+### Phase 6: Verification and Dashboards
+**Goal**: PostHog dashboards provide actionable insights on Botmem usage patterns
+**Depends on**: Phase 5 (data must be flowing before dashboards can be built)
+**Requirements**: REPLAY-02, HEAT-02, ERR-02, WEB-01, WEB-02, PROD-01, PROD-02, PROD-03
+**Success Criteria** (what must be TRUE):
+  1. Session recordings are playable in PostHog Replay tab and heatmap overlay is visible on Botmem pages via PostHog toolbar
+  2. Errors with stack traces appear in PostHog Error Tracking view
+  3. PostHog web analytics dashboard shows page views, unique visitors, session counts, and navigation paths between pages
+  4. A saved PostHog dashboard exists with insights for searches/day, syncs/day, memories created, a connector setup funnel, and a search retention insight
+**Plans**: TBD
+
+Plans:
+- [ ] 06-01: TBD
+- [ ] 06-02: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1. Search Quality | v1.0 | 2/2 | Complete | 2026-03-07 |
 | 2. Operational Maturity | v1.0 | 2/2 | Complete | 2026-03-07 |
 | 3. Extensibility | v1.0 | 2/2 | Complete | 2026-03-07 |
-| 4. PostHog Analytics Activation | 2/2 | Complete   | 2026-03-07 | - |
+| 4. PostHog Activation | v1.1 | 2/2 | Complete | 2026-03-07 |
+| 5. SDK Feature Enablement | v1.2 | 0/? | Not started | - |
+| 6. Verification and Dashboards | v1.2 | 0/? | Not started | - |

@@ -66,29 +66,29 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REPLAY-01 | — | Pending |
-| REPLAY-02 | — | Pending |
-| REPLAY-03 | — | Pending |
-| HEAT-01 | — | Pending |
-| HEAT-02 | — | Pending |
-| HEAT-03 | — | Pending |
-| ERR-01 | — | Pending |
-| ERR-02 | — | Pending |
-| ERR-03 | — | Pending |
-| WEB-01 | — | Pending |
-| WEB-02 | — | Pending |
-| WEB-03 | — | Pending |
-| PROD-01 | — | Pending |
-| PROD-02 | — | Pending |
-| PROD-03 | — | Pending |
-| ID-01 | — | Pending |
-| ID-02 | — | Pending |
+| REPLAY-01 | Phase 5 | Pending |
+| REPLAY-02 | Phase 6 | Pending |
+| REPLAY-03 | Phase 5 | Pending |
+| HEAT-01 | Phase 5 | Pending |
+| HEAT-02 | Phase 6 | Pending |
+| HEAT-03 | Phase 5 | Pending |
+| ERR-01 | Phase 5 | Pending |
+| ERR-02 | Phase 6 | Pending |
+| ERR-03 | Phase 5 | Pending |
+| WEB-01 | Phase 6 | Pending |
+| WEB-02 | Phase 6 | Pending |
+| WEB-03 | Phase 5 | Pending |
+| PROD-01 | Phase 6 | Pending |
+| PROD-02 | Phase 6 | Pending |
+| PROD-03 | Phase 6 | Pending |
+| ID-01 | Phase 5 | Pending |
+| ID-02 | Phase 5 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after initial definition*
+*Last updated: 2026-03-08 after roadmap creation*
