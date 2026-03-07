@@ -79,8 +79,8 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | EXT-04 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 16 total
-- Mapped to phases: 16
+- v1 requirements: 15 total
+- Mapped to phases: 15
 - Unmapped: 0 ✓
 
 ---
