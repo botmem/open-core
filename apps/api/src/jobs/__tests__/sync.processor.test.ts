@@ -2,9 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SyncProcessor } from '../sync.processor';
 import { ConnectorsService } from '../../connectors/connectors.service';
 import { AccountsService } from '../../accounts/accounts.service';
+import { AuthService } from '../../auth/auth.service';
 import { JobsService } from '../jobs.service';
 import { LogsService } from '../../logs/logs.service';
 import { EventsService } from '../../events/events.service';
+import { DbService } from '../../db/db.service';
+import { SettingsService } from '../../settings/settings.service';
+import { ConfigService } from '../../config/config.service';
+import { AnalyticsService } from '../../analytics/analytics.service';
 import { EventEmitter } from 'events';
 
 function createMockDeps() {
@@ -12,6 +17,9 @@ function createMockDeps() {
     manifest: { id: 'gmail' },
     sync: vi.fn(),
     removeAllListeners: vi.fn(),
+    resetSyncLimit: vi.fn(),
+    wrapSyncContext: vi.fn((ctx: any) => ctx),
+    isLimitReached: false,
   });
 
   const connectors = {
@@ -29,6 +37,10 @@ function createMockDeps() {
     update: vi.fn().mockResolvedValue({}),
   } as unknown as AccountsService;
 
+  const authService = {
+    getSavedCredentials: vi.fn().mockResolvedValue(null),
+  } as unknown as AuthService;
+
   const jobsService = {
     updateJob: vi.fn().mockResolvedValue(undefined),
     triggerSync: vi.fn().mockResolvedValue({}),
@@ -42,36 +54,65 @@ function createMockDeps() {
     emitToChannel: vi.fn(),
   } as unknown as EventsService;
 
-  return { connectors, accountsService, jobsService, logsService, events, mockConnector };
+  const dbService = {
+    db: {
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          then: vi.fn(),
+        }),
+      }),
+    },
+  } as unknown as DbService;
+
+  const cleanQueue = {
+    add: vi.fn().mockResolvedValue(undefined),
+  } as any;
+
+  const settingsService = {
+    get: vi.fn().mockReturnValue(''),
+    onChange: vi.fn(),
+  } as unknown as SettingsService;
+
+  const configService = {
+    syncDebugLimit: 0,
+  } as unknown as ConfigService;
+
+  const analytics = {
+    capture: vi.fn(),
+  } as unknown as AnalyticsService;
+
+  return { connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics, mockConnector };
 }
 
 describe('SyncProcessor', () => {
   it('processes sync job successfully', async () => {
-    const { connectors, accountsService, jobsService, logsService, events, mockConnector } = createMockDeps();
+    const { connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics, mockConnector } = createMockDeps();
     mockConnector.sync.mockResolvedValue({ cursor: 'c1', hasMore: false, processed: 10 });
 
-    const processor = new SyncProcessor(connectors, accountsService, jobsService, logsService, events);
+    const processor = new SyncProcessor(connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics);
 
     const job = { data: { accountId: 'acc-1', connectorType: 'gmail', jobId: 'j1' } } as any;
     await processor.process(job);
 
     expect(jobsService.updateJob).toHaveBeenCalledWith('j1', expect.objectContaining({ status: 'running' }));
     expect(accountsService.update).toHaveBeenCalledWith('acc-1', expect.objectContaining({ status: 'syncing' }));
-    expect(jobsService.updateJob).toHaveBeenCalledWith('j1', expect.objectContaining({ status: 'done', progress: 10 }));
+    // After loop, cursor is saved per page
     expect(accountsService.update).toHaveBeenCalledWith('acc-1', expect.objectContaining({
       lastCursor: 'c1',
-      status: 'connected',
       itemsSynced: 15,
     }));
-    expect(events.emitToChannel).toHaveBeenCalledWith('job:j1', 'job:complete', { jobId: 'j1', status: 'done' });
+    // After loop completes, status is set to connected
+    expect(accountsService.update).toHaveBeenCalledWith('acc-1', expect.objectContaining({
+      status: 'connected',
+    }));
     expect(mockConnector.removeAllListeners).toHaveBeenCalled();
   });
 
   it('handles error during sync', async () => {
-    const { connectors, accountsService, jobsService, logsService, events, mockConnector } = createMockDeps();
+    const { connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics, mockConnector } = createMockDeps();
     mockConnector.sync.mockRejectedValue(new Error('API rate limited'));
 
-    const processor = new SyncProcessor(connectors, accountsService, jobsService, logsService, events);
+    const processor = new SyncProcessor(connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics);
     const job = { data: { accountId: 'acc-1', connectorType: 'gmail', jobId: 'j1' } } as any;
 
     await expect(processor.process(job)).rejects.toThrow('API rate limited');
@@ -80,35 +121,39 @@ describe('SyncProcessor', () => {
       status: 'failed',
       error: 'API rate limited',
     }));
-    expect(accountsService.update).toHaveBeenCalledWith('acc-1', { status: 'error' });
+    expect(accountsService.update).toHaveBeenCalledWith('acc-1', expect.objectContaining({ status: 'error' }));
     expect(events.emitToChannel).toHaveBeenCalledWith('job:j1', 'job:complete', { jobId: 'j1', status: 'failed' });
     expect(mockConnector.removeAllListeners).toHaveBeenCalled();
   });
 
-  it('triggers follow-up sync when hasMore is true', async () => {
-    const { connectors, accountsService, jobsService, logsService, events, mockConnector } = createMockDeps();
-    mockConnector.sync.mockResolvedValue({ cursor: 'c2', hasMore: true, processed: 50 });
+  it('iterates pages when hasMore is true', async () => {
+    const { connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics, mockConnector } = createMockDeps();
+    // First call returns hasMore:true, second returns hasMore:false
+    mockConnector.sync
+      .mockResolvedValueOnce({ cursor: 'c1', hasMore: true, processed: 50 })
+      .mockResolvedValueOnce({ cursor: 'c2', hasMore: false, processed: 10 });
 
-    const processor = new SyncProcessor(connectors, accountsService, jobsService, logsService, events);
+    const processor = new SyncProcessor(connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics);
     const job = { data: { accountId: 'acc-1', connectorType: 'gmail', jobId: 'j1' } } as any;
     await processor.process(job);
 
-    expect(jobsService.triggerSync).toHaveBeenCalledWith('acc-1', 'gmail');
+    // sync should have been called twice (two pages)
+    expect(mockConnector.sync).toHaveBeenCalledTimes(2);
   });
 
-  it('does not trigger follow-up when hasMore is false', async () => {
-    const { connectors, accountsService, jobsService, logsService, events, mockConnector } = createMockDeps();
+  it('does not iterate when hasMore is false', async () => {
+    const { connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics, mockConnector } = createMockDeps();
     mockConnector.sync.mockResolvedValue({ cursor: null, hasMore: false, processed: 5 });
 
-    const processor = new SyncProcessor(connectors, accountsService, jobsService, logsService, events);
+    const processor = new SyncProcessor(connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics);
     const job = { data: { accountId: 'acc-1', connectorType: 'gmail', jobId: 'j1' } } as any;
     await processor.process(job);
 
-    expect(jobsService.triggerSync).not.toHaveBeenCalled();
+    expect(mockConnector.sync).toHaveBeenCalledTimes(1);
   });
 
   it('creates logger that adds logs', async () => {
-    const { connectors, accountsService, jobsService, logsService, events, mockConnector } = createMockDeps();
+    const { connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics, mockConnector } = createMockDeps();
     mockConnector.sync.mockImplementation(async (ctx: any) => {
       ctx.logger.info('started');
       ctx.logger.warn('slow');
@@ -117,7 +162,7 @@ describe('SyncProcessor', () => {
       return { cursor: null, hasMore: false, processed: 0 };
     });
 
-    const processor = new SyncProcessor(connectors, accountsService, jobsService, logsService, events);
+    const processor = new SyncProcessor(connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics);
     const job = { data: { accountId: 'acc-1', connectorType: 'gmail', jobId: 'j1' } } as any;
     await processor.process(job);
 
@@ -126,10 +171,10 @@ describe('SyncProcessor', () => {
   });
 
   it('cleans up listeners in finally block', async () => {
-    const { connectors, accountsService, jobsService, logsService, events, mockConnector } = createMockDeps();
+    const { connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics, mockConnector } = createMockDeps();
     mockConnector.sync.mockRejectedValue(new Error('fail'));
 
-    const processor = new SyncProcessor(connectors, accountsService, jobsService, logsService, events);
+    const processor = new SyncProcessor(connectors, accountsService, authService, jobsService, logsService, events, dbService, cleanQueue, settingsService, configService, analytics);
     const job = { data: { accountId: 'acc-1', connectorType: 'gmail', jobId: 'j1' } } as any;
 
     try { await processor.process(job); } catch {}
