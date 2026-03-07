@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: PostHog Deep Analytics
-status: roadmapped
-stopped_at: null
-last_updated: "2026-03-08"
-last_activity: 2026-03-08 -- Roadmap created for v1.2 (2 phases)
+status: executing
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-07T22:11:09Z"
+last_activity: 2026-03-08 -- Completed 05-01 SDK Feature Enablement
 progress:
-  total_phases: 2
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 6
+  completed_phases: 4
+  total_plans: 10
+  completed_plans: 9
   percent: 0
 ---
 
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v1.2 PostHog Deep Analytics -- Phase 5 ready to plan
+**Current focus:** v1.2 PostHog Deep Analytics -- Phase 5 plan 1 complete
 
 ## Current Position
 
 Phase: 5 of 6 (SDK Feature Enablement)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-08 -- Roadmap created for v1.2
+Plan: 1 of 1 in current phase (complete)
+Status: Phase 5 complete, Phase 6 ready
+Last activity: 2026-03-08 -- Completed 05-01 SDK Feature Enablement
 
-Progress: [##########] v1.0 complete | [##########] v1.1 complete | [..........] 0% v1.2
+Progress: [##########] v1.0 complete | [##########] v1.1 complete | [█████████░] 90% v1.2
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 4min
-- Total execution time: 0.5 hours
+- Total execution time: 0.55 hours
 
 **By Phase:**
 
@@ -47,9 +47,10 @@ Progress: [##########] v1.0 complete | [##########] v1.1 complete | [..........]
 | 02-operational-maturity | 2/2 | 8min | 4min |
 | 03-extensibility | 2/2 | 9min | 4.5min |
 | 04-posthog-activation | 2/2 | 6min | 3min |
+| 05-sdk-feature-enablement | 1/1 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (4min), 03-01 (4min), 03-02 (5min), 04-01 (3min), 04-02 (3min)
+- Last 5 plans: 03-01 (4min), 03-02 (5min), 04-01 (3min), 04-02 (3min), 05-01 (3min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -68,6 +69,9 @@ Recent decisions affecting current work:
 - [v1.0]: PostHog cloud over self-hosted (16GB RAM disproportionate for single-user)
 - [v1.0]: PostHog SDK integration ships as no-op when unconfigured
 - [Phase 04]: Used EU PostHog instance (eu.i.posthog.com) per user preference
+- [Phase 05]: Used maskCapturedNetworkRequestFn for network header redaction (correct PostHog SDK v1.359 API)
+- [Phase 05]: Backend exception filter only captures 5xx errors to avoid noise from 404s/validation
+- [Phase 05]: PostHogExceptionFilter extends BaseExceptionFilter to preserve default NestJS responses
 
 ### Pending Todos
 
@@ -80,5 +84,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-08
-Stopped at: Roadmap created for v1.2
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
