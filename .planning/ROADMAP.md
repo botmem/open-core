@@ -40,11 +40,11 @@ Plans:
   2. PostHog dashboard shows search, sync, and pin events when API key is configured
   3. System runs normally with no errors when PostHog API key is absent
   4. Decay job runs nightly without blocking normal API operations
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Nightly decay job (OPS-01, OPS-02)
-- [ ] 02-02: PostHog analytics integration (OPS-03, OPS-04, OPS-05)
+- [ ] 02-01-PLAN.md -- Nightly decay job (OPS-01, OPS-02)
+- [ ] 02-02-PLAN.md -- PostHog analytics integration (OPS-03, OPS-04, OPS-05)
 
 ### Phase 3: Extensibility
 **Goal**: Users can drop plugin files into the plugins directory to add custom connectors, scorers, or lifecycle hooks without modifying core code
