@@ -87,7 +87,7 @@ Plans:
 
 **Milestone Goal:** Enable all valuable free PostHog features -- session replay, heatmaps, error tracking, web analytics, and product analytics dashboards -- for comprehensive Botmem usage insights.
 
-- [ ] **Phase 5: SDK Feature Enablement** - Configure posthog-js and backend SDK to enable replay, heatmaps, autocapture, error tracking, and user identification
+- [x] **Phase 5: SDK Feature Enablement** - Configure posthog-js and backend SDK to enable replay, heatmaps, autocapture, error tracking, and user identification
 - [ ] **Phase 6: Verification and Dashboards** - Verify data flows into PostHog and build product analytics dashboards
 
 ## Phase Details
@@ -104,8 +104,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md -- Enable session replay, autocapture, heatmaps, error tracking, network recording, and backend exception filter
-- [ ] 05-02-PLAN.md -- User identification with stable ID and person properties
+- [x] 05-01-PLAN.md -- Enable session replay, autocapture, heatmaps, error tracking, network recording, and backend exception filter
+- [x] 05-02-PLAN.md -- User identification with stable ID and person properties
 
 ### Phase 6: Verification and Dashboards
 **Goal**: PostHog dashboards provide actionable insights on Botmem usage patterns
@@ -116,11 +116,11 @@ Plans:
   2. Errors with stack traces appear in PostHog Error Tracking view
   3. PostHog web analytics dashboard shows page views, unique visitors, session counts, and navigation paths between pages
   4. A saved PostHog dashboard exists with insights for searches/day, syncs/day, memories created, a connector setup funnel, and a search retention insight
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md -- Data flow verification (session replay, heatmaps, error tracking, navigation paths)
+- [ ] 06-02-PLAN.md -- Dashboard creation (web analytics, product metrics, funnel, retention)
 
 ## Progress
 
@@ -133,5 +133,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Operational Maturity | v1.0 | 2/2 | Complete | 2026-03-07 |
 | 3. Extensibility | v1.0 | 2/2 | Complete | 2026-03-07 |
 | 4. PostHog Activation | v1.1 | 2/2 | Complete | 2026-03-07 |
-| 5. SDK Feature Enablement | 1/2 | In Progress|  | - |
-| 6. Verification and Dashboards | v1.2 | 0/? | Not started | - |
+| 5. SDK Feature Enablement | v1.2 | 2/2 | Complete | 2026-03-08 |
+| 6. Verification and Dashboards | v1.2 | 0/2 | Not started | - |
