@@ -1,0 +1,7 @@
+{
+  "name": "sample-enricher",
+  "version": "1.0.0",
+  "type": "lifecycle",
+  "description": "Sample plugin that logs entities after enrichment -- copy and modify to build your own plugin",
+  "hooks": ["afterEnrich"]
+}
