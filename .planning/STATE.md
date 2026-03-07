@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-07T17:23:34.379Z"
-last_activity: 2026-03-07 -- Completed 03-01 Plugin Registry
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-07T17:29:30.000Z"
+last_activity: 2026-03-07 -- Completed 03-02 Pipeline Hook Wiring
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-07)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** Phase 3: Extensibility
+**Current focus:** All phases complete
 
 ## Current Position
 
 Phase: 3 of 3 (Extensibility)
-Plan: 1 of 2 in current phase (executing)
-Status: Executing
-Last activity: 2026-03-07 -- Completed 03-01 Plugin Registry
+Plan: 2 of 2 in current phase (complete)
+Status: Complete
+Last activity: 2026-03-07 -- Completed 03-02 Pipeline Hook Wiring
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 3.75min
-- Total execution time: 0.25 hours
+- Total plans completed: 6
+- Average duration: 4min
+- Total execution time: 0.40 hours
 
 **By Phase:**
 
@@ -45,15 +45,17 @@ Progress: [████████░░] 83%
 |-------|-------|-------|----------|
 | 01-search-quality | 2/2 | 7min | 3.5min |
 | 02-operational-maturity | 2/2 | 8min | 4min |
+| 03-extensibility | 2/2 | 9min | 4.5min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3min), 01-02 (4min), 02-01 (4min), 02-02 (4min)
+- Last 5 plans: 01-02 (4min), 02-01 (4min), 02-02 (4min), 03-01 (4min), 03-02 (5min)
 - Trend: Consistent
 
 *Updated after each plan completion*
 | Phase 02 P01 | 4min | 2 tasks | 6 files |
 | Phase 02 P02 | 4min | 2 tasks | 8 files |
 | Phase 03 P01 | 4min | 2 tasks | 6 files |
+| Phase 03 P02 | 5min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -76,6 +78,8 @@ Recent decisions affecting current work:
 - [02-01]: Decay processor preserves existing semantic/rerank scores, only recomputes time-dependent fields
 - [Phase 03-01]: fireHook passes Object.freeze({...data}) to prevent plugins from mutating pipeline state
 - [Phase 03-01]: Promise.allSettled with try-catch for both sync and async handler error isolation
+- [Phase 03-02]: Fire-and-forget hooks via void prefix on all fireHook calls to avoid blocking pipeline
+- [Phase 03-02]: Scorer bonus averaged across plugins and clamped to +/-0.05 to prevent ranking dominance
 
 ### Pending Todos
 
@@ -87,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T17:23:34.364Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-07T17:29:30.000Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
