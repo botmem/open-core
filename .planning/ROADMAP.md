@@ -28,7 +28,7 @@ This milestone extends Botmem beyond its working core (6 connectors, full pipeli
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Reranker integration (SRCH-01, SRCH-02)
+- [x] 01-01: Reranker integration (SRCH-01, SRCH-02)
 - [ ] 01-02: Pinning and importance reinforcement (SRCH-03, SRCH-04, SRCH-05, SRCH-06)
 
 ### Phase 2: Operational Maturity
@@ -66,6 +66,6 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Search Quality | 0/2 | Not started | - |
+| 1. Search Quality | 1/2 | In progress | - |
 | 2. Operational Maturity | 0/2 | Not started | - |
 | 3. Extensibility | 0/1 | Not started | - |

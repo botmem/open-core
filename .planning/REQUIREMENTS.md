@@ -9,8 +9,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Search Quality
 
-- [ ] **SRCH-01**: Search results are reranked using Qwen3-Reranker-0.6B via Ollama generate API, filling the 0.30 rerank weight slot
-- [ ] **SRCH-02**: Reranking is applied to top 10-15 candidates only, keeping latency under 3 seconds
+- [x] **SRCH-01**: Search results are reranked using Qwen3-Reranker-0.6B via Ollama generate API, filling the 0.30 rerank weight slot
+- [x] **SRCH-02**: Reranking is applied to top 10-15 candidates only, keeping latency under 3 seconds
 - [ ] **SRCH-03**: User can pin a memory, which sets a score floor (pinned memories never drop below 0.75 final score)
 - [ ] **SRCH-04**: Pinned memories are exempt from recency decay
 - [ ] **SRCH-05**: Each successful search result view increments the memory's recall count, boosting importance score
@@ -62,8 +62,8 @@ Deferred to future milestone. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRCH-01 | Phase 1 | Pending |
-| SRCH-02 | Phase 1 | Pending |
+| SRCH-01 | Phase 1 | Complete |
+| SRCH-02 | Phase 1 | Complete |
 | SRCH-03 | Phase 1 | Pending |
 | SRCH-04 | Phase 1 | Pending |
 | SRCH-05 | Phase 1 | Pending |

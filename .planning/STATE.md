@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-07T15:58:52.977Z"
-last_activity: 2026-03-07 -- Roadmap created
+status: executing
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-07T16:19:54Z"
+last_activity: 2026-03-07 -- Completed 01-01 Reranker Integration
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 17
 ---
 
 # Project State
@@ -26,28 +26,28 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 ## Current Position
 
 Phase: 1 of 3 (Search Quality)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-03-07 -- Roadmap created
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-03-07 -- Completed 01-01 Reranker Integration
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 17%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 3min
+- Total execution time: 0.05 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-search-quality | 1/2 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 01-01 (3min)
+- Trend: Starting
 
 *Updated after each plan completion*
 
@@ -60,6 +60,9 @@ Recent decisions affecting current work:
 
 - [Roadmap]: Reranker uses generate API workaround, not native /api/rerank (blocked upstream PR #7219)
 - [Roadmap]: PostHog cloud free tier, not self-hosted (16GB RAM requirement disproportionate)
+- [01-01]: Use logprobs softmax (yes/(yes+no)) for rerank scoring
+- [01-01]: Fallback to 0.70 semantic weight when reranker unavailable
+- [01-01]: Rerank only top 15 candidates to bound latency
 
 ### Pending Todos
 
@@ -71,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T15:58:52.974Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-search-quality/01-CONTEXT.md
+Last session: 2026-03-07T16:19:54Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: .planning/phases/01-search-quality/01-01-SUMMARY.md
