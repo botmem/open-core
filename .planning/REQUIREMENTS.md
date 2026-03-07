@@ -10,25 +10,25 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Session Replay
 
 - [x] **REPLAY-01**: PostHog session replay is enabled with privacy-safe defaults (mask all text inputs, mask sensitive CSS selectors for auth tokens/keys)
-- [ ] **REPLAY-02**: Session recordings appear in PostHog Replay tab and can be played back
+- [x] **REPLAY-02**: Session recordings appear in PostHog Replay tab and can be played back
 - [x] **REPLAY-03**: Network request recording is enabled for API call debugging (with auth headers masked)
 
 ### Heatmaps
 
 - [x] **HEAT-01**: PostHog autocapture is configured to collect click and scroll data
-- [ ] **HEAT-02**: Heatmap data is viewable in PostHog toolbar overlay on Botmem pages
+- [x] **HEAT-02**: Heatmap data is viewable in PostHog toolbar overlay on Botmem pages
 - [x] **HEAT-03**: Rageclicks (rapid repeated clicks) are captured as distinct events
 
 ### Error Tracking
 
 - [x] **ERR-01**: Frontend JavaScript exceptions are automatically captured and sent to PostHog
-- [ ] **ERR-02**: Errors appear in PostHog Error Tracking view with stack traces
+- [x] **ERR-02**: Errors appear in PostHog Error Tracking view with stack traces
 - [x] **ERR-03**: Backend unhandled exceptions are captured and sent to PostHog as server-side errors
 
 ### Web Analytics
 
 - [ ] **WEB-01**: PostHog web analytics dashboard shows page views, unique visitors, and session counts
-- [ ] **WEB-02**: Navigation paths between pages are trackable in PostHog
+- [x] **WEB-02**: Navigation paths between pages are trackable in PostHog
 - [x] **WEB-03**: UTM parameters and referrer data are captured when present
 
 ### Product Analytics
@@ -67,16 +67,16 @@ Requirements for this milestone. Each maps to roadmap phases.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | REPLAY-01 | Phase 5 | Complete |
-| REPLAY-02 | Phase 6 | Pending |
+| REPLAY-02 | Phase 6 | Complete |
 | REPLAY-03 | Phase 5 | Complete |
 | HEAT-01 | Phase 5 | Complete |
-| HEAT-02 | Phase 6 | Pending |
+| HEAT-02 | Phase 6 | Complete |
 | HEAT-03 | Phase 5 | Complete |
 | ERR-01 | Phase 5 | Complete |
-| ERR-02 | Phase 6 | Pending |
+| ERR-02 | Phase 6 | Complete |
 | ERR-03 | Phase 5 | Complete |
 | WEB-01 | Phase 6 | Pending |
-| WEB-02 | Phase 6 | Pending |
+| WEB-02 | Phase 6 | Complete |
 | WEB-03 | Phase 5 | Complete |
 | PROD-01 | Phase 6 | Pending |
 | PROD-02 | Phase 6 | Pending |
