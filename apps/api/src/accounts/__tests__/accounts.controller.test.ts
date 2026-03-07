@@ -9,6 +9,7 @@ function mockAccountsService() {
     create: vi.fn(),
     update: vi.fn(),
     remove: vi.fn(),
+    findByTypeAndIdentifier: vi.fn().mockResolvedValue(null),
   } as unknown as AccountsService;
 }
 
