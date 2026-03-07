@@ -94,6 +94,7 @@ export function MemoryGraph({ data, onReload }: MemoryGraphProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const nodePositionsRef = useRef<Map<string, { x: number; y: number; vx: number; vy: number }>>(new Map());
   const isInitialRender = useRef(true);
+  const prevFilteredRef = useRef<{ nodes: any[]; links: any[] } | null>(null);
   const [ForceGraph, setForceGraph] = useState<any>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [dimensions, setDimensions] = useState({ width: 900, height: 500 });
@@ -293,23 +294,32 @@ export function MemoryGraph({ data, onReload }: MemoryGraphProps) {
     return Array.from(types).sort();
   }, [data.links]);
 
-  // Filter graph data by min connections + legend toggles
+  // Filter graph data by min connections + legend toggles + search visibility
   // Preserve node positions across data updates to prevent graph from resetting
   const filteredData = useMemo(() => {
+    // Determine which nodes should be visible based on search/contact filter
+    const searchVisible = contactFilterIds ?? highlightedIds;
+
     const keepNodes = new Set<string>();
     for (const node of data.nodes) {
+      // When search is active, only keep nodes in the visible set
+      if (searchVisible && !searchVisible.has(node.id)) continue;
+
       // Legend toggle filters
       if (node.nodeType === 'contact' && hideContacts) continue;
       if (node.nodeType === 'group' && hideGroups) continue;
       if (node.nodeType === 'file' && hideFiles) continue;
       if (node.nodeType === 'device' && hideDevices) continue;
-      if (node.nodeType === 'connector') { keepNodes.add(node.id); continue; } // Always show connector hubs
+      if (node.nodeType === 'connector') {
+        if (!searchVisible) keepNodes.add(node.id);
+        continue;
+      }
       if (node.nodeType === 'memory' && hiddenSourceTypes.has(node.source)) continue;
 
+      // Always apply minConnections (contacts/groups/devices are exempt when searched)
       const count = connectionCounts.get(node.id) || 0;
-      if (count >= minConnections) {
-        keepNodes.add(node.id);
-      }
+      if (count < minConnections && !searchVisible) continue;
+      keepNodes.add(node.id);
     }
 
     // Save current node positions before computing new filtered data
@@ -341,33 +351,45 @@ export function MemoryGraph({ data, onReload }: MemoryGraphProps) {
       return true;
     });
     return { nodes, links };
-  }, [data, connectionCounts, minConnections, hiddenSourceTypes, hideContacts, hideGroups, hideFiles, hideDevices, hiddenEdgeTypes]);
+  }, [data, connectionCounts, minConnections, hiddenSourceTypes, hideContacts, hideGroups, hideFiles, hideDevices, hiddenEdgeTypes, contactFilterIds, highlightedIds]);
 
-  // Track camera state via onZoom callback — restored after data updates
-  const cameraRef = useRef<{ k: number; x: number; y: number } | null>(null);
-  const handleZoom = useCallback((transform: { k: number; x: number; y: number }) => {
-    if (!isInitialRender.current) {
-      cameraRef.current = transform;
-    }
-  }, []);
-
-  // Restore camera position after data update (prevent auto-recenter)
+  // After data updates (not initial render), restore camera position
+  // React will pass new filteredData to ForceGraph via the graphData prop,
+  // which reheats the simulation. We immediately stop it and restore camera.
   useEffect(() => {
-    if (!graphRef.current || isInitialRender.current) return;
-    if (cameraRef.current) {
-      const { k, x, y } = cameraRef.current;
-      requestAnimationFrame(() => {
-        if (graphRef.current) {
-          // Restore zoom + pan via the d3 zoom transform
-          graphRef.current.zoom(k, 0);
-          graphRef.current.centerAt(
-            -x / k + dimensions.width / (2 * k),
-            -y / k + dimensions.height / (2 * k),
-            0
-          );
-        }
-      });
+    if (isInitialRender.current) {
+      prevFilteredRef.current = filteredData;
+      return;
     }
+    if (!graphRef.current) {
+      prevFilteredRef.current = filteredData;
+      return;
+    }
+
+    const fg = graphRef.current;
+
+    // Read d3 zoom transform BEFORE the re-render triggers force-graph update
+    const canvas = containerRef.current?.querySelector('canvas');
+    const d3Zoom = canvas && (canvas as any).__zoom;
+    const savedK = d3Zoom?.k;
+    const savedX = d3Zoom?.x;
+    const savedY = d3Zoom?.y;
+
+    // After React passes new graphData to ForceGraph, it will reheat.
+    // Use rAF to restore camera after the update is processed.
+    requestAnimationFrame(() => {
+      if (!fg || savedK === undefined) return;
+      // Restore camera transform
+      fg.zoom(savedK, 0);
+      const cx = (dimensions.width / 2 - savedX) / savedK;
+      const cy = (dimensions.height / 2 - savedY) / savedK;
+      fg.centerAt(cx, cy, 0);
+      // Stop the simulation so nodes don't drift
+      fg.pauseAnimation?.();
+      fg.resumeAnimation?.();
+    });
+
+    prevFilteredRef.current = filteredData;
   }, [filteredData, dimensions]);
 
   // Focus mode: double-click a node to show only its connections, sorted by strength
@@ -974,9 +996,8 @@ export function MemoryGraph({ data, onReload }: MemoryGraphProps) {
           onNodeDoubleClick={handleNodeDoubleClick}
           onBackgroundClick={() => { setFocusedNodeId(null); setFocusExpansion(1); }}
           cooldownTicks={isInitialRender.current ? 100 : 0}
-          warmupTicks={isInitialRender.current ? 0 : 1}
+          warmupTicks={isInitialRender.current ? 0 : 50}
           onEngineStop={() => { isInitialRender.current = false; }}
-          onZoom={handleZoom}
           backgroundColor="#1A1A2E"
         />
 
