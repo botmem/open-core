@@ -26,9 +26,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Extensibility
 
-- [ ] **EXT-01**: Plugin system supports three plugin types: connector, scorer, and lifecycle hook
+- [x] **EXT-01**: Plugin system supports three plugin types: connector, scorer, and lifecycle hook
 - [ ] **EXT-02**: Lifecycle hooks fire on memory events: afterIngest, afterEmbed, afterEnrich, afterSearch
-- [ ] **EXT-03**: Plugins are plain objects with a manifest, not NestJS providers — loaded from plugins directory
+- [x] **EXT-03**: Plugins are plain objects with a manifest, not NestJS providers — loaded from plugins directory
 - [ ] **EXT-04**: Plugin interface is documented with a sample enricher plugin
 
 ## v2 Requirements
@@ -73,9 +73,9 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | OPS-03 | Phase 2 | Complete |
 | OPS-04 | Phase 2 | Complete |
 | OPS-05 | Phase 2 | Complete |
-| EXT-01 | Phase 3 | Pending |
+| EXT-01 | Phase 3 | Complete |
 | EXT-02 | Phase 3 | Pending |
-| EXT-03 | Phase 3 | Pending |
+| EXT-03 | Phase 3 | Complete |
 | EXT-04 | Phase 3 | Pending |
 
 **Coverage:**
