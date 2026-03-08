@@ -141,6 +141,9 @@ importers:
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.16(@swc/cli@0.8.0(@swc/core@1.15.13)(chokidar@4.0.3))(@swc/core@1.15.13)(@types/node@25.3.0)(esbuild@0.19.12)
+      '@nestjs/testing':
+        specifier: ^11.0.0
+        version: 11.1.16(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(@nestjs/platform-express@11.1.14)
       '@swc/cli':
         specifier: ^0.8.0
         version: 0.8.0(@swc/core@1.15.13)(chokidar@4.0.3)
@@ -1829,6 +1832,19 @@ packages:
       express:
         optional: true
       fastify:
+        optional: true
+
+  '@nestjs/testing@11.1.16':
+    resolution: {integrity: sha512-E7/aUCxzeMSJV80L5GWGIuiMyR/1ncS7uOIetAImfbS4ATE1/h2GBafk0qpk+vjFtPIbtoh9BWDGICzUEU5jDA==}
+    peerDependencies:
+      '@nestjs/common': ^11.0.0
+      '@nestjs/core': ^11.0.0
+      '@nestjs/microservices': ^11.0.0
+      '@nestjs/platform-express': ^11.0.0
+    peerDependenciesMeta:
+      '@nestjs/microservices':
+        optional: true
+      '@nestjs/platform-express':
         optional: true
 
   '@nestjs/websockets@11.1.14':
@@ -7548,6 +7564,14 @@ snapshots:
       path-to-regexp: 8.3.0
     optionalDependencies:
       express: 5.2.1
+
+  '@nestjs/testing@11.1.16(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(@nestjs/platform-express@11.1.14)':
+    dependencies:
+      '@nestjs/common': 11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.14(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.14)(@nestjs/websockets@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      tslib: 2.8.1
+    optionalDependencies:
+      '@nestjs/platform-express': 11.1.14(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)
 
   '@nestjs/websockets@11.1.14(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
     dependencies:
