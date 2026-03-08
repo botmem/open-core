@@ -9,7 +9,8 @@
 - v1.4 Search Intelligence - Phases 8-10 (shipped 2026-03-08)
 - v2.0 Security, Auth & Encryption - Phases 16-24 (in progress)
 - v2.1 Data Quality & Pipeline Integrity - Phases 25-28 (queued)
-- v3.0 Production Deployment & CI/CD - (planned, deferred from old v2.0)
+- v3.0 Monorepo & Developer Experience - Phases 29-33 (active)
+- v3.1 Production Deployment & CI/CD - (planned, deferred)
 
 ## Phases
 
@@ -199,6 +200,25 @@ Phase 10: Source Citations (deferred)
 - [ ] **Phase 27: Data Backfill** - Re-enrich existing memories with corrected pipeline, resumable, filterable, real-time progress (BKF-01 through BKF-04)
 - [ ] **Phase 28: Verification** - End-to-end validation that search, graph, and NLQ produce correct results (VER-01 through VER-04)
 
+## v3.0 Monorepo & Developer Experience (Phases 29-33)
+
+**Milestone Goal:** Transform the hacked-together monorepo into a production-grade, plug-and-play development environment -- proper tooling, Docker Compose with all services, build gates with tests, and no dev experience footguns like port conflicts or restart storms.
+
+**Phase Ordering Rationale:**
+- Foundation config first (Phase 29) because linting and typecheck must exist before they can be build gates or pre-commit hooks
+- Dev workflow fix (Phase 30) is the highest-value phase -- fixes the primary pain point (restart storms, port conflicts) and adds the health endpoint needed by Docker health checks
+- Docker & infrastructure (Phase 31) after dev workflow because health endpoint (Phase 30) is needed by Docker Compose health checks, and Makefile targets reference Docker Compose commands
+- Build optimization (Phase 32) after infrastructure because pnpm catalogs touch every package.json and must be stable before Docker build is finalized
+- Production Docker (Phase 33) last because it depends on stable lockfile and build pipeline from Phase 32
+- Each phase is independently shippable. Phase 30 alone delivers the highest value.
+
+**Summary:**
+- [ ] **Phase 29: Foundation Config** - ESLint 9, Prettier, typecheck task, .env.example documentation (QUAL-01, QUAL-02, QUAL-03, DOCK-03)
+- [ ] **Phase 30: Dev Workflow Fix** - Replace nodemon, turbo watch, proper exports, health endpoint (DEV-01, DEV-02, DEV-03, DEV-04, DOCK-04)
+- [ ] **Phase 31: Docker & Infrastructure** - Compose profiles, Makefile, health checks on all services (DOCK-01, DOCK-02)
+- [ ] **Phase 32: Build Optimization** - pnpm catalogs, Husky + lint-staged pre-commit/pre-push hooks (BUILD-01, QUAL-04)
+- [ ] **Phase 33: Production Docker** - Multi-stage build with turbo prune for minimal image size (BUILD-02)
+
 ## Phase Details (v2.0)
 
 ### Phase 16: User Authentication
@@ -384,10 +404,65 @@ Plans:
 
 **Plans**: TBD
 
+## Phase Details (v3.0)
+
+### Phase 29: Foundation Config
+**Goal**: Developer has consistent code quality tooling across all packages -- linting catches errors, formatting is automatic, type errors are surfaced before runtime, and environment setup is self-documenting
+**Depends on**: Phase 28 (v2.1 complete) -- but can execute independently as it is config-only additions
+**Requirements**: QUAL-01, QUAL-02, QUAL-03, DOCK-03
+**Success Criteria** (what must be TRUE):
+  1. Running `pnpm lint` from the repo root lints all packages with ESLint 9 flat config and reports TypeScript errors consistently across API, web, CLI, and all library packages
+  2. Running `pnpm format` (or saving a file with editor integration) auto-formats code with Prettier -- formatting is consistent across the entire monorepo
+  3. Running `pnpm typecheck` executes `tsc --noEmit` across all packages via Turbo and catches type errors without producing build output
+  4. A new developer can copy `.env.example` to `.env` and have a working configuration with safe defaults for all 11+ environment variables
+**Plans**: TBD
+
+### Phase 30: Dev Workflow Fix
+**Goal**: Developer can start the full dev environment with a single command and iterate on code changes across any package without port conflicts, restart storms, or manual pre-build steps
+**Depends on**: Phase 29 (linting and typecheck must exist so they can be referenced by turbo task graph)
+**Requirements**: DEV-01, DEV-02, DEV-03, DEV-04, DOCK-04
+**Success Criteria** (what must be TRUE):
+  1. Running `pnpm dev` starts the API and web dev servers without spawning competing instances or port conflicts -- a single API process owns port 12412
+  2. Editing a TypeScript file in a library package (e.g., `@botmem/shared`) triggers the API to pick up the change without manual rebuild or restart
+  3. Creating a new connector package with the correct `package.json` and adding it as a dependency requires zero changes to root dev scripts or turbo watch config
+  4. All library packages (`shared`, `connector-sdk`, `cli`) have proper conditional `exports` fields that resolve correctly for both CJS (NestJS API) and ESM (React web) consumers
+  5. `GET /api/health` returns JSON with connectivity status of Redis, Qdrant, and SQLite -- each showing `connected: true/false`
+**Plans**: TBD
+
+### Phase 31: Docker & Infrastructure
+**Goal**: Developer can start all required infrastructure with one command, with Ollama available as an opt-in profile, and a Makefile providing a simple command layer for common operations
+**Depends on**: Phase 30 (health endpoint needed for Docker Compose health checks; dev workflow must be stable before layering infrastructure)
+**Requirements**: DOCK-01, DOCK-02
+**Success Criteria** (what must be TRUE):
+  1. Running `docker compose up` starts Redis and Qdrant with health checks that report healthy within 30 seconds; running `docker compose --profile ollama up` additionally starts Ollama
+  2. Running `make dev` starts Docker infrastructure (Redis + Qdrant) and then the application dev servers -- a single command from clone to running app
+  3. Docker Compose services use pinned image versions (not `latest`) and all services have health check definitions
+**Plans**: TBD
+
+### Phase 32: Build Optimization
+**Goal**: Dependency versions are centralized so upgrades touch one file instead of ten, and code quality is enforced automatically on every commit and push
+**Depends on**: Phase 31 (Makefile targets reference Docker Compose commands; infrastructure must be stable)
+**Requirements**: BUILD-01, QUAL-04
+**Success Criteria** (what must be TRUE):
+  1. TypeScript, Vitest, and Vite versions are specified once in `pnpm-workspace.yaml` catalogs and all package.json files reference them via `catalog:` protocol -- upgrading requires changing one line
+  2. Committing code triggers a pre-commit hook that runs ESLint fix + Prettier on staged files -- badly formatted code cannot be committed
+  3. Pushing code triggers a pre-push hook that runs typecheck and tests on changed packages -- type errors and test failures are caught before they reach the remote
+**Plans**: TBD
+
+### Phase 33: Production Docker
+**Goal**: The API can be built into an optimized production Docker image suitable for deployment
+**Depends on**: Phase 32 (pnpm catalogs must be stable so the lockfile is finalized before Docker build)
+**Requirements**: BUILD-02
+**Success Criteria** (what must be TRUE):
+  1. `docker build` produces a production image using multi-stage build with `turbo prune` that includes only the API and its workspace dependencies -- not the web app or dev tooling
+  2. The production image size is under 500MB (compared to a naive full-monorepo image)
+  3. The production container starts and responds to `GET /api/health` with correct connectivity status
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 9 -> 10 -> 11 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 9 -> 10 -> 11 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -412,7 +487,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 22. PostgreSQL Dual-Driver | v2.0 | 0/? | Not started | - |
 | 23. Row Level Security | v2.0 | 0/? | Not started | - |
 | 24. Firebase Auth (Prod-Core) | v2.0 | 0/? | Not started | - |
-| 25. Source Type Reclassification | v2.1 | Complete    | 2026-03-08 | 2026-03-08 |
+| 25. Source Type Reclassification | v2.1 | Complete | 2026-03-08 | 2026-03-08 |
 | 26. Entity Format & Quality | v2.1 | 0/? | Not started | - |
 | 27. Data Backfill | v2.1 | 0/? | Not started | - |
 | 28. Verification | v2.1 | 0/? | Not started | - |
+| 29. Foundation Config | v3.0 | 0/? | Not started | - |
+| 30. Dev Workflow Fix | v3.0 | 0/? | Not started | - |
+| 31. Docker & Infrastructure | v3.0 | 0/? | Not started | - |
+| 32. Build Optimization | v3.0 | 0/? | Not started | - |
+| 33. Production Docker | v3.0 | 0/? | Not started | - |
