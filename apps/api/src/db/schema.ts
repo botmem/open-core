@@ -2,7 +2,7 @@ import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 export const accounts = sqliteTable('accounts', {
   id: text('id').primaryKey(),
-  userId: text('user_id'),  // nullable for migration — will be set for all rows
+  userId: text('user_id'), // nullable for migration — will be set for all rows
   connectorType: text('connector_type').notNull(),
   identifier: text('identifier').notNull(),
   status: text('status').notNull().default('disconnected'),
@@ -18,7 +18,9 @@ export const accounts = sqliteTable('accounts', {
 
 export const jobs = sqliteTable('jobs', {
   id: text('id').primaryKey(),
-  accountId: text('account_id').notNull().references(() => accounts.id),
+  accountId: text('account_id')
+    .notNull()
+    .references(() => accounts.id),
   connectorType: text('connector_type').notNull(),
   accountIdentifier: text('account_identifier'),
   status: text('status').notNull().default('queued'),
@@ -50,7 +52,9 @@ export const connectorCredentials = sqliteTable('connector_credentials', {
 
 export const rawEvents = sqliteTable('raw_events', {
   id: text('id').primaryKey(),
-  accountId: text('account_id').notNull().references(() => accounts.id),
+  accountId: text('account_id')
+    .notNull()
+    .references(() => accounts.id),
   connectorType: text('connector_type').notNull(),
   sourceId: text('source_id').notNull(),
   sourceType: text('source_type').notNull(),
@@ -66,28 +70,37 @@ export const rawEvents = sqliteTable('raw_events', {
 export const memories = sqliteTable('memories', {
   id: text('id').primaryKey(),
   accountId: text('account_id').references(() => accounts.id),
-  memoryBankId: text('memory_bank_id'),  // nullable for migration -- will be set for all rows
+  memoryBankId: text('memory_bank_id'), // nullable for migration -- will be set for all rows
   connectorType: text('connector_type').notNull(),
   sourceType: text('source_type').notNull(), // email | message | photo | location
   sourceId: text('source_id').notNull(),
   text: text('text').notNull(),
   eventTime: text('event_time').notNull(),
   ingestTime: text('ingest_time').notNull(),
-  factuality: text('factuality').notNull().default('{"label":"UNVERIFIED","confidence":0.5,"rationale":"Pending evaluation"}'),
-  weights: text('weights').notNull().default('{"semantic":0,"rerank":0,"recency":0,"importance":0.5,"trust":0.5,"final":0}'),
+  factuality: text('factuality')
+    .notNull()
+    .default('{"label":"UNVERIFIED","confidence":0.5,"rationale":"Pending evaluation"}'),
+  weights: text('weights')
+    .notNull()
+    .default('{"semantic":0,"rerank":0,"recency":0,"importance":0.5,"trust":0.5,"final":0}'),
   entities: text('entities').notNull().default('[]'), // JSON array
   claims: text('claims').notNull().default('[]'), // JSON array
   metadata: text('metadata').notNull().default('{}'), // JSON
   embeddingStatus: text('embedding_status').notNull().default('pending'), // pending | done | failed
   pinned: integer('pinned').notNull().default(0),
   recallCount: integer('recall_count').notNull().default(0),
+  enrichedAt: text('enriched_at'),
   createdAt: text('created_at').notNull(),
 });
 
 export const memoryLinks = sqliteTable('memory_links', {
   id: text('id').primaryKey(),
-  srcMemoryId: text('src_memory_id').notNull().references(() => memories.id),
-  dstMemoryId: text('dst_memory_id').notNull().references(() => memories.id),
+  srcMemoryId: text('src_memory_id')
+    .notNull()
+    .references(() => memories.id),
+  dstMemoryId: text('dst_memory_id')
+    .notNull()
+    .references(() => memories.id),
   linkType: text('link_type').notNull().default('related'), // related | supports | contradicts
   strength: real('strength').notNull().default(0),
   createdAt: text('created_at').notNull(),
@@ -97,7 +110,7 @@ export const memoryLinks = sqliteTable('memory_links', {
 
 export const contacts = sqliteTable('contacts', {
   id: text('id').primaryKey(),
-  userId: text('user_id'),  // nullable for migration — will be set for all rows
+  userId: text('user_id'), // nullable for migration — will be set for all rows
   displayName: text('display_name').notNull(),
   entityType: text('entity_type').notNull().default('person'), // person | organization | location | event | product | topic | pet | group | device | other
   avatars: text('avatars').notNull().default('[]'),
@@ -108,7 +121,9 @@ export const contacts = sqliteTable('contacts', {
 
 export const contactIdentifiers = sqliteTable('contact_identifiers', {
   id: text('id').primaryKey(),
-  contactId: text('contact_id').notNull().references(() => contacts.id),
+  contactId: text('contact_id')
+    .notNull()
+    .references(() => contacts.id),
   identifierType: text('identifier_type').notNull(), // email | phone | slack_id | imessage_handle | name
   identifierValue: text('identifier_value').notNull(),
   connectorType: text('connector_type'),
@@ -118,15 +133,23 @@ export const contactIdentifiers = sqliteTable('contact_identifiers', {
 
 export const memoryContacts = sqliteTable('memory_contacts', {
   id: text('id').primaryKey(),
-  memoryId: text('memory_id').notNull().references(() => memories.id),
-  contactId: text('contact_id').notNull().references(() => contacts.id),
+  memoryId: text('memory_id')
+    .notNull()
+    .references(() => memories.id),
+  contactId: text('contact_id')
+    .notNull()
+    .references(() => contacts.id),
   role: text('role').notNull(), // sender | recipient | mentioned | participant
 });
 
 export const mergeDismissals = sqliteTable('merge_dismissals', {
   id: text('id').primaryKey(),
-  contactId1: text('contact_id_1').notNull().references(() => contacts.id),
-  contactId2: text('contact_id_2').notNull().references(() => contacts.id),
+  contactId1: text('contact_id_1')
+    .notNull()
+    .references(() => contacts.id),
+  contactId2: text('contact_id_2')
+    .notNull()
+    .references(() => contacts.id),
   createdAt: text('created_at').notNull(),
 });
 
@@ -144,7 +167,9 @@ export const users = sqliteTable('users', {
 
 export const refreshTokens = sqliteTable('refresh_tokens', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
   tokenHash: text('token_hash').notNull(),
   family: text('family').notNull(),
   expiresAt: text('expires_at').notNull(),
@@ -154,7 +179,9 @@ export const refreshTokens = sqliteTable('refresh_tokens', {
 
 export const passwordResets = sqliteTable('password_resets', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
   tokenHash: text('token_hash').notNull(),
   expiresAt: text('expires_at').notNull(),
   usedAt: text('used_at'),
@@ -176,7 +203,9 @@ export const memoryBanks = sqliteTable('memory_banks', {
 
 export const apiKeys = sqliteTable('api_keys', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
   name: text('name').notNull(),
   keyHash: text('key_hash').notNull(),
   lastFour: text('last_four').notNull(),

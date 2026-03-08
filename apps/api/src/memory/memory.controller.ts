@@ -13,16 +13,19 @@ import {
 import type { Response } from 'express';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { randomUUID } from 'crypto';
 import { MemoryService } from './memory.service';
 import { DbService } from '../db/db.service';
 import { AccountsService } from '../accounts/accounts.service';
 import { OllamaService } from './ollama.service';
 import { QdrantService } from './qdrant.service';
-import { memories, memoryContacts, rawEvents } from '../db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { EventsService } from '../events/events.service';
+import { accounts, memories, memoryContacts, rawEvents, jobs } from '../db/schema';
+import { eq, and, sql, isNull } from 'drizzle-orm';
 import { RequiresJwt } from '../user-auth/decorators/requires-jwt.decorator';
 import { CurrentUser } from '../user-auth/decorators/current-user.decorator';
 import { SearchMemoriesDto } from './dto/search-memories.dto';
+import { BackfillEnrichDto } from './dto/backfill-enrich.dto';
 
 @Controller('memories')
 export class MemoryController {
@@ -33,6 +36,7 @@ export class MemoryController {
     private accountsService: AccountsService,
     private ollama: OllamaService,
     private qdrant: QdrantService,
+    private events: EventsService,
     @InjectQueue('backfill') private backfillQueue: Queue,
     @InjectQueue('clean') private cleanQueue: Queue,
     @InjectQueue('embed') private embedQueue: Queue,
@@ -178,6 +182,75 @@ export class MemoryController {
     }
 
     return { enqueued, total: unlinked.length };
+  }
+
+  @RequiresJwt()
+  @Post('backfill-enrich')
+  async backfillEnrich(@CurrentUser() user: { id: string }, @Body() dto: BackfillEnrichDto) {
+    const db = this.dbService.db;
+
+    // Build WHERE conditions: embeddingStatus=done AND enrichedAt IS NULL
+    const conditions = [eq(memories.embeddingStatus, 'done'), isNull(memories.enrichedAt)];
+    if (dto.connectorType) {
+      conditions.push(eq(memories.connectorType, dto.connectorType));
+    }
+
+    const targets = await db
+      .select({ id: memories.id })
+      .from(memories)
+      .where(and(...conditions));
+
+    if (targets.length === 0) {
+      return { jobId: null, enqueued: 0, total: 0, message: 'No memories need re-enrichment' };
+    }
+
+    // Get user's first account for jobs FK
+    const userAccounts = await db
+      .select({ id: accounts.id })
+      .from(accounts)
+      .where(eq(accounts.userId, user.id))
+      .limit(1);
+
+    if (!userAccounts.length) {
+      return { error: 'No account found -- sync a connector first' };
+    }
+
+    const now = new Date().toISOString();
+    const jobId = randomUUID();
+
+    // Create tracked job row
+    await db.insert(jobs).values({
+      id: jobId,
+      accountId: userAccounts[0].id,
+      connectorType: dto.connectorType || 'backfill',
+      status: 'running',
+      progress: 0,
+      total: targets.length,
+      startedAt: now,
+      createdAt: now,
+    });
+
+    // Enqueue individual BullMQ jobs
+    for (const t of targets) {
+      await this.backfillQueue.add(
+        'backfill-enrich',
+        { memoryId: t.id, jobId },
+        {
+          jobId: t.id,
+          attempts: 2,
+          backoff: { type: 'exponential', delay: 1000 },
+        },
+      );
+    }
+
+    // Emit initial progress
+    this.events.emitToChannel(`job:${jobId}`, 'job:progress', {
+      jobId,
+      processed: 0,
+      total: targets.length,
+    });
+
+    return { jobId, enqueued: targets.length, total: targets.length };
   }
 
   @RequiresJwt()
