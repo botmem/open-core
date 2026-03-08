@@ -6,6 +6,7 @@ import { OllamaService } from './ollama.service';
 import { QdrantService, ScoredPoint } from './qdrant.service';
 import { ConnectorsService } from '../connectors/connectors.service';
 import { PluginRegistry } from '../plugins/plugin-registry';
+import { CryptoService } from '../crypto/crypto.service';
 import { memories, memoryLinks, memoryContacts, contacts, contactIdentifiers, accounts, settings } from '../db/schema';
 import { parseNlq } from './nlq-parser';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -21,6 +22,7 @@ interface SearchFilters {
   userId?: string;
   memoryBankId?: string;
   memoryBankIds?: string[];  // API key memory bank scoping
+  accountIds?: string[];     // User isolation — filter by user's accounts
 }
 
 /** Strip accents/diacritics for fuzzy matching (amélie → amelie) */
@@ -100,11 +102,26 @@ export class MemoryService {
     private qdrant: QdrantService,
     private connectors: ConnectorsService,
     private pluginRegistry: PluginRegistry,
+    private crypto: CryptoService,
   ) {}
 
   /** Invalidate contacts cache (call after contact writes) */
   invalidateContactsCache() {
     this.contactsCache = null;
+  }
+
+  /** Get account IDs belonging to a user — used for data isolation */
+  /**
+   * Returns account IDs for a user. null = no user filter (internal/system calls).
+   * Empty array = user exists but has no accounts (should see zero data).
+   */
+  async getUserAccountIds(userId?: string): Promise<string[] | null> {
+    if (!userId) return null;
+    const rows = await this.dbService.db
+      .select({ id: accounts.id })
+      .from(accounts)
+      .where(eq(accounts.userId, userId));
+    return rows.map(r => r.id);
   }
 
   private async getCachedContacts(): Promise<{ id: string; displayName: string }[]> {
@@ -196,9 +213,16 @@ export class MemoryService {
   async search(query: string, filters?: SearchFilters, limit = 20, rerank = false, userId?: string, memoryBankId?: string, memoryBankIds?: string[]): Promise<SearchResponse> {
     if (!query.trim()) return { items: [], fallback: false };
 
+    // --- User isolation: resolve account IDs ---
+    const userAccountIds = await this.getUserAccountIds(userId);
+
     // --- NLQ parsing (pure, synchronous) ---
     const nlq = parseNlq(query);
     const effectiveFilters: SearchFilters = { ...filters };
+    if (userAccountIds !== null) {
+      if (userAccountIds.length === 0) return { items: [], fallback: false };
+      effectiveFilters.accountIds = userAccountIds;
+    }
 
     // Apply memory bank scoping
     if (memoryBankId) effectiveFilters.memoryBankId = memoryBankId;
@@ -513,7 +537,7 @@ export class MemoryService {
     score: number,
     weights: SearchResult['weights'],
   ): SearchResult {
-    const mem = row.memory;
+    const mem = this.crypto.decryptMemoryFields(row.memory);
     return {
       id: mem.id,
       text: mem.text,
@@ -537,7 +561,7 @@ export class MemoryService {
       .select()
       .from(memories)
       .where(eq(memories.id, id));
-    return rows.length ? rows[0] : null;
+    return rows.length ? this.crypto.decryptMemoryFields(rows[0]) : null;
   }
 
   async list(params: {
@@ -555,10 +579,17 @@ export class MemoryService {
     const offset = params.offset || 0;
     const sortCol = params.sortBy === 'ingestTime' ? memories.ingestTime : memories.eventTime;
 
+    // User isolation
+    const userAccountIds = await this.getUserAccountIds(params.userId);
+
     // Show memories as soon as embedding is done
     const conditions: any[] = [
       eq(memories.embeddingStatus, 'done'),
     ];
+    if (userAccountIds !== null) {
+      if (userAccountIds.length === 0) return { items: [], total: 0 };
+      conditions.push(inArray(memories.accountId, userAccountIds));
+    }
     if (params.connectorType) {
       conditions.push(eq(memories.connectorType, params.connectorType));
     }
@@ -584,7 +615,7 @@ export class MemoryService {
       .limit(limit)
       .offset(offset);
     const rows = await itemsQuery;
-    const items = rows.map((r) => ({ ...r.memory, accountIdentifier: r.accountIdentifier }));
+    const items = rows.map((r) => ({ ...this.crypto.decryptMemoryFields(r.memory), accountIdentifier: r.accountIdentifier }));
 
     return { items, total };
   }
@@ -627,7 +658,13 @@ export class MemoryService {
 
   async getStats(userId?: string, memoryBankIds?: string[]) {
     const db = this.dbService.db;
+    const userAccountIds = await this.getUserAccountIds(userId);
     const conditions: any[] = [eq(memories.embeddingStatus, 'done')];
+    // User isolation
+    if (userAccountIds !== null) {
+      if (userAccountIds.length === 0) return { total: 0, bySource: {}, byConnector: {}, byFactuality: {} };
+      conditions.push(inArray(memories.accountId, userAccountIds));
+    }
     // Memory bank scoping for stats — if memoryBankIds provided (API key), filter by those banks
     if (memoryBankIds?.length) {
       conditions.push(inArray(memories.memoryBankId, memoryBankIds));
@@ -673,20 +710,16 @@ export class MemoryService {
     return { total, bySource, byConnector, byFactuality };
   }
 
-  async getGraphData(limit = 500, linkLimit = 2000, userId?: string, memoryBankId?: string, memoryBankIds?: string[]) {
+  async getGraphData(limit = 500, _linkLimit = 2000, userId?: string, memoryBankId?: string, memoryBankIds?: string[]) {
     const db = this.dbService.db;
+    const userAccountIds = await this.getUserAccountIds(userId);
 
-    // Fetch linked memories first, then fill with recent
-    const allLinks = await db.select().from(memoryLinks).limit(linkLimit);
-
-    const linkedIdSet = new Set<string>();
-    for (const link of allLinks) {
-      linkedIdSet.add(link.srcMemoryId);
-      linkedIdSet.add(link.dstMemoryId);
-    }
-
-    // Build memory bank filter conditions
+    // Build memory bank + user isolation filter conditions
     const memoryBankConditions: any[] = [eq(memories.embeddingStatus, 'done')];
+    if (userAccountIds !== null) {
+      if (userAccountIds.length === 0) return { nodes: [], links: [] };
+      memoryBankConditions.push(inArray(memories.accountId, userAccountIds));
+    }
     if (memoryBankId) {
       memoryBankConditions.push(eq(memories.memoryBankId, memoryBankId));
     } else if (memoryBankIds?.length) {
@@ -694,7 +727,7 @@ export class MemoryService {
     }
     const memoryBankFilter = memoryBankConditions.length > 1 ? and(...memoryBankConditions)! : memoryBankConditions[0];
 
-    // Fetch recent memories — show as soon as embedding is done
+    // Fetch user's recent memories first (user-scoped)
     const recentMemories = await db
       .select()
       .from(memories)
@@ -704,14 +737,31 @@ export class MemoryService {
 
     const memoryIds = new Set(recentMemories.map((m) => m.id));
 
-    // Add any linked memories not already in the recent set (only if done)
-    const missingLinkedIds = [...linkedIdSet].filter((id) => !memoryIds.has(id));
+    // Fetch links only for user's memories (batched)
+    const memoryIdList = [...memoryIds];
+    let allLinks: Array<typeof memoryLinks.$inferSelect> = [];
+    for (let i = 0; i < memoryIdList.length; i += 500) {
+      const batch = memoryIdList.slice(i, i + 500);
+      const srcLinks = await db.select().from(memoryLinks).where(inArray(memoryLinks.srcMemoryId, batch));
+      allLinks.push(...srcLinks);
+    }
+
+    // Add linked memories not already in the set (only if user-owned and done)
+    const linkedIdSet = new Set<string>();
+    for (const link of allLinks) {
+      if (!memoryIds.has(link.dstMemoryId)) linkedIdSet.add(link.dstMemoryId);
+    }
+    const missingLinkedIds = [...linkedIdSet];
     const linkedMemories: Array<typeof recentMemories[0]> = [];
     for (let i = 0; i < missingLinkedIds.length; i += 100) {
       const batch = missingLinkedIds.slice(i, i + 100);
       if (!batch.length) break;
-      const rows = await db.select().from(memories)
-        .where(and(inArray(memories.id, batch), eq(memories.embeddingStatus, 'done')));
+      // Apply user isolation to linked memories too
+      const linkedConditions: any[] = [inArray(memories.id, batch), eq(memories.embeddingStatus, 'done')];
+      if (userAccountIds !== null && userAccountIds.length > 0) {
+        linkedConditions.push(inArray(memories.accountId, userAccountIds));
+      }
+      const rows = await db.select().from(memories).where(and(...linkedConditions));
       linkedMemories.push(...rows);
     }
 
@@ -722,9 +772,15 @@ export class MemoryService {
       (l) => memoryIds.has(l.srcMemoryId) && memoryIds.has(l.dstMemoryId),
     );
 
-    // Fetch contacts and identifiers (small tables — fetch all, filter in JS)
-    const allMemoryContacts = await db.select().from(memoryContacts);
-    const relevantMemoryContacts = allMemoryContacts.filter((mc) => memoryIds.has(mc.memoryId));
+    // Fetch contacts and identifiers — scope to user's memories only
+    const memoryIdArray = [...memoryIds];
+    let allMemoryContacts: Array<typeof memoryContacts.$inferSelect> = [];
+    for (let i = 0; i < memoryIdArray.length; i += 500) {
+      const batch = memoryIdArray.slice(i, i + 500);
+      const rows = await db.select().from(memoryContacts).where(inArray(memoryContacts.memoryId, batch));
+      allMemoryContacts.push(...rows);
+    }
+    const relevantMemoryContacts = allMemoryContacts;
 
     const relevantContactIdSet = new Set(relevantMemoryContacts.map((mc) => mc.contactId));
 
@@ -742,17 +798,27 @@ export class MemoryService {
       }
     }
 
-    const allContacts = await db.select().from(contacts);
-    const relevantContacts = allContacts.filter((c) => relevantContactIdSet.has(c.id));
+    const contactIdArray = [...relevantContactIdSet];
+    let relevantContacts: Array<typeof contacts.$inferSelect> = [];
+    for (let i = 0; i < contactIdArray.length; i += 500) {
+      const batch = contactIdArray.slice(i, i + 500);
+      const rows = await db.select().from(contacts).where(inArray(contacts.id, batch));
+      relevantContacts.push(...rows);
+    }
 
-    const allIdentifiers = await db.select().from(contactIdentifiers);
-    const relevantIdentifiers = allIdentifiers.filter((i) => relevantContactIdSet.has(i.contactId));
+    let relevantIdentifiers: Array<typeof contactIdentifiers.$inferSelect> = [];
+    for (let i = 0; i < contactIdArray.length; i += 500) {
+      const batch = contactIdArray.slice(i, i + 500);
+      const rows = await db.select().from(contactIdentifiers).where(inArray(contactIdentifiers.contactId, batch));
+      relevantIdentifiers.push(...rows);
+    }
 
     // Build entity → cluster mapping
     const entityClusters = new Map<string, number>();
     let nextCluster = 0;
 
-    const memoryNodes = allMemories.map((m) => {
+    const memoryNodes = allMemories.map((raw) => {
+      const m = this.crypto.decryptMemoryFields(raw);
       let entities: any[] = [];
       try { entities = JSON.parse(m.entities); } catch {}
 
@@ -843,21 +909,13 @@ export class MemoryService {
       strength: mc.role === 'group' ? 0.9 : 0.7,
     }));
 
-    // Build file/attachment nodes from memories with attachments in metadata.
-    // First get the top files by occurrence across ALL memories (not just graph slice).
-    const fileCountRows = await db
-      .select({
-        metadata: memories.metadata,
-        connectorType: memories.connectorType,
-      })
-      .from(memories)
-      .where(sql`json_extract(${memories.metadata}, '$.attachments') IS NOT NULL`);
-
-    // Aggregate file counts across all memories
+    // Build file/attachment nodes from memories in the current graph slice.
+    // Extract from already-decrypted allMemories to avoid json_extract on encrypted metadata.
     const fileCounts = new Map<string, { count: number; mimeType: string; connectorType: string }>();
-    for (const row of fileCountRows) {
+    for (const raw of allMemories) {
+      const m = this.crypto.decryptMemoryFields(raw);
       let meta: any = {};
-      try { meta = JSON.parse(row.metadata); } catch { continue; }
+      try { meta = JSON.parse(m.metadata); } catch { continue; }
       const atts = meta.attachments as Array<{ filename?: string; mimeType?: string }> | undefined;
       if (!atts) continue;
       for (const att of atts) {
@@ -867,7 +925,7 @@ export class MemoryService {
         if (existing) {
           existing.count++;
         } else {
-          fileCounts.set(name, { count: 1, mimeType: att.mimeType || 'unknown', connectorType: row.connectorType });
+          fileCounts.set(name, { count: 1, mimeType: att.mimeType || 'unknown', connectorType: m.connectorType });
         }
       }
     }
@@ -898,7 +956,7 @@ export class MemoryService {
     const fileEdges: typeof edges = [];
     for (const m of allMemories) {
       let meta: any = {};
-      try { meta = JSON.parse(m.metadata); } catch { continue; }
+      try { meta = JSON.parse(this.crypto.decrypt(m.metadata) ?? m.metadata); } catch { continue; }
       const attachments = meta.attachments as Array<{ filename?: string }> | undefined;
       if (!attachments?.length) continue;
       for (const att of attachments) {
@@ -926,8 +984,9 @@ export class MemoryService {
   async buildGraphDelta(memoryId: string) {
     const db = this.dbService.db;
 
-    const [mem] = await db.select().from(memories).where(eq(memories.id, memoryId));
-    if (!mem || mem.embeddingStatus !== 'done') return null;
+    const [rawMem] = await db.select().from(memories).where(eq(memories.id, memoryId));
+    if (!rawMem || rawMem.embeddingStatus !== 'done') return null;
+    const mem = this.crypto.decryptMemoryFields(rawMem);
 
     let entities: any[] = [];
     try { entities = JSON.parse(mem.entities); } catch {}
@@ -1083,7 +1142,12 @@ export class MemoryService {
   }) {
     const db = this.dbService.db;
     const limit = params.limit || 50;
+    const userAccountIds = await this.getUserAccountIds(params.userId);
     const conditions: any[] = [eq(memories.embeddingStatus, 'done')];
+    if (userAccountIds !== null) {
+      if (userAccountIds.length === 0) return [];
+      conditions.push(inArray(memories.accountId, userAccountIds));
+    }
     if (params.memoryBankId) {
       conditions.push(eq(memories.memoryBankId, params.memoryBankId));
     } else if (params.memoryBankIds?.length) {
@@ -1350,6 +1414,10 @@ export class MemoryService {
     } else if (filters.memoryBankIds?.length) {
       // API key scoped to specific memory banks
       must.push({ key: 'memory_bank_id', match: { any: filters.memoryBankIds } });
+    }
+    // User isolation — filter by account_id
+    if (filters.accountIds?.length) {
+      must.push({ key: 'account_id', match: { any: filters.accountIds } });
     }
 
     return must.length ? { must } : {};

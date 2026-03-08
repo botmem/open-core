@@ -51,6 +51,7 @@ packages/
 | `OLLAMA_TEXT_MODEL` | `qwen3:0.6b` | Text enrichment model (uses /no_think) |
 | `OLLAMA_VL_MODEL` | `qwen3-vl:2b` | Vision-language model (photo enrichment) |
 | `FRONTEND_URL` | `http://localhost:12412` | CORS / OAuth redirect origin |
+| `APP_SECRET` | `dev-app-secret-change-in-production` | AES-256-GCM key for encrypting credentials at rest |
 | `PLUGINS_DIR` | `./plugins` | External plugin directory |
 
 Config lives in `apps/api/src/config/config.service.ts`.

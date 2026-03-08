@@ -27,6 +27,7 @@ describe('EnrichProcessor', () => {
 
     eventsService = {
       emitToChannel: vi.fn(),
+      emitDebounced: vi.fn(),
     };
 
     logsService = {
@@ -47,9 +48,23 @@ describe('EnrichProcessor', () => {
       fireHook: vi.fn().mockResolvedValue(undefined),
     };
 
+    const memoryService = {
+      getStats: vi.fn().mockResolvedValue({ total: 0 }),
+      buildGraphDelta: vi.fn().mockResolvedValue(null),
+    };
+
+    const cryptoService = {
+      encrypt: vi.fn().mockImplementation((v: string) => v),
+      decrypt: vi.fn().mockImplementation((v: string) => v),
+      encryptMemoryFields: vi.fn().mockImplementation((f: any) => f),
+      decryptMemoryFields: vi.fn().mockImplementation((m: any) => m),
+    };
+
     processor = new EnrichProcessor(
       makeDbService(db),
       enrichService,
+      memoryService as any,
+      cryptoService as any,
       eventsService,
       logsService,
       jobsService,
