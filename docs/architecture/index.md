@@ -25,14 +25,14 @@ Each stage of the pipeline is idempotent. If an embed or enrich job fails, it ca
 ```
                      +-----------+
                      |  Web UI   |
-                     |  :5173    |
+                     |  :12412    |
                      +-----+-----+
                            |
                       HTTP / WS
                            |
 +-----------+        +-----+-----+        +------------+
 | Connectors|------->|  NestJS   |<------>|   SQLite   |
-| (plugins) |  emit  |  API :3001|  ORM   |   (WAL)    |
+| (plugins) |  emit  |  API :12412|  ORM   |   (WAL)    |
 +-----------+        +-----+-----+        +------------+
                            |
               +------------+------------+

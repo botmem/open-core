@@ -62,6 +62,6 @@ pnpm install
 pnpm dev
 ```
 
-The API serves on `http://localhost:3001` and the web UI on `http://localhost:5173`.
+The API serves on `http://localhost:12412` and the web UI on `http://localhost:12412`.
 
 Connect your first data source from the web UI, or jump straight to the [Agent API](/agent-api/) to give your AI agents access to your personal memory.

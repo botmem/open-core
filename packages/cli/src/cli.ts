@@ -6,6 +6,8 @@ import { runSearch, searchHelp } from './commands/search.js';
 import { runMemories, runMemory, runStats } from './commands/memories.js';
 import { runContacts, runContact } from './commands/contacts.js';
 import { runJobs, runSync, runRetry, runAccounts } from './commands/jobs.js';
+import { runTimeline, timelineHelp } from './commands/timeline.js';
+import { runEntities, runRelated, entitiesHelp, relatedHelp } from './commands/entities.js';
 
 const HELP = `
   botmem -- Query and manage your personal memory system
@@ -15,6 +17,10 @@ const HELP = `
 
   COMMANDS
     search <query>          Search memories semantically
+    timeline                Query memories by time range
+    related <id>            Find memories related to a given memory
+    entities search <q>     Search extracted entities (people, orgs, topics)
+    entities graph <value>  Show entity graph with relationships
     memories                List recent memories
     memory <id>             Get or delete a memory
     stats                   Memory count breakdown by source/connector
@@ -28,7 +34,7 @@ const HELP = `
     accounts                List connected accounts
 
   GLOBAL OPTIONS
-    --api-url <url>   API base URL (env: BOTMEM_API_URL, default: http://localhost:3001/api)
+    --api-url <url>   API base URL (env: BOTMEM_API_URL, default: http://localhost:12412/api)
     --json            Output raw JSON (for piping to jq or scripts)
     -h, --help        Show help (use with any command for details)
 
@@ -39,11 +45,17 @@ const HELP = `
     botmem contact abc123 memories
     botmem status
     botmem sync abc123
+    botmem timeline --from 2025-01-01 --to 2025-01-31
+    botmem related abc123-def456
+    botmem entities search "Assad"
     botmem search "project update" --json | jq '.[].text'
 `.trim();
 
 const COMMAND_HELP: Record<string, string> = {
   search: searchHelp,
+  timeline: timelineHelp,
+  related: relatedHelp,
+  entities: entitiesHelp,
   memories: `
   botmem memories -- List recent memories
 
@@ -122,7 +134,7 @@ const COMMAND_HELP: Record<string, string> = {
 };
 
 function parseGlobalArgs(argv: string[]) {
-  let apiUrl = process.env['BOTMEM_API_URL'] || 'http://localhost:3001/api';
+  let apiUrl = process.env['BOTMEM_API_URL'] || 'http://localhost:12412/api';
   let json = false;
   let help = false;
   const rest: string[] = [];
@@ -216,6 +228,15 @@ async function main() {
         break;
       case 'accounts':
         await runAccounts(client, json);
+        break;
+      case 'timeline':
+        await runTimeline(client, commandArgs, json);
+        break;
+      case 'related':
+        await runRelated(client, commandArgs, json);
+        break;
+      case 'entities':
+        await runEntities(client, commandArgs, json);
         break;
       default:
         console.error(`Unknown command: ${command}\n`);

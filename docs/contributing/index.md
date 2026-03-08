@@ -28,13 +28,13 @@ docker compose up -d   # Redis + Qdrant
 ### Start Development Servers
 
 ```bash
-pnpm dev   # Starts API (:3001) + Web UI (:5173) via Turbo
+pnpm dev   # Starts API (:12412) + Web UI (:12412) via Turbo
 ```
 
 ### Verify
 
 ```bash
-curl http://localhost:3001/api/version
+curl http://localhost:12412/api/version
 ```
 
 ## Available Commands
@@ -160,31 +160,31 @@ See [Building a Connector](/connectors/building-a-connector) for a complete walk
 
 ```bash
 # All logs
-curl http://localhost:3001/api/logs
+curl http://localhost:12412/api/logs
 
 # Logs for a specific account
-curl http://localhost:3001/api/logs?accountId=<uuid>
+curl http://localhost:12412/api/logs?accountId=<uuid>
 
 # Error logs only
-curl http://localhost:3001/api/logs?level=error
+curl http://localhost:12412/api/logs?level=error
 ```
 
 ### Queue Health
 
 ```bash
-curl http://localhost:3001/api/jobs/queues
+curl http://localhost:12412/api/jobs/queues
 ```
 
 ### Retry Failed Jobs
 
 ```bash
-curl -X POST http://localhost:3001/api/memories/retry-failed
+curl -X POST http://localhost:12412/api/memories/retry-failed
 ```
 
 ### Check a Specific Memory
 
 ```bash
-curl http://localhost:3001/api/memories/<uuid>
+curl http://localhost:12412/api/memories/<uuid>
 ```
 
 ## Architecture Decisions

@@ -104,7 +104,7 @@ export function formatMemory(m: {
     try {
       const ents = JSON.parse(m.entities);
       if (Array.isArray(ents) && ents.length) {
-        lines.push(`${dim('Entities:')} ${ents.map((e: any) => e.name || e).join(', ')}`);
+        lines.push(`${dim('Entities:')} ${ents.map((e: any) => e.value || e.name || e.id || String(e)).join(', ')}`);
       }
     } catch {}
   }

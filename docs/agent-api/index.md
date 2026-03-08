@@ -7,7 +7,7 @@ Botmem is designed to be the memory layer for your AI agents. The **`botmem` CLI
 ```
 +------------------+     +------------------+
 |   Human / Agent  |     |   Botmem API     |
-|                  +---->+   port 3001      |
+|                  +---->+   port 12412      |
 |   botmem search  |     |                  |
 |   botmem status  |     |   Semantic search|
 |   botmem --json  |     |   Contact lookup |

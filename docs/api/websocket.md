@@ -5,7 +5,7 @@ Botmem provides a WebSocket gateway at `/events` for real-time updates. The gate
 ## Connection
 
 ```javascript
-const ws = new WebSocket('ws://localhost:3001/events');
+const ws = new WebSocket('ws://localhost:12412/events');
 
 ws.onopen = () => {
   console.log('Connected to Botmem events');
@@ -127,7 +127,7 @@ The WebSocket gateway is implemented using NestJS's `@WebSocketGateway` decorato
 ## Example: Monitoring Sync Progress
 
 ```javascript
-const ws = new WebSocket('ws://localhost:3001/events');
+const ws = new WebSocket('ws://localhost:12412/events');
 
 ws.onopen = () => {
   // Subscribe to all relevant channels

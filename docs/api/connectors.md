@@ -62,7 +62,7 @@ GET /api/connectors/:type/schema
     "properties": {
       "clientId": { "type": "string", "title": "Google Client ID" },
       "clientSecret": { "type": "string", "title": "Google Client Secret" },
-      "redirectUri": { "type": "string", "title": "Redirect URI", "default": "http://localhost:3001/api/auth/gmail/callback" }
+      "redirectUri": { "type": "string", "title": "Redirect URI", "default": "http://localhost:12412/api/auth/gmail/callback" }
     },
     "required": ["clientId", "clientSecret"]
   }

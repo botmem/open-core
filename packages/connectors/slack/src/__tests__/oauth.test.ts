@@ -3,7 +3,7 @@ import { getSlackAuthUrl, exchangeSlackCode } from '../oauth.js';
 
 describe('getSlackAuthUrl', () => {
   it('generates correct URL with params', () => {
-    const url = getSlackAuthUrl('client-123', 'http://localhost:3001/callback');
+    const url = getSlackAuthUrl('client-123', 'http://localhost:12412/callback');
     expect(url).toContain('slack.com/oauth/v2/authorize');
     expect(url).toContain('client_id=client-123');
     expect(url).toContain('redirect_uri=');

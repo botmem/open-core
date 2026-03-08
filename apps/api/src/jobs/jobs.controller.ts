@@ -1,8 +1,11 @@
 import { Controller, Get, Post, Delete, Param, Query } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { eq, and } from 'drizzle-orm';
 import { JobsService } from './jobs.service';
 import { AccountsService } from '../accounts/accounts.service';
+import { DbService } from '../db/db.service';
+import { rawEvents, memories, memoryContacts } from '../db/schema';
 import type { Job } from '@botmem/shared';
 
 function toApiJob(row: any): Job {
@@ -26,6 +29,7 @@ export class JobsController {
   constructor(
     private jobsService: JobsService,
     private accountsService: AccountsService,
+    private dbService: DbService,
     @InjectQueue('sync') private syncQueue: Queue,
     @InjectQueue('clean') private cleanQueue: Queue,
     @InjectQueue('embed') private embedQueue: Queue,
@@ -101,24 +105,59 @@ export class JobsController {
       }
     }
 
-    // Retry failed BullMQ pipeline jobs by re-adding them to their queue
-    for (const queue of [this.cleanQueue, this.embedQueue, this.enrichQueue]) {
-      const failed = await queue.getFailed();
+    // Retry failed BullMQ pipeline jobs in batches
+    const BATCH = 500;
+
+    // Embed/clean failures: delete stale memory, then re-enqueue through clean
+    const db = this.dbService.db;
+    for (const queue of [this.cleanQueue, this.embedQueue]) {
+      const failed = await queue.getFailed(0, BATCH);
       for (const fjob of failed) {
-        await queue.add(fjob.name, fjob.data, {
+        try {
+          const rawEventId = fjob.data?.rawEventId;
+          await fjob.remove();
+          if (!rawEventId) continue;
+
+          // Find the raw event to get source_id + connector_type
+          const raw = await db.select({ sourceId: rawEvents.sourceId, connectorType: rawEvents.connectorType })
+            .from(rawEvents).where(eq(rawEvents.id, rawEventId)).limit(1);
+          if (!raw.length) continue;
+
+          // Delete existing stale memory (if any) so clean processor won't skip as dedup
+          const existing = await db.select({ id: memories.id }).from(memories)
+            .where(and(eq(memories.sourceId, raw[0].sourceId), eq(memories.connectorType, raw[0].connectorType)))
+            .limit(1);
+          if (existing.length) {
+            await db.delete(memoryContacts).where(eq(memoryContacts.memoryId, existing[0].id));
+            await db.delete(memories).where(eq(memories.id, existing[0].id));
+          }
+
+          await this.cleanQueue.add('clean', { rawEventId }, {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 5000 },
+          });
+          retried++;
+        } catch { /* skip individual failures */ }
+      }
+    }
+
+    // Enrich failures: re-add directly
+    const enrichFailed = await this.enrichQueue.getFailed(0, BATCH);
+    for (const fjob of enrichFailed) {
+      try {
+        const { name, data } = fjob;
+        await fjob.remove();
+        await this.enrichQueue.add(name, data, {
           attempts: 3,
           backoff: { type: 'exponential', delay: 5000 },
         });
-        await fjob.remove();
-      }
-      retried += failed.length;
+        retried++;
+      } catch { /* skip individual failures */ }
     }
 
     // Clean failed sync jobs from BullMQ
-    const failedSync = await this.syncQueue.getFailed();
-    for (const fjob of failedSync) {
-      await fjob.remove();
-    }
+    const failedSync = await this.syncQueue.getFailed(0, BATCH);
+    await Promise.allSettled(failedSync.map(fjob => fjob.remove()));
 
     return { ok: true, retried };
   }

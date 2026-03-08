@@ -11,7 +11,7 @@ export async function syncContacts(
 ): Promise<{ processed: number }> {
   const clientId = ctx.auth.raw?.clientId as string | undefined;
   const clientSecret = ctx.auth.raw?.clientSecret as string | undefined;
-  const redirectUri = (ctx.auth.raw?.redirectUri as string | undefined) || 'http://localhost:3001/api/auth/gmail/callback';
+  const redirectUri = (ctx.auth.raw?.redirectUri as string | undefined) || 'http://localhost:12412/api/auth/gmail/callback';
   const auth = clientId && clientSecret
     ? createOAuth2Client(clientId, clientSecret, redirectUri)
     : new google.auth.OAuth2();

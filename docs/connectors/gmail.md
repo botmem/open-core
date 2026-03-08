@@ -21,7 +21,7 @@ The Gmail connector imports emails, contacts, and attachments from Google using 
 3. Navigate to **APIs & Services > Credentials**
 4. Click **Create Credentials > OAuth client ID**
 5. Select **Web application**
-6. Add `http://localhost:3001/api/auth/gmail/callback` as an **Authorized redirect URI**
+6. Add `http://localhost:12412/api/auth/gmail/callback` as an **Authorized redirect URI**
 7. Copy the **Client ID** and **Client Secret**
 
 ### 2. Enable Required APIs
@@ -38,7 +38,7 @@ Navigate to the Connectors page in the web UI and click **Add** on the Google co
 |---|---|
 | Client ID | Your Google OAuth Client ID |
 | Client Secret | Your Google OAuth Client Secret |
-| Redirect URI | `http://localhost:3001/api/auth/gmail/callback` (default) |
+| Redirect URI | `http://localhost:12412/api/auth/gmail/callback` (default) |
 
 ### 4. Authorize
 
@@ -65,7 +65,7 @@ After authorization, you will be redirected back to Botmem.
     "redirectUri": {
       "type": "string",
       "title": "Redirect URI",
-      "default": "http://localhost:3001/api/auth/gmail/callback"
+      "default": "http://localhost:12412/api/auth/gmail/callback"
     }
   },
   "required": ["clientId", "clientSecret"]

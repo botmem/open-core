@@ -155,7 +155,7 @@ Each stage uses exponential backoff for retries:
 Failed embed jobs set the memory's `embeddingStatus` to `failed`. These can be retried via:
 
 ```bash
-curl -X POST http://localhost:3001/api/memories/retry-failed
+curl -X POST http://localhost:12412/api/memories/retry-failed
 ```
 
 ## Performance Characteristics

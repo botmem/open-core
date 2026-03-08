@@ -23,6 +23,8 @@ export class QdrantService implements OnModuleInit {
     // problem where the first embed failure prevents the collection from being created.
     try {
       await this.ensureCollection(768);
+      // Ensure HNSW index is built even for small collections
+      await this.ensureIndexed();
     } catch (err) {
       console.error('Qdrant collection init failed (will retry on first embed):', err);
     }
@@ -33,7 +35,19 @@ export class QdrantService implements OnModuleInit {
     if (!exists) {
       await this.client.createCollection(QdrantService.COLLECTION, {
         vectors: { size: vectorSize, distance: 'Cosine' },
+        optimizers_config: { indexing_threshold: 1000 },
       });
+    }
+  }
+
+  /** Update indexing threshold on existing collection to trigger HNSW index build */
+  async ensureIndexed(): Promise<void> {
+    try {
+      await this.client.updateCollection(QdrantService.COLLECTION, {
+        optimizers_config: { indexing_threshold: 1000 },
+      });
+    } catch {
+      // Collection may not exist yet
     }
   }
 
@@ -73,12 +87,21 @@ export class QdrantService implements OnModuleInit {
       params.filter = filter;
     }
 
-    const results = await this.client.search(QdrantService.COLLECTION, params as any);
-    return results.map((r: any) => ({
-      id: r.id as string,
-      score: r.score as number,
-      payload: (r.payload || {}) as Record<string, unknown>,
-    }));
+    try {
+      const results = await this.client.search(QdrantService.COLLECTION, params as any);
+      return results.map((r: any) => ({
+        id: r.id as string,
+        score: r.score as number,
+        payload: (r.payload || {}) as Record<string, unknown>,
+      }));
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      if (msg.includes('Not Found') || msg.includes("doesn't exist")) {
+        await this.ensureCollection(vector.length);
+        return [];
+      }
+      throw err;
+    }
   }
 
   async recommend(memoryId: string, limit: number, filter?: Record<string, unknown>): Promise<ScoredPoint[]> {
@@ -103,9 +126,37 @@ export class QdrantService implements OnModuleInit {
     }
   }
 
+  async getCollectionInfo(): Promise<{ pointsCount: number; indexedVectorsCount: number; status: string }> {
+    try {
+      const info = await this.client.getCollection(QdrantService.COLLECTION);
+      return {
+        pointsCount: (info as any).points_count ?? 0,
+        indexedVectorsCount: (info as any).indexed_vectors_count ?? 0,
+        status: (info as any).status ?? 'unknown',
+      };
+    } catch {
+      return { pointsCount: 0, indexedVectorsCount: 0, status: 'not_found' };
+    }
+  }
+
+  async pointExists(id: string): Promise<boolean> {
+    try {
+      const result = await this.client.retrieve(QdrantService.COLLECTION, { ids: [id], with_payload: false, with_vector: false });
+      return result.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
   async remove(memoryId: string): Promise<void> {
-    await this.client.delete(QdrantService.COLLECTION, {
-      points: [memoryId],
-    });
+    try {
+      await this.client.delete(QdrantService.COLLECTION, {
+        points: [memoryId],
+      });
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      if (msg.includes('Not Found') || msg.includes("doesn't exist")) return;
+      throw err;
+    }
   }
 }

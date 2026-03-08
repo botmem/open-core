@@ -52,22 +52,22 @@ pnpm dev
 ```
 
 This starts:
-- **API** on `http://localhost:3001`
-- **Web UI** on `http://localhost:5173`
+- **API** on `http://localhost:12412`
+- **Web UI** on `http://localhost:12412`
 
 ## 5. Verify the Installation
 
 Check that the API is running:
 
 ```bash
-curl http://localhost:3001/api/version
+curl http://localhost:12412/api/version
 ```
 
 You should see a JSON response with the version number.
 
 ## 6. Connect Your First Data Source
 
-Open the web UI at `http://localhost:5173` and navigate to the Connectors page. Each connector has its own setup flow:
+Open the web UI at `http://localhost:12412` and navigate to the Connectors page. Each connector has its own setup flow:
 
 | Connector | Auth Type | What You Need |
 |---|---|---|
@@ -86,10 +86,10 @@ Once a connector is authenticated, trigger a sync from the web UI or via the API
 
 ```bash
 # List accounts
-curl http://localhost:3001/api/accounts
+curl http://localhost:12412/api/accounts
 
 # Trigger sync for an account
-curl -X POST http://localhost:3001/api/jobs/sync/<account-id>
+curl -X POST http://localhost:12412/api/jobs/sync/<account-id>
 ```
 
 The sync pipeline will:
@@ -103,7 +103,7 @@ The sync pipeline will:
 ## 8. Search Your Memories
 
 ```bash
-curl -X POST http://localhost:3001/api/memories/search \
+curl -X POST http://localhost:12412/api/memories/search \
   -H 'Content-Type: application/json' \
   -d '{"query": "coffee meeting last week", "limit": 5}'
 ```

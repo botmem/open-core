@@ -14,7 +14,9 @@ interface MemoryDetailPanelProps {
 }
 
 export function MemoryDetailPanel({ memory, onClose }: MemoryDetailPanelProps) {
-  const weights = Object.entries(memory.weights);
+  const weights = Object.entries(memory.weights).filter(
+    ([key, val]) => !(key === 'semantic' && val === 0) && !(key === 'rerank' && val === 0),
+  );
   const { pinMemory, unpinMemory } = useMemoryStore();
 
   const handlePinClick = () => {
@@ -113,8 +115,8 @@ export function MemoryDetailPanel({ memory, onClose }: MemoryDetailPanelProps) {
           <div>
             <h4 className="font-display text-xs font-bold uppercase mb-2 text-nb-text">Entities</h4>
             <div className="flex flex-wrap gap-1.5">
-              {memory.entities.map((e, i) => (
-                <Badge key={i} color="#4ECDC4">
+              {memory.entities.map((e) => (
+                <Badge key={`${e.type}:${e.value}`} color="#4ECDC4">
                   {e.type}: {e.value}
                 </Badge>
               ))}
