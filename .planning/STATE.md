@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: completed
-stopped_at: Completed 30-01-PLAN.md
-last_updated: "2026-03-08T17:52:53.765Z"
-last_activity: 2026-03-08 -- Phase 30 Plan 01 complete (CJS exports, turbo watch, nest build --watch)
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-03-08T18:26:30Z"
+last_activity: 2026-03-08 -- Phase 31 Plan 01 complete (docker-compose health checks, Makefile DX)
 progress:
   total_phases: 26
-  completed_phases: 15
-  total_plans: 30
-  completed_plans: 30
+  completed_phases: 16
+  total_plans: 31
+  completed_plans: 31
 ---
 
 # Project State
@@ -20,21 +20,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v3.0 Monorepo & Developer Experience -- Phase 30 complete
+**Current focus:** v3.0 Monorepo & Developer Experience -- Phase 31 complete
 
 ## Current Position
 
-Phase: 30 (Dev Workflow Fix) -- complete
-Plan: 01 (complete), 02 (complete)
-Status: Phase 30 complete, ready for Phase 31 (Docker & Infrastructure)
-Last activity: 2026-03-08 -- Phase 30 Plan 01 complete (CJS exports, turbo watch, nest build --watch)
+Phase: 31 (Docker & Infrastructure) -- complete
+Plan: 01 (complete)
+Status: Phase 31 complete, ready for Phase 32 (Build Optimization)
+Last activity: 2026-03-08 -- Phase 31 Plan 01 complete (docker-compose health checks, Makefile DX)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: 4min
-- Total execution time: 40min
+- Total execution time: 42min
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -49,6 +49,7 @@ Last activity: 2026-03-08 -- Phase 30 Plan 01 complete (CJS exports, turbo watch
 | 26 | 02 | 2min | 2 | 2 |
 | 30 | 02 | 2min | 1 | 3 |
 | 30 | 01 | 5min | 2 | 27 |
+| 31 | 01 | 2min | 2 | 2 |
 
 ## Accumulated Context
 
@@ -113,6 +114,12 @@ Recent decisions affecting current work:
 - [30-01]: SWC builder in nest-cli.json for faster incremental rebuilds than tsc
 - [30-01]: Web dev script renamed to dev:standalone to prevent turbo from starting conflicting Vite server
 
+### Decisions (Phase 31)
+
+- [31-01]: Removed api service from docker-compose (no Dockerfile, app runs via pnpm dev)
+- [31-01]: Ollama behind profile -- opt-in only, not started by default
+- [31-01]: Qdrant healthcheck uses bash TCP probe (no curl in image)
+
 ### Pending Todos
 
 None yet.
@@ -128,6 +135,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-08T17:48:18Z
-Stopped at: Completed 30-01-PLAN.md
-Resume: /gsd:execute-phase 31-01
+Last session: 2026-03-08T18:26:30Z
+Stopped at: Completed 31-01-PLAN.md
+Resume: /gsd:execute-phase 32-01
