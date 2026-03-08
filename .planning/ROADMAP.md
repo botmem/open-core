@@ -315,7 +315,11 @@ Plans:
 2. Connector sync accepts `bankId` parameter -- all ingested memories go into the specified bank
 3. Search results are scoped to the user's accessible banks (own banks for JWT auth, scoped banks for API key auth)
 4. On first login, a "Default" bank is created and all existing memories are migrated into it
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
 ### Phase 20: Encryption at Rest
 
@@ -328,7 +332,11 @@ Plans:
 2. Reading encrypted fields through the API returns decrypted values transparently (encryption is at the DB layer)
 3. Migration script encrypts all existing plaintext credentials without downtime
 4. Missing APP_SECRET causes startup error with clear message
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
 ### Phase 21: End-to-End Encryption (Prod-Core)
 
@@ -341,7 +349,11 @@ Plans:
 2. Memory `text`, `entities`, `claims`, and `metadata` fields are encrypted client-side before POST -- server stores ciphertext
 3. Embedding vectors remain plaintext in Qdrant -- semantic search returns results, but text fields are encrypted until decrypted client-side
 4. Password change triggers batched re-encryption of all user memories with progress tracking (resumable on failure)
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
 ### Phase 22: PostgreSQL Dual-Driver
 
@@ -354,7 +366,11 @@ Plans:
 2. Shared DB interface abstracts all queries -- application code never uses SQLite-specific or Postgres-specific syntax
 3. `DB_DRIVER=postgres` + `DATABASE_URL` starts the API on PostgreSQL; `DB_DRIVER=sqlite` (default) uses SQLite as before
 4. FTS5 queries on SQLite and tsvector+GIN queries on PostgreSQL both return equivalent search results
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
 ### Phase 23: Row Level Security
 
@@ -367,7 +383,11 @@ Plans:
 2. Each API request sets `SET LOCAL app.current_user_id = '<user_id>'` before executing queries
 3. Attempting to read/write another user's data via direct SQL returns no results (no error, just empty)
 4. Drizzle ORM queries work correctly with RLS enabled -- no bypasses from connection pooling or missing session vars
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
 ### Phase 24: Firebase Auth (Prod-Core)
 
@@ -380,7 +400,11 @@ Plans:
 2. React UI shows Firebase login/register with email+password, Google, and GitHub options
 3. `AUTH_PROVIDER=local` (default) uses JWT email+password auth; `AUTH_PROVIDER=firebase` uses Firebase -- switching requires only env var change
 4. Firebase-authenticated users get local user records created on first login (sync from Firebase UID)
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
 <details>
 <summary>Old v2.0 Phases (11-15) -- partially complete, restructured</summary>
@@ -453,7 +477,11 @@ Plans:
 2. Interrupting and restarting the backfill resumes from where it left off -- already-processed memories are skipped
 3. Backfill progress (processed/total, current connector) is visible in the frontend via WebSocket updates
 4. User can start a backfill filtered to a specific connector type (e.g., only re-enrich Gmail memories)
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
 ### Phase 28: Verification
 
@@ -585,7 +613,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 24. Firebase Auth (Prod-Core)    | v2.0      | 0/?            | Not started | -          |
 | 25. Source Type Reclassification | v2.1      | Complete       | 2026-03-08  | 2026-03-08 |
 | 26. Entity Format & Quality      | v2.1      | Complete       | 2026-03-08  | 2026-03-08 |
-| 27. Data Backfill                | v2.1      | 0/?            | Not started | -          |
+| 27. Data Backfill                | v2.1      | 0/1            | Not started | -          |
 | 28. Verification                 | v2.1      | 0/?            | Not started | -          |
 | 29. Foundation Config            | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
 | 30. Dev Workflow Fix             | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
