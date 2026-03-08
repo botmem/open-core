@@ -21,20 +21,23 @@ export class MeService {
   /**
    * Set the "self" contact manually by storing the contact ID in settings.
    */
-  async setSelfContact(contactId: string): Promise<{ ok: boolean }> {
+  async setSelfContact(contactId: string, userId?: string): Promise<{ ok: boolean }> {
     const db = this.dbService.db;
 
-    // Verify the contact exists
+    // Verify the contact exists and belongs to user
+    const conditions: any[] = [eq(contacts.id, contactId)];
+    if (userId) conditions.push(eq(contacts.userId, userId));
     const existing = await db
       .select({ id: contacts.id })
       .from(contacts)
-      .where(eq(contacts.id, contactId));
+      .where(and(...conditions));
     if (!existing.length) {
       throw new Error(`Contact ${contactId} not found`);
     }
 
+    const settingKey = userId ? `${SELF_CONTACT_ID_KEY}:${userId}` : SELF_CONTACT_ID_KEY;
     db.insert(settings)
-      .values({ key: SELF_CONTACT_ID_KEY, value: contactId })
+      .values({ key: settingKey, value: contactId })
       .onConflictDoUpdate({ target: settings.key, set: { value: contactId } })
       .run();
 
@@ -45,11 +48,13 @@ export class MeService {
    * Auto-detect the self contact by cross-referencing account identifiers
    * with the contact_identifiers table. Returns the contact ID or null.
    */
-  private async detectSelfContactId(): Promise<string | null> {
+  private async detectSelfContactId(userId?: string): Promise<string | null> {
     const db = this.dbService.db;
 
-    // Get all connected accounts
-    const allAccounts = await db.select().from(accounts);
+    // Get user's accounts only
+    const accountConditions: any[] = [];
+    if (userId) accountConditions.push(eq(accounts.userId, userId));
+    const allAccounts = await db.select().from(accounts).where(accountConditions.length ? and(...accountConditions) : undefined);
     if (!allAccounts.length) return null;
 
     // Build normalized identifier lookup values from accounts
@@ -126,34 +131,33 @@ export class MeService {
   /**
    * Resolve the self contact ID: manual override first, then auto-detect.
    */
-  private async resolveSelfContactId(): Promise<string | null> {
+  private async resolveSelfContactId(userId?: string): Promise<string | null> {
     const db = this.dbService.db;
 
-    // Check manual override
-    const row = db
-      .select()
-      .from(settings)
-      .where(eq(settings.key, SELF_CONTACT_ID_KEY))
-      .get();
+    // Check per-user manual override first, then global fallback
+    const settingKey = userId ? `${SELF_CONTACT_ID_KEY}:${userId}` : SELF_CONTACT_ID_KEY;
+    let row = db.select().from(settings).where(eq(settings.key, settingKey)).get();
+    if (!row && userId) {
+      row = db.select().from(settings).where(eq(settings.key, SELF_CONTACT_ID_KEY)).get();
+    }
 
     if (row?.value) {
-      // Verify it still exists
-      const exists = await db
-        .select({ id: contacts.id })
-        .from(contacts)
-        .where(eq(contacts.id, row.value));
+      // Verify it still exists (and belongs to user if userId given)
+      const conditions: any[] = [eq(contacts.id, row.value)];
+      if (userId) conditions.push(eq(contacts.userId, userId));
+      const exists = await db.select({ id: contacts.id }).from(contacts).where(and(...conditions));
       if (exists.length) return row.value;
     }
 
     // Auto-detect
-    return this.detectSelfContactId();
+    return this.detectSelfContactId(userId);
   }
 
   /**
    * Lightweight check: is the "me" identity set?
    */
-  async getStatus(): Promise<{ isSet: boolean; contactId: string | null }> {
-    const contactId = await this.resolveSelfContactId();
+  async getStatus(userId?: string): Promise<{ isSet: boolean; contactId: string | null }> {
+    const contactId = await this.resolveSelfContactId(userId);
     return { isSet: !!contactId, contactId };
   }
 
@@ -161,10 +165,10 @@ export class MeService {
    * Find contacts that look like duplicates of "me" — candidates for merge.
    * Uses same heuristics as merge suggestions: name substring match + shared identifiers.
    */
-  async getMergeCandidates(): Promise<
+  async getMergeCandidates(userId?: string): Promise<
     Array<{ id: string; displayName: string; avatars: string; reason: string; identifiers: Array<{ identifierType: string; identifierValue: string; connectorType: string | null }> }>
   > {
-    const selfId = await this.resolveSelfContactId();
+    const selfId = await this.resolveSelfContactId(userId);
     if (!selfId) return [];
 
     const db = this.dbService.db;
@@ -186,13 +190,13 @@ export class MeService {
     );
     const dismissedIds = new Set(dismissedRows.map((d) => d.contactId1 === selfId ? d.contactId2 : d.contactId1));
 
-    // Find candidates: persons with matching name or shared identifiers
-    const allPersons = await db.select().from(contacts).where(
-      and(
-        sql`${contacts.id} != ${selfId}`,
-        sql`COALESCE(${contacts.entityType}, 'person') = 'person'`,
-      ),
-    );
+    // Find candidates: persons with matching name or shared identifiers (user-scoped)
+    const personConditions: any[] = [
+      sql`${contacts.id} != ${selfId}`,
+      sql`COALESCE(${contacts.entityType}, 'person') = 'person'`,
+    ];
+    if (userId) personConditions.push(eq(contacts.userId, userId));
+    const allPersons = await db.select().from(contacts).where(and(...personConditions));
 
     const candidates: Array<{ id: string; displayName: string; avatars: string; reason: string; identifiers: Array<{ identifierType: string; identifierValue: string; connectorType: string | null }> }> = [];
 
@@ -255,11 +259,11 @@ export class MeService {
   /**
    * Build the full /api/me response.
    */
-  async getMe() {
+  async getMe(userId?: string) {
     const db = this.dbService.db;
 
     // Resolve self contact
-    const selfContactId = await this.resolveSelfContactId();
+    const selfContactId = await this.resolveSelfContactId(userId);
 
     // Build identity from self contact
     let identity: {
@@ -308,9 +312,10 @@ export class MeService {
       }
     }
 
-    // Build accounts list with stats
-    const allAccounts = await db.select().from(accounts);
-    const accountsList = allAccounts.map((acct) => ({
+    // Build accounts list with stats — user-scoped
+    const accountFilter = userId ? eq(accounts.userId, userId) : undefined;
+    const userAccounts = await db.select().from(accounts).where(accountFilter);
+    const accountsList = userAccounts.map((acct) => ({
       id: acct.id,
       connectorType: acct.connectorType,
       identifier: acct.identifier,
@@ -319,8 +324,16 @@ export class MeService {
       itemsSynced: acct.itemsSynced,
     }));
 
-    // Stats — only count fully-processed memories (matching dashboard)
-    const doneFilter = eq(memories.embeddingStatus, 'done');
+    const userAccountIds = userAccounts.map(a => a.id);
+
+    // Stats — only count fully-processed memories for this user
+    const doneConditions: any[] = [eq(memories.embeddingStatus, 'done')];
+    if (userAccountIds.length > 0) {
+      doneConditions.push(inArray(memories.accountId, userAccountIds));
+    }
+    const doneFilter = userAccountIds.length === 0 && userId
+      ? sql`1=0`  // User has no accounts — zero results
+      : and(...doneConditions);
 
     const totalMemoriesResult = await db
       .select({ count: sql<number>`count(*)` })
@@ -328,9 +341,11 @@ export class MeService {
       .where(doneFilter);
     const totalMemories = totalMemoriesResult[0].count;
 
+    const contactFilter = userId ? eq(contacts.userId, userId) : undefined;
     const totalContactsResult = await db
       .select({ count: sql<number>`count(*)` })
-      .from(contacts);
+      .from(contacts)
+      .where(contactFilter);
     const totalContacts = totalContactsResult[0].count;
 
     const memoriesByConnectorRows = await db
@@ -375,11 +390,17 @@ export class MeService {
       .limit(1);
     const newestMemory = newestMemoryRow[0]?.eventTime || null;
 
-    // Top entities — parse JSON entities from all memories and count
+    // Top entities — parse JSON entities from user's memories
+    const entityConditions: any[] = [sql`${memories.entities} != '[]'`];
+    if (userAccountIds.length > 0) {
+      entityConditions.push(inArray(memories.accountId, userAccountIds));
+    } else if (userId) {
+      entityConditions.push(sql`1=0`);
+    }
     const allEntitiesRows = await db
       .select({ entities: memories.entities })
       .from(memories)
-      .where(sql`${memories.entities} != '[]'`);
+      .where(and(...entityConditions));
 
     const entityCounts = new Map<string, number>();
     for (const row of allEntitiesRows) {

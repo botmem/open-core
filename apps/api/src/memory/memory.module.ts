@@ -6,6 +6,7 @@ import { EventsModule } from '../events/events.module';
 import { ContactsModule } from '../contacts/contacts.module';
 import { AccountsModule } from '../accounts/accounts.module';
 import { SettingsModule } from '../settings/settings.module';
+import { CryptoModule } from '../crypto/crypto.module';
 import { JobsModule } from '../jobs/jobs.module';
 import { OllamaService } from './ollama.service';
 import { QdrantService } from './qdrant.service';
@@ -26,6 +27,7 @@ import { MemoryController } from './memory.controller';
     ContactsModule,
     AccountsModule,
     SettingsModule,
+    CryptoModule,
     forwardRef(() => JobsModule),
     BullModule.registerQueue({ name: 'clean' }),
     BullModule.registerQueue({ name: 'embed' }),

@@ -15,6 +15,7 @@ describe('MemoryService', () => {
   let qdrantService: any;
   let connectorsService: any;
   let pluginRegistry: any;
+  let cryptoService: any;
 
   beforeEach(async () => {
     db = createTestDb();
@@ -43,12 +44,21 @@ describe('MemoryService', () => {
       fireHook: vi.fn().mockResolvedValue(undefined),
     };
 
+    cryptoService = {
+      encrypt: vi.fn().mockImplementation((v: string) => v),
+      decrypt: vi.fn().mockImplementation((v: string) => v),
+      isEncrypted: vi.fn().mockReturnValue(false),
+      encryptMemoryFields: vi.fn().mockImplementation((f: any) => f),
+      decryptMemoryFields: vi.fn().mockImplementation((m: any) => m),
+    };
+
     service = new MemoryService(
       makeDbService(db),
       ollamaService,
       qdrantService,
       connectorsService,
       pluginRegistry,
+      cryptoService,
     );
 
     await db.insert(accounts).values({

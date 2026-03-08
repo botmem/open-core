@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: completed
-stopped_at: Completed 34-02-PLAN.md
-last_updated: '2026-03-08T19:39:04.770Z'
-last_activity: 2026-03-08 -- Phase 34 Plan 02 complete (structured logging + transaction atomicity)
+stopped_at: Completed 34-03-PLAN.md
+last_updated: '2026-03-08T19:45:50Z'
+last_activity: 2026-03-08 -- Phase 34 Plan 03 complete (security hardening + authorization + error logging)
 progress:
   total_phases: 27
-  completed_phases: 17
+  completed_phases: 18
   total_plans: 35
-  completed_plans: 34
+  completed_plans: 35
 ---
 
 # Project State
@@ -20,22 +20,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v3.0 Monorepo & Developer Experience -- Phase 34 Plan 02 complete
+**Current focus:** v3.0 Monorepo & Developer Experience -- Phase 34 complete (all plans)
 
 ## Current Position
 
 Phase: 34 (NestJS Best Practices Maturation)
-Plan: 02 of 03 (complete)
-Status: Phase 34 Plan 02 complete, ready for Plan 03
-Last activity: 2026-03-08 -- Phase 34 Plan 02 complete (structured logging + transaction atomicity)
+Plan: 03 of 03 (complete)
+Status: Phase 34 complete (all 3 plans done)
+Last activity: 2026-03-08 -- Phase 34 Plan 03 complete (security hardening + authorization + error logging)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 4min
-- Total execution time: 61min
+- Total execution time: 68min
 
 | Phase | Plan | Duration | Tasks | Files |
 | ----- | ---- | -------- | ----- | ----- |
@@ -54,6 +54,7 @@ Last activity: 2026-03-08 -- Phase 34 Plan 02 complete (structured logging + tra
 | 34    | 01   | 6min     | 2     | 29    |
 | 32    | 01   | 3min     | 2     | 14    |
 | 34    | 02   | 10min    | 2     | 16    |
+| 34    | 03   | 7min     | 2     | 12    |
 
 ## Accumulated Context
 
@@ -136,6 +137,12 @@ Recent decisions affecting current work:
 - [34-02]: Error logging passes err.stack as second param to logger.error() for NestJS stack trace support
 - [34-02]: Transaction scope limited to multi-table cascading deletes only -- single-table operations left as-is
 
+### Decisions (Phase 34-03)
+
+- [34-03]: Production validation uses OnModuleInit to fail fast at startup, not lazy check
+- [34-03]: Agent controller removes fail() wrapper entirely, lets NestJS exception filter handle errors
+- [34-03]: Contacts getSuggestions/getMemories accept optional userId for backward compatibility
+
 ### Decisions (Phase 32)
 
 - [32-01]: pnpm catalog for typescript, vitest, vite, @vitest/coverage-v8 -- four deps centralized
@@ -157,6 +164,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-08T19:35:32Z
-Stopped at: Completed 34-02-PLAN.md
-Resume: /gsd:execute-phase 34-03
+Last session: 2026-03-08T19:45:50Z
+Stopped at: Completed 34-03-PLAN.md
+Resume: Phase 34 complete. Next phase TBD.

@@ -10,6 +10,7 @@ import { useJobs } from '../hooks/useJobs';
 import { useConnectors } from '../hooks/useConnectors';
 import { useMemories } from '../hooks/useMemories';
 import { useJobStore } from '../store/jobStore';
+import { useMemoryBankStore } from '../store/memoryBankStore';
 
 const dashTabs = [
   { id: 'overview', label: 'OVERVIEW' },
@@ -21,19 +22,16 @@ export function DashboardPage() {
   const { accounts } = useConnectors();
   const { graphData, loadGraph, memoryStats } = useMemories();
   const { retrying, retryAllFailed } = useJobStore();
+  const activeMemoryBankId = useMemoryBankStore((s) => s.activeMemoryBankId);
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     loadGraph();
-  }, []);
+  }, [activeMemoryBankId]);
 
   const totalMemories = memoryStats?.total ?? 0;
   const activeConnectors = accounts.filter((a) => a.status === 'connected' || a.status === 'syncing').length;
-  const failedSyncJobs = jobs.filter((j) => j.status === 'failed').length;
-  const failedPipeline = queueStats
-    ? Object.values(queueStats).reduce((sum, s) => sum + (s.failed ?? 0), 0)
-    : 0;
-  const failedJobs = failedSyncJobs + failedPipeline;
+  const failedJobs = jobs.filter((j) => j.status === 'failed').length;
 
   // Pending = items still in BullMQ queues (waiting + active + delayed) across pipeline stages
   const pipelinePending = queueStats
