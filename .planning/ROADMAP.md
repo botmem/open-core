@@ -188,12 +188,17 @@ Phase 10: Source Citations (deferred)
 **Depends on**: Phase 15 (v1.4 complete, codebase stable)
 **Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05
 **Success Criteria** (what must be TRUE):
-  1. `POST /auth/register` creates a new user with bcrypt-hashed password and returns JWT access token + sets httpOnly refresh cookie
-  2. `POST /auth/login` with valid email+password returns JWT access token (15min expiry) + sets httpOnly refresh cookie (7d expiry)
-  3. `POST /auth/refresh` with valid refresh cookie returns new access token and rotates refresh token (old token invalidated)
-  4. `POST /auth/forgot-password` sends reset email with token link; `POST /auth/reset-password` with valid token (1hr) allows password change
+  1. `POST /api/user-auth/register` creates a new user with bcrypt-hashed password and returns JWT access token + sets httpOnly refresh cookie
+  2. `POST /api/user-auth/login` with valid email+password returns JWT access token (15min expiry) + sets httpOnly refresh cookie (7d expiry)
+  3. `POST /api/user-auth/refresh` with valid refresh cookie returns new access token and rotates refresh token (old token invalidated)
+  4. `POST /api/user-auth/forgot-password` sends reset email with token link; `POST /api/user-auth/reset-password` with valid token (1hr) allows password change
   5. React frontend has login/register pages and persists session via refresh token
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 16-01-PLAN.md -- Backend auth infrastructure: schema, JWT, register/login/refresh/logout
+- [ ] 16-02-PLAN.md -- Password reset infrastructure: passwordResets table, MailService
+- [ ] 16-03-PLAN.md -- Frontend auth rewrite + password reset endpoints wiring
 
 ### Phase 17: API Security
 **Goal**: All API endpoints require authentication except explicitly public ones, and CORS is locked to the frontend origin
@@ -321,7 +326,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. NLQ Parsing | v1.4 | 2/2 | Complete | 2026-03-08 |
 | 10. Source Citations | v1.4 | 0/? | Deferred | - |
 | 11. Repo & Infrastructure | v2.0 | 3/3 | Complete | 2026-03-08 |
-| 16. User Authentication | v2.0 | 0/? | Not started | - |
+| 16. User Authentication | v2.0 | 0/3 | Planning | - |
 | 17. API Security | v2.0 | 0/? | Not started | - |
 | 18. API Keys | v2.0 | 0/? | Not started | - |
 | 19. Memory Banks | v2.0 | 0/? | Not started | - |
