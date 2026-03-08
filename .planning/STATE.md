@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: PostHog Deep Analytics
-status: completed
-stopped_at: Completed 06-02 PostHog Dashboard Configuration
-last_updated: "2026-03-07T23:57:27Z"
-last_activity: 2026-03-08 -- Completed 06-02 PostHog Dashboard Configuration
+milestone: v2.0
+milestone_name: Production Deployment & Open-Core Split
+status: active
+stopped_at: null
+last_updated: "2026-03-08T12:00:00Z"
+last_activity: 2026-03-08 -- Milestone v2.0 started
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v1.2 PostHog Deep Analytics -- Phase 6 complete (milestone done)
+**Current focus:** v2.0 Production Deployment & Open-Core Split
 
 ## Current Position
 
-Phase: 6 of 6 (Verification and Dashboards) -- v1.2 milestone
-Plan: 2 of 2 in current phase (06-02 complete)
-Status: v1.2 milestone complete
-Last activity: 2026-03-08 -- Completed 06-02 PostHog Dashboard Configuration
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-08 — Milestone v2.0 started
 
-Progress: [##########] v1.0 complete | [##########] v1.1 complete | [##########] v1.2 complete | [##########] 100% v1.3
+Progress: [##########] v1.0 complete | [##########] v1.1 complete | [##########] v1.2 complete | [░░░░░░░░░░] 0% v2.0
 
 ## Performance Metrics
 
@@ -51,10 +51,6 @@ Progress: [##########] v1.0 complete | [##########] v1.1 complete | [##########]
 | 06-verification-and-dashboards | 2/2 | 17min | 8.5min |
 | 07-test-infrastructure-fixes | 2/2 | 30min | 15min |
 
-**Recent Trend:**
-- Last 5 plans: 05-01 (3min), 05-02 (1min), 06-01 (3min), 07-01 (5min), 06-02 (14min)
-- Trend: Consistent
-
 *Updated after each plan completion*
 
 ## Accumulated Context
@@ -64,24 +60,13 @@ Progress: [##########] v1.0 complete | [##########] v1.1 complete | [##########]
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Phase 04]: connector_setup fires only on new account creation, not re-auth
-- [Phase 04]: graph_view uses ref guard to fire only once per mount
-- [Phase 02]: AnalyticsModule is @Global() so all modules can inject without explicit imports
-- [Phase 02]: distinctId='server' for all backend analytics events to avoid PII
-- [v1.0]: PostHog cloud over self-hosted (16GB RAM disproportionate for single-user)
-- [v1.0]: PostHog SDK integration ships as no-op when unconfigured
-- [Phase 04]: Used EU PostHog instance (eu.i.posthog.com) per user preference
-- [Phase 05]: Used maskCapturedNetworkRequestFn for network header redaction (correct PostHog SDK v1.359 API)
-- [Phase 05]: Backend exception filter only captures 5xx errors to avoid noise from 404s/validation
-- [Phase 05]: PostHogExceptionFilter extends BaseExceptionFilter to preserve default NestJS responses
-- [Phase 05]: User ID priority: email > contactId > fallback for stable PostHog session linking
-- [Phase 06]: PostHogExceptionFilter must receive HttpAdapterHost to avoid TypeError when handling exceptions
-- [Phase 06]: Used 'search' event name for memory search tracking, 'embed_complete' for memories created metric
-- [Phase 06]: 7-day retention period for search return frequency in PostHog
-- [Phase 07]: Used @vitest/coverage-v8@^3 to match existing vitest@^3 peer dependency
-- [Phase 07]: Standardized all coverage thresholds to 80/80/80/75 across monorepo
-- [Phase 07]: Only test files modified to fix failures; no production code changes
-- [Phase 07]: Mock loadBuiltin in plugins tests to prevent WhatsApp warm session hang
+- [v2.0]: SQLite → PostgreSQL for production (concurrent writes, proper migrations)
+- [v2.0]: Firebase auth (Google ecosystem, generous free tier)
+- [v2.0]: OpenRouter for production inference, keep Ollama for open-core
+- [v2.0]: Open-core (public) / prod-core (private) repo split under `botmem` GitHub org
+- [v2.0]: Caddy over Nginx (automatic HTTPS, simpler config)
+- [v2.0]: Vultr $5 VPS for production hosting
+- [v2.0]: botmem.xyz domain (Spaceship DNS)
 
 ### Pending Todos
 
@@ -100,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T23:57:27Z
-Stopped at: Completed 06-02 PostHog Dashboard Configuration
+Last session: 2026-03-08T12:00:00Z
+Stopped at: Milestone v2.0 started
 Resume file: None

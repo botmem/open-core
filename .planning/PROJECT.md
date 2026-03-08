@@ -44,24 +44,32 @@ Every piece of personal communication and digital interaction is searchable, con
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Session replay recording for user interaction debugging
-- [ ] Heatmaps for click/scroll behavior analysis
-- [ ] Error tracking for frontend JS exceptions
-- [ ] Web analytics dashboard for traffic and navigation patterns
-- [ ] Product analytics dashboards (funnels, retention, user paths)
-- [ ] User identification for cross-session tracking
+- [ ] GitHub org with open-core (public) and prod-core (private) repos
+- [ ] PostgreSQL database layer (replacing SQLite for production)
+- [ ] Firebase authentication
+- [ ] OpenRouter inference API integration
+- [ ] Vultr VPS provisioned and configured
+- [ ] Docker Compose production stack
+- [ ] Caddy reverse proxy with SSL
+- [ ] DNS (botmem.xyz) pointed to Vultr
+- [ ] CI/CD pipelines for open-core and prod-core
+- [ ] Production end-to-end verification
 
-## Current Milestone: v1.2 PostHog Deep Analytics
+## Current Milestone: v2.0 Production Deployment & Open-Core Split
 
-**Goal:** Enable all valuable free PostHog features — session replay, heatmaps, error tracking, web analytics, and product analytics dashboards — to get comprehensive usage insights on Botmem.
+**Goal:** Deploy Botmem to production on a Vultr VPS with proper infrastructure (Postgres, Firebase auth, Caddy SSL, OpenRouter inference), split the monorepo into open-core (public) and prod-core (private) under a GitHub org, and wire CI/CD pipelines for automatic deployment.
 
 **Target features:**
-- Session replay with privacy-safe recording (mask sensitive data)
-- Heatmap tracking for click and scroll behavior
-- Automatic JS error capture and reporting
-- Web analytics (traffic, navigation paths, referrers)
-- Product analytics dashboards in PostHog (funnels, retention)
-- User identification linking anonymous and authenticated sessions
+- GitHub org (`botmem`) with public open-core repo and private prod-core repo
+- SQLite → PostgreSQL migration for production
+- Firebase authentication (project under amroessams@gmail.com)
+- OpenRouter API integration for production inference (keep Ollama for open-core)
+- Vultr $5 VPS provisioning and server configuration
+- Docker Compose production stack (API, web, Postgres, Redis, Qdrant, Caddy)
+- Caddy reverse proxy with automatic SSL (Let's Encrypt)
+- DNS configuration on Spaceship (botmem.xyz → Vultr IP)
+- GitHub Actions CI/CD pipelines for both open-core and prod-core builds
+- End-to-end production verification
 
 ### Out of Scope
 
@@ -82,7 +90,8 @@ Every piece of personal communication and digital interaction is searchable, con
 - **Vector DB**: Qdrant (cosine similarity, auto-created collection)
 - **Port**: API on 12412, web on 5173
 - **WhatsApp limitation**: LID format only, no phone number resolution possible via Baileys v6
-- **No git remote**: commits are local only
+- **Git remote**: github.com/botmem org (open-core public, prod-core private)
+- **Domain**: botmem.xyz (Spaceship, DNS not yet configured)
 - 6 connectors implemented and working
 - Contacts system fully operational with cross-connector dedup
 
@@ -108,5 +117,11 @@ Every piece of personal communication and digital interaction is searchable, con
 | PostHog for analytics | Self-hostable, privacy-respecting, generous free tier | ✓ Good |
 | PostHog cloud over self-hosted | 16GB RAM requirement disproportionate for single-user | ✓ Good |
 
+| SQLite → PostgreSQL for production | Production needs concurrent writes, proper migrations, multi-connection support | — Pending |
+| Firebase for auth | Google ecosystem, generous free tier, easy integration | — Pending |
+| OpenRouter for prod inference | API-based, no GPU needed on VPS, keeps open-core Ollama-compatible | — Pending |
+| Open-core / prod-core split | Public OSS version + private production with business docs | — Pending |
+| Caddy over Nginx | Automatic HTTPS, simpler config, built-in Let's Encrypt | — Pending |
+
 ---
-*Last updated: 2026-03-08 after v1.2 milestone start*
+*Last updated: 2026-03-08 after v2.0 milestone start*
