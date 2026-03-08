@@ -9,8 +9,8 @@
 ### Entity Classification
 
 - [x] **ENT-01**: Entity extraction uses canonical type taxonomy (person, organization, location, event, product, topic, pet, group, device, other) enforced via Ollama structured output (`format` parameter)
-- [ ] **ENT-02**: All existing memories have entity types backfilled to canonical taxonomy via SQL string replacement (no LLM re-run)
-- [ ] **ENT-03**: User can filter entity search by type (e.g. `/entities/search?q=Nugget&type=pet`)
+- [x] **ENT-02**: All existing memories have entity types backfilled to canonical taxonomy via SQL string replacement (no LLM re-run)
+- [x] **ENT-03**: User can filter entity search by type (e.g. `/entities/search?q=Nugget&type=pet`)
 
 ### NLQ Parsing
 
@@ -46,8 +46,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | ENT-01 | Phase 8 | Complete |
-| ENT-02 | Phase 8 | Pending |
-| ENT-03 | Phase 8 | Pending |
+| ENT-02 | Phase 8 | Complete |
+| ENT-03 | Phase 8 | Complete |
 | NLQ-01 | Phase 9 | Pending |
 | NLQ-02 | Phase 9 | Pending |
 | NLQ-03 | Phase 9 | Pending |
