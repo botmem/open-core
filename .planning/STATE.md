@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
-status: completed
-stopped_at: Completed 26-02-PLAN.md
-last_updated: "2026-03-08T17:38:20.474Z"
-last_activity: 2026-03-08 -- Phase 26 Plan 02 complete (normalizer wired into enrich + embed pipeline)
+status: in-progress
+stopped_at: Completed 30-02-PLAN.md
+last_updated: "2026-03-08T17:46:00Z"
+last_activity: 2026-03-08 -- Phase 30 Plan 02 complete (health endpoint with service probes)
 progress:
-  total_phases: 26
-  completed_phases: 14
-  total_plans: 29
-  completed_plans: 28
+  total_phases: 30
+  completed_phases: 15
+  total_plans: 31
+  completed_plans: 29
 ---
 
 # Project State
@@ -20,21 +20,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v2.1 Data Quality & Pipeline Integrity -- Phase 26 complete, Phase 27 next
+**Current focus:** v3.0 Monorepo & Developer Experience -- Phase 30 Plan 02 complete
 
 ## Current Position
 
-Phase: 26 (Entity Format & Quality) -- complete
-Plan: 01 (complete), 02 (complete)
-Status: Phase 26 complete, ready for Phase 27 (Data Backfill)
-Last activity: 2026-03-08 -- Phase 26 Plan 02 complete (normalizer wired into enrich + embed pipeline)
+Phase: 30 (Dev Workflow Fix) -- in progress
+Plan: 02 (complete)
+Status: Phase 30 Plan 02 complete (health endpoint), Plan 01 pending
+Last activity: 2026-03-08 -- Phase 30 Plan 02 complete (health endpoint with sqlite/redis/qdrant probes)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: 4min
-- Total execution time: 33min
+- Total execution time: 35min
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -47,6 +47,7 @@ Last activity: 2026-03-08 -- Phase 26 Plan 02 complete (normalizer wired into en
 | 29 | 01 | 4min | 2 | 18 |
 | 26 | 01 | 3min | 2 | 3 |
 | 26 | 02 | 2min | 2 | 2 |
+| 30 | 02 | 2min | 1 | 3 |
 
 ## Accumulated Context
 
@@ -101,6 +102,12 @@ Recent decisions affecting current work:
 - [26-02]: Bidirectional link dedup: check both src->dst and dst->src before inserting memoryLinks
 - [26-02]: embedEntities stored as parallel normalized copy in metadata -- contact resolution untouched
 
+### Decisions (Phase 30)
+
+- [30-02]: Lazy ioredis connection (lazyConnect: true) -- only probes on health check, not on startup
+- [30-02]: Promise.allSettled for concurrent health probing -- one slow service does not block others
+- [30-02]: Health endpoint always returns HTTP 200 -- reports status, never fails itself
+
 ### Pending Todos
 
 None yet.
@@ -116,6 +123,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-08T17:34:31Z
-Stopped at: Completed 26-02-PLAN.md
-Resume: /gsd:execute-phase 27-01
+Last session: 2026-03-08T17:46:00Z
+Stopped at: Completed 30-02-PLAN.md
+Resume: /gsd:execute-phase 30-01 (or continue to Phase 31)

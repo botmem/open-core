@@ -236,7 +236,7 @@
 - [ ] **DOCK-01**: Running `docker compose up` starts Redis + Qdrant with health checks; `--profile ollama` adds Ollama
 - [ ] **DOCK-02**: Developer can run `make dev` to start infrastructure + app with a single command
 - [x] **DOCK-03**: New developers can read `.env.example` to understand all required and optional environment variables
-- [ ] **DOCK-04**: `GET /api/health` returns connectivity status of Redis, Qdrant, and SQLite
+- [x] **DOCK-04**: `GET /api/health` returns connectivity status of Redis, Qdrant, and SQLite
 
 ### Build Optimization
 
@@ -271,7 +271,7 @@
 | DOCK-01 | Phase 31 | Pending |
 | DOCK-02 | Phase 31 | Pending |
 | DOCK-03 | Phase 29 | Complete |
-| DOCK-04 | Phase 30 | Pending |
+| DOCK-04 | Phase 30 | Complete |
 | BUILD-01 | Phase 32 | Pending |
 | BUILD-02 | Phase 33 | Pending |
 

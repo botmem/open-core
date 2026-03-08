@@ -438,7 +438,7 @@ Plans:
 
 Plans:
 - [ ] 30-01-PLAN.md -- Dev workflow overhaul: CJS exports, turbo watch, nest build --watch (DEV-01, DEV-02, DEV-03, DEV-04)
-- [ ] 30-02-PLAN.md -- Health endpoint with Redis/Qdrant/SQLite probes (DOCK-04)
+- [x] 30-02-PLAN.md -- Health endpoint with Redis/Qdrant/SQLite probes (DOCK-04) (completed 2026-03-08)
 
 ### Phase 31: Docker & Infrastructure
 **Goal**: Developer can start all required infrastructure with one command, with Ollama available as an opt-in profile, and a Makefile providing a simple command layer for common operations
