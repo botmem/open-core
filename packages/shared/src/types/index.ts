@@ -140,4 +140,5 @@ export interface User {
   email: string;
   name: string;
   onboarded: boolean;
+  createdAt?: string;
 }

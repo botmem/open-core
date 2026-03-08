@@ -133,7 +133,8 @@ export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
-  displayName: text('display_name'),
+  name: text('name').notNull(),
+  onboarded: integer('onboarded').notNull().default(0),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
@@ -142,6 +143,7 @@ export const refreshTokens = sqliteTable('refresh_tokens', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id),
   tokenHash: text('token_hash').notNull(),
+  family: text('family').notNull(),
   expiresAt: text('expires_at').notNull(),
   revokedAt: text('revoked_at'),
   createdAt: text('created_at').notNull(),

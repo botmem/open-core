@@ -36,7 +36,9 @@ async function bootstrap() {
     });
   }
 
+  const cookieParser = (await import('cookie-parser')).default;
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+  app.use(cookieParser());
   app.enableShutdownHooks();
   app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('api');
