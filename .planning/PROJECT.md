@@ -56,7 +56,19 @@ Every piece of personal communication and digital interaction is searchable, con
 - [ ] PostgreSQL dual-driver with RLS
 - [ ] Firebase auth for prod-core
 
-## Current Milestone: v2.0 Security, Auth & Encryption
+## Current Milestone: v3.0 Monorepo & Developer Experience
+
+**Goal:** Transform the hacked-together monorepo into a production-grade, plug-and-play development environment — proper tooling, Docker Compose with all services, build gates with tests, and no dev experience footguns like port conflicts.
+
+**Target features:**
+- Proper pnpm workspace + Turborepo configuration following latest best practices
+- Docker Compose that's truly plug-and-play (includes Ollama, Redis, Qdrant — one command to run)
+- Fix port conflict issues (file changes spawning competing instances)
+- Tests must pass before build succeeds (build pipeline gates)
+- Monorepo structure ready for productionization and commercialization
+- Consistent tsconfig, linting, and build configuration across all packages
+
+## Paused Milestone: v2.0 Security, Auth & Encryption (24% complete)
 
 **Goal:** Add user authentication, API keys, memory banks, encryption at rest, E2EE for prod-core, and PostgreSQL with RLS — transforming Botmem from a completely open system into a properly secured personal memory platform.
 
@@ -82,9 +94,9 @@ Every piece of personal communication and digital interaction is searchable, con
 - Fix entity misclassification (names classified as locations/organizations)
 - Backfill pipeline to re-enrich existing memories with corrected extraction
 
-## Queued Milestone: v3.0 Production Deployment & CI/CD
+## Queued Milestone: v3.1 Production Deployment & CI/CD
 
-**Goal:** Deploy Botmem to production with Docker/Caddy/CI-CD, OpenRouter inference abstraction, and automated deployment pipelines. (Deferred from old v2.0.)
+**Goal:** Deploy Botmem to production with Docker/Caddy/CI-CD, OpenRouter inference abstraction, and automated deployment pipelines. (Deferred from old v2.0, renumbered after v3.0 Monorepo.)
 
 ### Out of Scope
 
@@ -140,4 +152,4 @@ Every piece of personal communication and digital interaction is searchable, con
 | AES-256-GCM encryption at rest | Protect auth context and credentials in SQLite/Postgres | — Pending |
 
 ---
-*Last updated: 2026-03-08 after v2.1 milestone defined*
+*Last updated: 2026-03-08 after v3.0 Monorepo & Developer Experience milestone started*
