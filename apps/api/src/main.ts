@@ -42,7 +42,16 @@ async function bootstrap() {
   app.enableShutdownHooks();
   app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('api');
-  app.enableCors();
+
+  const config = app.get(ConfigService);
+  app.enableCors({
+    origin: config.frontendUrl.includes(',')
+      ? config.frontendUrl.split(',').map((s) => s.trim())
+      : config.frontendUrl,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   // Global exception filter: sends 5xx errors to PostHog
   const analyticsService = app.get(AnalyticsService);
@@ -71,7 +80,6 @@ async function bootstrap() {
     });
   }
 
-  const config = app.get(ConfigService);
   const port = config.port;
   await app.listen(port);
   console.log(`botmem running on http://localhost:${port}`);

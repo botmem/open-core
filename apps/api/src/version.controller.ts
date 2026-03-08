@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { Public } from './user-auth/decorators/public.decorator';
 
 const BUILD_TIME = new Date().toISOString();
 let BUILD_HASH = 'unknown';
@@ -9,6 +10,7 @@ try {
     .trim();
 } catch {}
 
+@Public()
 @Controller('version')
 export class VersionController {
   @Get()

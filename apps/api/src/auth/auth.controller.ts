@@ -2,7 +2,9 @@ import { Controller, Post, Get, Param, Body, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { ConfigService } from '../config/config.service';
+import { Public } from '../user-auth/decorators/public.decorator';
 
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(
