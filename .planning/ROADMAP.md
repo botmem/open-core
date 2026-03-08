@@ -8,6 +8,7 @@
 - v1.3 Test Coverage - Phase 7 (shipped 2026-03-08)
 - v1.4 Search Intelligence - Phases 8-10 (shipped 2026-03-08)
 - v2.0 Security, Auth & Encryption - Phases 16-24 (in progress)
+- v2.1 Data Quality & Pipeline Integrity - Phases 25-28 (queued)
 - v3.0 Production Deployment & CI/CD - (planned, deferred from old v2.0)
 
 ## Phases
@@ -146,7 +147,7 @@ Plans:
 - [x] **Phase 9: NLQ Parsing** - Temporal references via chrono-node, entity extraction, intent classification (completed 2026-03-08)
 - [ ] **Phase 10: Source Citations & Verification** - Deferred (CIT-01 moved to backlog)
 
-### Phase 8-10 details (collapsed — see phase directories for plans)
+### Phase 8-10 details (collapsed -- see phase directories for plans)
 
 Phase 8: Entity Type Taxonomy (2/2 plans complete)
 Phase 8.1: Contact Auto-Merge (2/2 plans complete)
@@ -180,6 +181,23 @@ Phase 10: Source Citations (deferred)
 - [ ] **Phase 22: PostgreSQL Dual-Driver** - Postgres schema, shared DB interface, conditional driver, FTS5->tsvector (DB-01 through DB-04)
 - [ ] **Phase 23: Row Level Security** - Postgres RLS policies for user data isolation (DB-05)
 - [ ] **Phase 24: Firebase Auth (Prod-Core)** - Firebase guard, React Firebase UI, AUTH_PROVIDER switch, social login (FBAUTH-01 through FBAUTH-04)
+
+## v2.1 Data Quality & Pipeline Integrity (Phases 25-28)
+
+**Milestone Goal:** Fix source type misclassification, tame entity extraction chaos, unify entity format, deduplicate entities, and backfill existing data -- so search, filtering, and the memory graph actually work correctly.
+
+**Phase Ordering Rationale:**
+- Source type fix first (Phase 25) because it is independent of entity work and delivers immediate search improvement
+- Entity format unification (Phase 26) before entity quality because the normalizer needs a consistent shape to work with
+- Entity quality improvements bundled with format (Phase 26) because both modify the same pipeline files and must precede backfill
+- Backfill (Phase 27) depends on the corrected pipeline from Phase 26 -- running backfill with the old pipeline would just reproduce bad data
+- Verification (Phase 28) depends on all prior phases completing -- it validates the full fix chain end-to-end
+
+**Summary:**
+- [ ] **Phase 25: Source Type Reclassification** - Fix photos connector, backfill SQLite + Qdrant, remove SOURCE_TYPE_ALIASES hack (SRC-01 through SRC-04)
+- [ ] **Phase 26: Entity Format & Quality** - Unified entity shape, improved extraction prompt, normalizer with dedup/clean/validate, entity cap (FMT-01 through FMT-03, ENT-01 through ENT-05)
+- [ ] **Phase 27: Data Backfill** - Re-enrich existing memories with corrected pipeline, resumable, filterable, real-time progress (BKF-01 through BKF-04)
+- [ ] **Phase 28: Verification** - End-to-end validation that search, graph, and NLQ produce correct results (VER-01 through VER-04)
 
 ## Phase Details (v2.0)
 
@@ -297,7 +315,7 @@ Plans:
 **Plans**: TBD
 
 <details>
-<summary>Old v2.0 Phases (11-15) — partially complete, restructured</summary>
+<summary>Old v2.0 Phases (11-15) -- partially complete, restructured</summary>
 
 Phase 11 (Repo & Infrastructure) is complete and stays as-is.
 Phases 12-15 (DB, Inference, Docker, CI/CD) are restructured:
@@ -314,10 +332,58 @@ Phases 12-15 (DB, Inference, Docker, CI/CD) are restructured:
 
 </details>
 
+## Phase Details (v2.1)
+
+### Phase 25: Source Type Reclassification
+**Goal**: Photo searches return actual photos and only photos -- the source type classification is correct at the connector level, backfilled in historical data, and the NLQ workaround hack is removed
+**Depends on**: Phase 24 (v2.0 complete)
+**Requirements**: SRC-01, SRC-02, SRC-03, SRC-04
+**Success Criteria** (what must be TRUE):
+  1. Running a photos-immich sync produces memories with `source_type: 'photo'` (not `'file'`)
+  2. Searching for "photos" or filtering by `source_type=photo` returns only photo memories -- no Slack file attachments mixed in
+  3. The `SOURCE_TYPE_ALIASES` mapping in NLQ parser and memory service is removed, and photo queries still work correctly using the native `photo` type
+  4. Qdrant vector payloads for existing photo memories show `source_type: 'photo'` after backfill
+**Plans**: TBD
+
+### Phase 26: Entity Format & Quality
+**Goal**: Entity extraction produces clean, correctly-typed, deduplicated entities in a single consistent format across the entire pipeline
+**Depends on**: Phase 25 (source types must be correct before entity re-extraction makes sense)
+**Requirements**: FMT-01, FMT-02, FMT-03, ENT-01, ENT-02, ENT-03, ENT-04, ENT-05
+**Success Criteria** (what must be TRUE):
+  1. Entities from both embed and enrich steps use the same `{type, value}` shape -- no format mismatches between pipeline stages
+  2. A newly synced email or message produces entities with only canonical types (PERSON, ORGANIZATION, LOCATION, DATE, EVENT, PRODUCT, CONCEPT, QUANTITY, LANGUAGE, OTHER) -- no hallucinated types like "GREETING" or "SCHEDULE"
+  3. Entity values do not contain empty strings, single characters, pronouns ("I", "you"), bare URLs, or generic terms ("hello", "thanks") -- the normalizer strips these
+  4. A single memory with duplicate mentions of the same entity (e.g., "John" mentioned 5 times) stores only one entity entry after dedup
+  5. No duplicate `memoryLinks` are created when re-processing a memory -- the existence check prevents insert errors
+**Plans**: TBD
+
+### Phase 27: Data Backfill
+**Goal**: All existing memories are re-enriched with the corrected entity extraction pipeline, with progress tracking and the ability to pause/resume
+**Depends on**: Phase 26 (corrected pipeline must be in place before re-processing data)
+**Requirements**: BKF-01, BKF-02, BKF-03, BKF-04
+**Success Criteria** (what must be TRUE):
+  1. Running the backfill job re-enriches existing memories with updated entity extraction (new prompt, normalizer, dedup)
+  2. Interrupting and restarting the backfill resumes from where it left off -- already-processed memories are skipped
+  3. Backfill progress (processed/total, current connector) is visible in the frontend via WebSocket updates
+  4. User can start a backfill filtered to a specific connector type (e.g., only re-enrich Gmail memories)
+**Plans**: TBD
+
+### Phase 28: Verification
+**Goal**: End-to-end confirmation that search, graph visualization, and NLQ queries produce correct, clean results after all data quality fixes
+**Depends on**: Phase 27 (all fixes and backfill must be complete)
+**Requirements**: VER-01, VER-02, VER-03, VER-04
+**Success Criteria** (what must be TRUE):
+  1. A fresh re-sync of a connector (e.g., Gmail) produces correct source types and clean entities without needing a separate backfill step
+  2. Searching for "photos" returns only actual photos from photos-immich -- zero Slack file attachments in results
+  3. The memory graph shows entities with correct canonical types, no duplicates within a memory, and no garbage nodes
+  4. NLQ queries like "show me photos from last week" use `source_type: 'photo'` directly (no alias resolution) and return correct results
+
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 9 -> 10 -> 11 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 9 -> 10 -> 11 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -342,3 +408,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 22. PostgreSQL Dual-Driver | v2.0 | 0/? | Not started | - |
 | 23. Row Level Security | v2.0 | 0/? | Not started | - |
 | 24. Firebase Auth (Prod-Core) | v2.0 | 0/? | Not started | - |
+| 25. Source Type Reclassification | v2.1 | 0/? | Not started | - |
+| 26. Entity Format & Quality | v2.1 | 0/? | Not started | - |
+| 27. Data Backfill | v2.1 | 0/? | Not started | - |
+| 28. Verification | v2.1 | 0/? | Not started | - |

@@ -121,7 +121,7 @@
 - [x] ENT-01, ENT-02, ENT-03 (Entity Classification)
 - [x] NLQ-01, NLQ-02, NLQ-03 (NLQ Parsing)
 - [x] PERF-01 (Search Performance)
-- [ ] CIT-01 (Source Citations — deferred)
+- [ ] CIT-01 (Source Citations -- deferred)
 
 ### v1.3 -- Test Coverage (Complete)
 
@@ -180,25 +180,44 @@
 |---------|--------|
 | Cross-memory entity dedup (global entity table) | Adds significant complexity; per-memory dedup is sufficient for v2.1 |
 | Entity linking to external knowledge bases | Overkill for personal memory system |
-| Upgrading Ollama model (qwen3:0.6b → larger) | Test improvements with current model first |
+| Upgrading Ollama model (qwen3:0.6b -> larger) | Test improvements with current model first |
 | rawEvents payload JSON mutation | Treat rawEvents as immutable audit log |
 
 ### v2.1 Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| SRC-01 | Phase 25 | Pending |
+| SRC-02 | Phase 25 | Pending |
+| SRC-03 | Phase 25 | Pending |
+| SRC-04 | Phase 25 | Pending |
+| FMT-01 | Phase 26 | Pending |
+| FMT-02 | Phase 26 | Pending |
+| FMT-03 | Phase 26 | Pending |
+| ENT-01 | Phase 26 | Pending |
+| ENT-02 | Phase 26 | Pending |
+| ENT-03 | Phase 26 | Pending |
+| ENT-04 | Phase 26 | Pending |
+| ENT-05 | Phase 26 | Pending |
+| BKF-01 | Phase 27 | Pending |
+| BKF-02 | Phase 27 | Pending |
+| BKF-03 | Phase 27 | Pending |
+| BKF-04 | Phase 27 | Pending |
+| VER-01 | Phase 28 | Pending |
+| VER-02 | Phase 28 | Pending |
+| VER-03 | Phase 28 | Pending |
+| VER-04 | Phase 28 | Pending |
 
 **v2.1 Coverage:**
 - v2.1 requirements: 18 total (SRC: 4, ENT: 5, FMT: 3, BKF: 4, VER: 4)
-- Mapped to phases: 0
-- Unmapped: 18 ⚠️
+- Mapped to phases: 18 (Phases 25-28)
+- Unmapped: 0
 
 ## Future Requirements
 
 Deferred to future releases. Tracked but not in current roadmap.
 
-### v3.0 — Production Deployment & CI/CD
+### v3.0 -- Production Deployment & CI/CD
 
 - **DEP-01**: Vultr VPS provisioning with Docker and swap
 - **DEP-02**: Multi-stage Dockerfile for API + web
@@ -230,4 +249,4 @@ Deferred to future releases. Tracked but not in current roadmap.
 
 ---
 *Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after v2.1 requirements defined*
+*Last updated: 2026-03-08 after v2.1 roadmap created*
