@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule } from './config/config.module';
@@ -19,11 +20,13 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { MailModule } from './mail/mail.module';
 import { UserAuthModule } from './user-auth/user-auth.module';
 import { VersionController } from './version.controller';
+import { HealthController } from './health.controller';
+import { JwtAuthGuard } from './user-auth/jwt-auth.guard';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
 @Module({
-  controllers: [VersionController],
+  controllers: [VersionController, HealthController],
   imports: [
     ...(isDev
       ? []
@@ -50,6 +53,12 @@ const isDev = process.env.NODE_ENV !== 'production';
     MeModule,
     MailModule,
     UserAuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}
