@@ -219,9 +219,9 @@
 
 ### Code Quality
 
-- [ ] **QUAL-01**: Developer can run ESLint across all packages with a single command and get consistent TypeScript linting
-- [ ] **QUAL-02**: All code is auto-formatted on save/commit with Prettier using consistent rules
-- [ ] **QUAL-03**: Developer can run typecheck across all packages as a standalone Turbo task
+- [x] **QUAL-01**: Developer can run ESLint across all packages with a single command and get consistent TypeScript linting
+- [x] **QUAL-02**: All code is auto-formatted on save/commit with Prettier using consistent rules
+- [x] **QUAL-03**: Developer can run typecheck across all packages as a standalone Turbo task
 - [ ] **QUAL-04**: Committing code automatically runs lint+format on staged files; pushing runs typecheck+tests on changed packages
 
 ### Dev Workflow
@@ -235,7 +235,7 @@
 
 - [ ] **DOCK-01**: Running `docker compose up` starts Redis + Qdrant with health checks; `--profile ollama` adds Ollama
 - [ ] **DOCK-02**: Developer can run `make dev` to start infrastructure + app with a single command
-- [ ] **DOCK-03**: New developers can read `.env.example` to understand all required and optional environment variables
+- [x] **DOCK-03**: New developers can read `.env.example` to understand all required and optional environment variables
 - [ ] **DOCK-04**: `GET /api/health` returns connectivity status of Redis, Qdrant, and SQLite
 
 ### Build Optimization
@@ -260,9 +260,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QUAL-01 | Phase 29 | Pending |
-| QUAL-02 | Phase 29 | Pending |
-| QUAL-03 | Phase 29 | Pending |
+| QUAL-01 | Phase 29 | Complete |
+| QUAL-02 | Phase 29 | Complete |
+| QUAL-03 | Phase 29 | Complete |
 | QUAL-04 | Phase 32 | Pending |
 | DEV-01 | Phase 30 | Pending |
 | DEV-02 | Phase 30 | Pending |
@@ -270,7 +270,7 @@
 | DEV-04 | Phase 30 | Pending |
 | DOCK-01 | Phase 31 | Pending |
 | DOCK-02 | Phase 31 | Pending |
-| DOCK-03 | Phase 31 | Pending |
+| DOCK-03 | Phase 29 | Complete |
 | DOCK-04 | Phase 30 | Pending |
 | BUILD-01 | Phase 32 | Pending |
 | BUILD-02 | Phase 33 | Pending |

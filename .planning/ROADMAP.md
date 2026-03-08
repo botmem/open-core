@@ -422,7 +422,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 29-01-PLAN.md -- ESLint 9, Prettier, typecheck, .env.example (QUAL-01, QUAL-02, QUAL-03, DOCK-03)
+- [x] 29-01-PLAN.md -- ESLint 9, Prettier, typecheck, .env.example (QUAL-01, QUAL-02, QUAL-03, DOCK-03)
 
 ### Phase 30: Dev Workflow Fix
 **Goal**: Developer can start the full dev environment with a single command and iterate on code changes across any package without port conflicts, restart storms, or manual pre-build steps
@@ -498,7 +498,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 26. Entity Format & Quality | v2.1 | 0/2 | Not started | - |
 | 27. Data Backfill | v2.1 | 0/? | Not started | - |
 | 28. Verification | v2.1 | 0/? | Not started | - |
-| 29. Foundation Config | v3.0 | 0/1 | Not started | - |
+| 29. Foundation Config | v3.0 | 1/1 | Complete | 2026-03-08 |
 | 30. Dev Workflow Fix | v3.0 | 0/? | Not started | - |
 | 31. Docker & Infrastructure | v3.0 | 0/? | Not started | - |
 | 32. Build Optimization | v3.0 | 0/? | Not started | - |

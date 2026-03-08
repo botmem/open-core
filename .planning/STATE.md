@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Monorepo & Developer Experience
-status: ready
+status: in-progress
 stopped_at: null
-last_updated: "2026-03-08T17:00:00.000Z"
-last_activity: 2026-03-08 -- Milestone v3.0 roadmap created (5 phases)
+last_updated: "2026-03-08T17:25:00.000Z"
+last_activity: 2026-03-08 -- Phase 29 Plan 01 complete (ESLint 9, Prettier, typecheck, .env.example)
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v3.0 Monorepo & Developer Experience -- Ready to plan Phase 29
+**Current focus:** v3.0 Monorepo & Developer Experience -- Phase 29 complete, ready for Phase 30
 
 ## Current Position
 
-Phase: 29 (Foundation Config) -- not yet planned
-Plan: —
-Status: Ready to plan
-Last activity: 2026-03-08 — Milestone v3.0 roadmap created (5 phases, 14 requirements)
+Phase: 29 (Foundation Config) -- complete
+Plan: 01 (complete)
+Status: Phase 29 complete, ready for Phase 30
+Last activity: 2026-03-08 -- Phase 29 Plan 01 complete (ESLint 9, Prettier, typecheck, .env.example)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 4min
-- Total execution time: 24min
+- Total execution time: 28min
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -45,6 +45,7 @@ Last activity: 2026-03-08 — Milestone v3.0 roadmap created (5 phases, 14 requi
 | 17 | 01 | 5min | 2 | 13 |
 | 25 | 01 | 3min | 2 | 4 |
 | 25 | 02 | 1min | 1 | 1 |
+| 29 | 01 | 4min | 2 | 18 |
 
 ## Accumulated Context
 
@@ -84,6 +85,13 @@ Recent decisions affecting current work:
 
 - [25-01]: Migration scripts use main().catch() pattern instead of top-level await for tsx CJS compatibility
 
+### Decisions (Phase 29)
+
+- [29-01]: Single root eslint.config.mjs -- no per-package ESLint configs (monorepo anti-pattern)
+- [29-01]: no-explicit-any as warn not error -- codebase uses any extensively
+- [29-01]: Web uses tsc --noEmit (not tsc -b --noEmit) to avoid TS6310 with referenced composite projects
+- [29-01]: APP_SECRET added to .env.example -- was in config.service.ts but missing from plan template
+
 ### Pending Todos
 
 None yet.
@@ -99,6 +107,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-08T17:00:00.000Z
-Stopped at: Milestone v3.0 roadmap created
-Resume: /gsd:plan-phase 29
+Last session: 2026-03-08T17:25:00.000Z
+Stopped at: Completed 29-01-PLAN.md
+Resume: /gsd:plan-phase 30
