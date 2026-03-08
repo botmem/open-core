@@ -461,7 +461,10 @@ Plans:
   1. TypeScript, Vitest, and Vite versions are specified once in `pnpm-workspace.yaml` catalogs and all package.json files reference them via `catalog:` protocol -- upgrading requires changing one line
   2. Committing code triggers a pre-commit hook that runs ESLint fix + Prettier on staged files -- badly formatted code cannot be committed
   3. Pushing code triggers a pre-push hook that runs typecheck and tests on changed packages -- type errors and test failures are caught before they reach the remote
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 32-01-PLAN.md -- pnpm catalogs + Husky git hooks (BUILD-01, QUAL-04)
 
 ### Phase 33: Production Docker
 **Goal**: The API can be built into an optimized production Docker image suitable for deployment
