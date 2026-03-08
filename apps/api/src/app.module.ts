@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { ConfigModule } from './config/config.module';
 import { DbModule } from './db/db.module';
 import { ConnectorsModule } from './connectors/connectors.module';
@@ -28,18 +29,20 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from './user-auth/jwt-auth.guard';
 
 const isDev = process.env.NODE_ENV !== 'production';
+const webDistPath = join(__dirname, '..', '..', 'web', 'dist');
+const serveStatic = !isDev && existsSync(webDistPath);
 
 @Module({
   controllers: [VersionController, HealthController],
   imports: [
-    ...(isDev
-      ? []
-      : [
+    ...(serveStatic
+      ? [
           ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', '..', 'web', 'dist'),
+            rootPath: webDistPath,
             exclude: ['/api/{*path}'],
           }),
-        ]),
+        ]
+      : []),
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 100 }]),
     AnalyticsModule,
     ConfigModule,
