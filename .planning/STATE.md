@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Search Intelligence
 status: executing
-stopped_at: Completed 09-01-PLAN.md
+stopped_at: Completed 09-02-PLAN.md
 last_updated: "2026-03-08T12:07:51.909Z"
-last_activity: 2026-03-08 -- Phase 9 Plan 01 complete (NLQ parser with chrono-node)
+last_activity: 2026-03-08 -- Phase 9 Plan 02 complete (NLQ pipeline integration)
 progress:
   total_phases: 16
   completed_phases: 10
   total_plans: 23
-  completed_plans: 22
-  percent: 96
+  completed_plans: 23
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 ## Current Position
 
 Phase: 9 of 15 (Temporal Reasoning)
-Plan: 1 of 2 complete
-Status: In Progress
-Last activity: 2026-03-08 -- Phase 9 Plan 01 complete (NLQ parser with chrono-node)
+Plan: 2 of 2 complete
+Status: Complete
+Last activity: 2026-03-08 -- Phase 9 Plan 02 complete (NLQ pipeline integration with temporal filtering)
 
-Progress: [██████████] 96%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [██████████] 96%
 | Phase 08.1 P02 | 2min | 2 tasks | 2 files |
 | Phase 11 P02 | 1min | 2 tasks | 1 files |
 | Phase 09 P01 | 3min | 1 tasks | 3 files |
+| Phase 09 P02 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase 08.1]: Safety-tiered auto-merge: non-person exact-name and sparse-to-rich are auto-merged, person-to-person preserved for manual review
 - [Phase 11]: Keep origin remote as personal repo, open-core remote for org
 - [Phase 09]: Custom chrono-node wrappers for 'last week' (Mon-Sun) and 'between X and Y' (combine results)
+- [Phase 09]: Browse intent boosts recency weight to 0.40; temporal fallback retries without date filter on zero results
 
 ### Pending Todos
 
@@ -102,5 +104,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-08T12:07:19.264Z
-Stopped at: Completed 09-01-PLAN.md
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None
