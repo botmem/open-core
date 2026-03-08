@@ -1,94 +1,138 @@
-# Requirements: Botmem v1.2 — PostHog Deep Analytics
+# Requirements: Botmem v2.0 — Production Deployment & Open-Core Split
 
 **Defined:** 2026-03-08
 **Core Value:** Every piece of personal communication is searchable, connected, and queryable — with factuality labeling so the user knows what's verified vs. hearsay.
 
-## v1.2 Requirements
+## v2.0 Requirements
 
-Requirements for this milestone. Each maps to roadmap phases.
+Requirements for production deployment and open-core split. Each maps to roadmap phases.
 
-### Session Replay
+### Repository & Organization
 
-- [x] **REPLAY-01**: PostHog session replay is enabled with privacy-safe defaults (mask all text inputs, mask sensitive CSS selectors for auth tokens/keys)
-- [x] **REPLAY-02**: Session recordings appear in PostHog Replay tab and can be played back
-- [x] **REPLAY-03**: Network request recording is enabled for API call debugging (with auth headers masked)
+- [ ] **REPO-01**: GitHub org `botmem` is created and configured
+- [ ] **REPO-02**: Open-core public repo is created with sanitized git history (no secrets)
+- [ ] **REPO-03**: Prod-core private repo is created with deployment configs and business docs
+- [ ] **REPO-04**: Git history is sanitized to remove all credentials, API keys, and secrets before public push
 
-### Heatmaps
+### Database
 
-- [x] **HEAT-01**: PostHog autocapture is configured to collect click and scroll data
-- [x] **HEAT-02**: Heatmap data is viewable in PostHog toolbar overlay on Botmem pages
-- [x] **HEAT-03**: Rageclicks (rapid repeated clicks) are captured as distinct events
+- [ ] **DB-01**: PostgreSQL schema file (`schema.pg.ts`) mirrors SQLite schema with identical logical structure
+- [ ] **DB-02**: Shared database interface abstracts over SQLite and PostgreSQL drivers (application code is dialect-agnostic)
+- [ ] **DB-03**: Conditional DbService initializes correct driver based on environment config (`DB_DRIVER=sqlite|postgres`)
+- [ ] **DB-04**: SQLite FTS5 is ported to PostgreSQL tsvector + GIN index for full-text search
+- [ ] **DB-05**: All raw SQLite-specific SQL (`json_extract`, `.get()`, `.prepare()`, `PRAGMA`) is abstracted behind the shared interface
 
-### Error Tracking
+### Inference
 
-- [x] **ERR-01**: Frontend JavaScript exceptions are automatically captured and sent to PostHog
-- [x] **ERR-02**: Errors appear in PostHog Error Tracking view with stack traces
-- [x] **ERR-03**: Backend unhandled exceptions are captured and sent to PostHog as server-side errors
+- [ ] **INF-01**: InferenceService interface abstracts embed, generate, and rerank operations
+- [ ] **INF-02**: OllamaProvider implements InferenceService using existing Ollama HTTP API
+- [ ] **INF-03**: OpenRouterProvider implements InferenceService using OpenAI-compatible API (`openai` SDK)
+- [ ] **INF-04**: Provider selection is controlled by environment config (`INFERENCE_PROVIDER=ollama|openrouter`)
+- [ ] **INF-05**: Scoring formula redistributes weights when reranker is unavailable (rerank weight → semantic + recency)
 
-### Web Analytics
+### Authentication
 
-- [x] **WEB-01**: PostHog web analytics dashboard shows page views, unique visitors, and session counts
-- [x] **WEB-02**: Navigation paths between pages are trackable in PostHog
-- [x] **WEB-03**: UTM parameters and referrer data are captured when present
+- [ ] **AUTH-01**: Firebase project is created under amroessams@gmail.com via gcloud CLI
+- [ ] **AUTH-02**: NestJS guard verifies Firebase ID tokens via `firebase-admin` SDK
+- [ ] **AUTH-03**: Auth guard is opt-in via `@RequireAuth()` decorator (not global — preserves OAuth callbacks, WebSocket, CLI access)
+- [ ] **AUTH-04**: Auth is disabled when Firebase config is absent (open-core runs without auth)
+- [ ] **AUTH-05**: React login/register UI with Firebase client SDK
 
-### Product Analytics
+### Deployment
 
-- [x] **PROD-01**: A PostHog dashboard exists with saved insights for key Botmem metrics (searches/day, syncs/day, memories created)
-- [x] **PROD-02**: A funnel insight tracks the connector setup flow: visit connectors → start auth → complete sync
-- [x] **PROD-03**: A retention insight measures how often the user returns to search memories
+- [ ] **DEP-01**: $12/mo Vultr VPS (2GB RAM) is provisioned with Docker, swap (2GB), and firewall rules
+- [ ] **DEP-02**: Multi-stage Dockerfile builds API + web into a single optimized image
+- [ ] **DEP-03**: `docker-compose.prod.yml` orchestrates API, PostgreSQL, Redis, Qdrant, and Caddy
+- [ ] **DEP-04**: Caddyfile configures reverse proxy with automatic Let's Encrypt SSL for botmem.xyz
+- [ ] **DEP-05**: Spaceship DNS A record points botmem.xyz (and www) to Vultr VPS IP
 
-### User Identity
+### CI/CD
 
-- [x] **ID-01**: PostHog identify() is called with a stable user identifier so sessions are linked across page reloads
-- [x] **ID-02**: User properties (connectors_count, memories_count) are set as person properties in PostHog for segmentation
+- [ ] **CICD-01**: GitHub Actions workflow for open-core repo: lint, test, build on push/PR
+- [ ] **CICD-02**: GitHub Actions workflow for prod-core repo: lint, test, build, deploy to Vultr on push to main
+- [ ] **CICD-03**: Deployment pipeline SSHs into VPS, pulls latest image, runs docker compose up
+
+### Website & Documentation
+
+- [ ] **SITE-01**: Landing page updated with open-core vs production differentiation (features comparison, self-host vs hosted)
+- [ ] **SITE-02**: Documentation updated with deployment guide, auth setup, OpenRouter config, and self-hosting instructions
 
 ## Previous Milestones (Completed)
 
+### v1.2 — PostHog Deep Analytics (Complete)
+
+- [x] REPLAY-01–03, HEAT-01–03, ERR-01–03, WEB-01–03, PROD-01–03, ID-01–02
+
 ### v1.1 — PostHog Analytics Activation (Complete)
 
-- [x] **CFG-01**: PostHog cloud API keys configured
-- [x] **CFG-02**: PostHog host URL configurable
-- [x] **VER-01–05**: All event types verified end-to-end
-- [x] **COV-01–02**: connector_setup and graph tracking events added
+- [x] CFG-01–02, VER-01–05, COV-01–02
+
+## Future Requirements
+
+Deferred to future releases. Tracked but not in current roadmap.
+
+### Monitoring & Operations
+
+- **OPS-01**: Uptime monitoring and alerting (e.g., UptimeRobot, Grafana)
+- **OPS-02**: Log aggregation from Docker containers
+- **OPS-03**: Automated PostgreSQL backup schedule (pg_dump cron)
+- **OPS-04**: Blue-green or rolling deployment strategy
+
+### Multi-tenancy
+
+- **MT-01**: Multiple user accounts with isolated data
+- **MT-02**: Admin dashboard for user management
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| PostHog self-hosting | 16GB RAM + ClickHouse/Kafka disproportionate for single-user |
-| Feature flags / A/B testing | No user base to split-test against yet |
-| Surveys | Single-user, no survey audience |
-| LLM analytics | Not using PostHog's LLM observability features |
-| Revenue tracking | No monetization |
-| Cohort analysis | Single-user system |
+| Kubernetes / container orchestration | Single VPS is sufficient at this scale |
+| Custom domain per user | Single-tenant production deployment |
+| Self-hosted Firebase alternative (Supabase Auth) | Firebase free tier is sufficient, Google ecosystem integration |
+| CDN / edge caching | Unnecessary for single-user production instance |
+| Multi-region deployment | Single VPS, single region |
+| Blue-green deployment | Overkill for solo developer; simple docker compose restart is fine for v2.0 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REPLAY-01 | Phase 5 | Complete |
-| REPLAY-02 | Phase 6 | Complete |
-| REPLAY-03 | Phase 5 | Complete |
-| HEAT-01 | Phase 5 | Complete |
-| HEAT-02 | Phase 6 | Complete |
-| HEAT-03 | Phase 5 | Complete |
-| ERR-01 | Phase 5 | Complete |
-| ERR-02 | Phase 6 | Complete |
-| ERR-03 | Phase 5 | Complete |
-| WEB-01 | Phase 6 | Complete |
-| WEB-02 | Phase 6 | Complete |
-| WEB-03 | Phase 5 | Complete |
-| PROD-01 | Phase 6 | Complete |
-| PROD-02 | Phase 6 | Complete |
-| PROD-03 | Phase 6 | Complete |
-| ID-01 | Phase 5 | Complete |
-| ID-02 | Phase 5 | Complete |
+| REPO-01 | — | Pending |
+| REPO-02 | — | Pending |
+| REPO-03 | — | Pending |
+| REPO-04 | — | Pending |
+| DB-01 | — | Pending |
+| DB-02 | — | Pending |
+| DB-03 | — | Pending |
+| DB-04 | — | Pending |
+| DB-05 | — | Pending |
+| INF-01 | — | Pending |
+| INF-02 | — | Pending |
+| INF-03 | — | Pending |
+| INF-04 | — | Pending |
+| INF-05 | — | Pending |
+| AUTH-01 | — | Pending |
+| AUTH-02 | — | Pending |
+| AUTH-03 | — | Pending |
+| AUTH-04 | — | Pending |
+| AUTH-05 | — | Pending |
+| DEP-01 | — | Pending |
+| DEP-02 | — | Pending |
+| DEP-03 | — | Pending |
+| DEP-04 | — | Pending |
+| DEP-05 | — | Pending |
+| CICD-01 | — | Pending |
+| CICD-02 | — | Pending |
+| CICD-03 | — | Pending |
+| SITE-01 | — | Pending |
+| SITE-02 | — | Pending |
 
 **Coverage:**
-- v1.2 requirements: 17 total
-- Mapped to phases: 17
-- Unmapped: 0
+- v2.0 requirements: 29 total
+- Mapped to phases: 0
+- Unmapped: 29
 
 ---
 *Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after roadmap creation*
+*Last updated: 2026-03-08 after initial definition*
