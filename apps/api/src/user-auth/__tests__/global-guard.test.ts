@@ -1,0 +1,61 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard } from '../jwt-auth.guard';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+
+describe('JwtAuthGuard (global)', () => {
+  let guard: JwtAuthGuard;
+  let reflector: Reflector;
+
+  beforeEach(() => {
+    reflector = new Reflector();
+    guard = new JwtAuthGuard(reflector);
+  });
+
+  function mockContext(isPublic: boolean): ExecutionContext {
+    const handler = () => {};
+    const cls = class {};
+    vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(isPublic);
+    return {
+      getHandler: () => handler,
+      getClass: () => cls,
+      switchToHttp: () => ({
+        getRequest: () => ({ headers: {} }),
+        getResponse: () => ({}),
+        getNext: () => () => {},
+      }),
+      getType: () => 'http',
+      getArgs: () => [],
+      getArgByIndex: () => null,
+      switchToRpc: () => ({} as any),
+      switchToWs: () => ({} as any),
+    } as unknown as ExecutionContext;
+  }
+
+  it('should allow access to @Public() decorated routes', () => {
+    const ctx = mockContext(true);
+    const result = guard.canActivate(ctx);
+    expect(result).toBe(true);
+  });
+
+  it('should check IS_PUBLIC_KEY metadata', () => {
+    const ctx = mockContext(true);
+    guard.canActivate(ctx);
+    expect(reflector.getAllAndOverride).toHaveBeenCalledWith(IS_PUBLIC_KEY, [
+      ctx.getHandler(),
+      ctx.getClass(),
+    ]);
+  });
+
+  it('should delegate to passport for non-public routes', async () => {
+    const ctx = mockContext(false);
+    // super.canActivate returns a Promise that rejects because there's
+    // no passport strategy registered in the test context.
+    // This confirms the guard IS delegating to passport for auth.
+    const result = guard.canActivate(ctx);
+    await expect(Promise.resolve(result)).rejects.toThrow(
+      'Unknown authentication strategy "jwt"',
+    );
+  });
+});
