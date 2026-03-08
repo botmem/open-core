@@ -190,7 +190,11 @@ Plans:
   2. Searching "where did I go in January" returns location-type memories filtered to January of the current (or most recent) year
   3. Query intent classification distinguishes recall ("what did John say about the project"), browse ("show me recent photos"), and find ("Sarah's phone number") -- observable via the parsed query structure in API response
   4. Search with NLQ enhancements completes in under 500ms measured at the API response level -- no LLM calls occur during search request handling
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 09-01-PLAN.md -- NLQ parser module with TDD: chrono-node temporal parsing, intent classification, source type detection (NLQ-01, NLQ-03, PERF-01)
+- [ ] 09-02-PLAN.md -- Search pipeline integration: Qdrant temporal filter, browse weight adjustment, temporal fallback, CLI + frontend parse display (NLQ-01, NLQ-02, NLQ-03, PERF-01)
 
 ### Phase 10: Source Citations & Verification
 **Goal**: Search results carry source citation metadata suitable for AI assistant drill-down, and all v1.4 features are validated with LLM-assisted quality testing against real data
@@ -288,7 +292,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 7. Test Infrastructure Fixes | v1.3 | 2/2 | Complete | 2026-03-08 |
 | 8. Entity Type Taxonomy | v1.4 | 2/2 | Complete | 2026-03-08 |
 | 8.1 Contact Auto-Merge | 2/2 | Complete   | 2026-03-08 | - |
-| 9. NLQ Parsing | v1.4 | 0/? | Not started | - |
+| 9. NLQ Parsing | v1.4 | 0/2 | Not started | - |
 | 10. Source Citations & Verification | v1.4 | 0/? | Not started | - |
 | 11. Repo & Infrastructure | v2.0 | 1/3 | In Progress | - |
 | 12. PostgreSQL Dual-Database | v2.0 | 0/? | Not started | - |
