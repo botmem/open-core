@@ -63,53 +63,54 @@
 
 ### v2.0 Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| OAuth social login on open-core | Firebase handles social login for prod-core only |
-| Write-capable API keys | Read-only is sufficient for agent/CLI use; writes require full auth |
-| Multi-tenancy admin dashboard | Single-user focus; admin features deferred |
-| Docker/Caddy/CI-CD deployment | Deferred to v3.0 |
-| OpenRouter inference abstraction | Deferred to v3.0 |
-| Rate limiting | Can be added later without architectural changes |
-| Key escrow / recovery | Zero-knowledge design: lost password = lost data (by design) |
+| Feature                          | Reason                                                              |
+| -------------------------------- | ------------------------------------------------------------------- |
+| OAuth social login on open-core  | Firebase handles social login for prod-core only                    |
+| Write-capable API keys           | Read-only is sufficient for agent/CLI use; writes require full auth |
+| Multi-tenancy admin dashboard    | Single-user focus; admin features deferred                          |
+| Docker/Caddy/CI-CD deployment    | Deferred to v3.0                                                    |
+| OpenRouter inference abstraction | Deferred to v3.0                                                    |
+| Rate limiting                    | Can be added later without architectural changes                    |
+| Key escrow / recovery            | Zero-knowledge design: lost password = lost data (by design)        |
 
 ### v2.0 Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| AUTH-01 | Phase 16 | Complete |
-| AUTH-02 | Phase 16 | Complete |
-| AUTH-03 | Phase 16 | Complete |
-| AUTH-04 | Phase 16 | Complete |
-| AUTH-05 | Phase 16 | Complete |
-| SEC-01 | Phase 17 | Complete |
-| SEC-02 | Phase 17 | Complete |
-| KEY-01 | Phase 18 | Pending |
-| KEY-02 | Phase 18 | Pending |
-| KEY-03 | Phase 18 | Pending |
-| KEY-04 | Phase 18 | Pending |
-| KEY-05 | Phase 18 | Pending |
-| BANK-01 | Phase 19 | Pending |
-| BANK-02 | Phase 19 | Pending |
-| BANK-03 | Phase 19 | Pending |
-| BANK-04 | Phase 19 | Pending |
-| ENC-01 | Phase 20 | Pending |
-| ENC-02 | Phase 20 | Pending |
-| E2EE-01 | Phase 21 | Pending |
-| E2EE-02 | Phase 21 | Pending |
-| E2EE-03 | Phase 21 | Pending |
-| E2EE-04 | Phase 21 | Pending |
-| DB-01 | Phase 22 | Pending |
-| DB-02 | Phase 22 | Pending |
-| DB-03 | Phase 22 | Pending |
-| DB-04 | Phase 22 | Pending |
-| DB-05 | Phase 23 | Pending |
-| FBAUTH-01 | Phase 24 | Pending |
-| FBAUTH-02 | Phase 24 | Pending |
-| FBAUTH-03 | Phase 24 | Pending |
-| FBAUTH-04 | Phase 24 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| AUTH-01     | Phase 16 | Complete |
+| AUTH-02     | Phase 16 | Complete |
+| AUTH-03     | Phase 16 | Complete |
+| AUTH-04     | Phase 16 | Complete |
+| AUTH-05     | Phase 16 | Complete |
+| SEC-01      | Phase 17 | Complete |
+| SEC-02      | Phase 17 | Complete |
+| KEY-01      | Phase 18 | Pending  |
+| KEY-02      | Phase 18 | Pending  |
+| KEY-03      | Phase 18 | Pending  |
+| KEY-04      | Phase 18 | Pending  |
+| KEY-05      | Phase 18 | Pending  |
+| BANK-01     | Phase 19 | Pending  |
+| BANK-02     | Phase 19 | Pending  |
+| BANK-03     | Phase 19 | Pending  |
+| BANK-04     | Phase 19 | Pending  |
+| ENC-01      | Phase 20 | Pending  |
+| ENC-02      | Phase 20 | Pending  |
+| E2EE-01     | Phase 21 | Pending  |
+| E2EE-02     | Phase 21 | Pending  |
+| E2EE-03     | Phase 21 | Pending  |
+| E2EE-04     | Phase 21 | Pending  |
+| DB-01       | Phase 22 | Pending  |
+| DB-02       | Phase 22 | Pending  |
+| DB-03       | Phase 22 | Pending  |
+| DB-04       | Phase 22 | Pending  |
+| DB-05       | Phase 23 | Pending  |
+| FBAUTH-01   | Phase 24 | Pending  |
+| FBAUTH-02   | Phase 24 | Pending  |
+| FBAUTH-03   | Phase 24 | Pending  |
+| FBAUTH-04   | Phase 24 | Pending  |
 
 **v2.0 Coverage:**
+
 - v2.0 requirements: 30 total (AUTH: 5, FBAUTH: 4, SEC: 2, KEY: 5, BANK: 4, ENC: 2, E2EE: 4, DB: 5)
 - Mapped to phases: 30 (Phases 16-24, skipping FBAUTH to end)
 - Unmapped: 0
@@ -176,39 +177,40 @@
 
 ### v2.1 Out of Scope
 
-| Feature | Reason |
-|---------|--------|
+| Feature                                         | Reason                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
 | Cross-memory entity dedup (global entity table) | Adds significant complexity; per-memory dedup is sufficient for v2.1 |
-| Entity linking to external knowledge bases | Overkill for personal memory system |
-| Upgrading Ollama model (qwen3:0.6b -> larger) | Test improvements with current model first |
-| rawEvents payload JSON mutation | Treat rawEvents as immutable audit log |
+| Entity linking to external knowledge bases      | Overkill for personal memory system                                  |
+| Upgrading Ollama model (qwen3:0.6b -> larger)   | Test improvements with current model first                           |
+| rawEvents payload JSON mutation                 | Treat rawEvents as immutable audit log                               |
 
 ### v2.1 Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| SRC-01 | Phase 25 | Complete |
-| SRC-02 | Phase 25 | Complete |
-| SRC-03 | Phase 25 | Complete |
-| SRC-04 | Phase 25 | Complete |
-| FMT-01 | Phase 26 | Complete |
-| FMT-02 | Phase 26 | Complete |
-| FMT-03 | Phase 26 | Complete |
-| ENT-01 | Phase 26 | Complete |
-| ENT-02 | Phase 26 | Complete |
-| ENT-03 | Phase 26 | Complete |
-| ENT-04 | Phase 26 | Complete |
-| ENT-05 | Phase 26 | Complete |
-| BKF-01 | Phase 27 | Pending |
-| BKF-02 | Phase 27 | Pending |
-| BKF-03 | Phase 27 | Pending |
-| BKF-04 | Phase 27 | Pending |
-| VER-01 | Phase 28 | Pending |
-| VER-02 | Phase 28 | Pending |
-| VER-03 | Phase 28 | Pending |
-| VER-04 | Phase 28 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| SRC-01      | Phase 25 | Complete |
+| SRC-02      | Phase 25 | Complete |
+| SRC-03      | Phase 25 | Complete |
+| SRC-04      | Phase 25 | Complete |
+| FMT-01      | Phase 26 | Complete |
+| FMT-02      | Phase 26 | Complete |
+| FMT-03      | Phase 26 | Complete |
+| ENT-01      | Phase 26 | Complete |
+| ENT-02      | Phase 26 | Complete |
+| ENT-03      | Phase 26 | Complete |
+| ENT-04      | Phase 26 | Complete |
+| ENT-05      | Phase 26 | Complete |
+| BKF-01      | Phase 27 | Pending  |
+| BKF-02      | Phase 27 | Pending  |
+| BKF-03      | Phase 27 | Pending  |
+| BKF-04      | Phase 27 | Pending  |
+| VER-01      | Phase 28 | Pending  |
+| VER-02      | Phase 28 | Pending  |
+| VER-03      | Phase 28 | Pending  |
+| VER-04      | Phase 28 | Pending  |
 
 **v2.1 Coverage:**
+
 - v2.1 requirements: 18 total (SRC: 4, ENT: 5, FMT: 3, BKF: 4, VER: 4)
 - Mapped to phases: 18 (Phases 25-28)
 - Unmapped: 0
@@ -222,7 +224,7 @@
 - [x] **QUAL-01**: Developer can run ESLint across all packages with a single command and get consistent TypeScript linting
 - [x] **QUAL-02**: All code is auto-formatted on save/commit with Prettier using consistent rules
 - [x] **QUAL-03**: Developer can run typecheck across all packages as a standalone Turbo task
-- [ ] **QUAL-04**: Committing code automatically runs lint+format on staged files; pushing runs typecheck+tests on changed packages
+- [x] **QUAL-04**: Committing code automatically runs lint+format on staged files; pushing runs typecheck+tests on changed packages
 
 ### Dev Workflow
 
@@ -240,42 +242,43 @@
 
 ### Build Optimization
 
-- [ ] **BUILD-01**: TypeScript, Vitest, and Vite versions are defined once in pnpm catalogs, referenced everywhere
+- [x] **BUILD-01**: TypeScript, Vitest, and Vite versions are defined once in pnpm catalogs, referenced everywhere
 - [ ] **BUILD-02**: Production Docker image uses multi-stage build with turbo prune for minimal image size
 
 ### v3.0 Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| pnpm 10 upgrade | Breaking changes (no hoisting, lifecycle script restrictions) — risk outweighs benefit |
-| Nx migration | Turbo is sufficient, already in use, lower migration cost |
-| Biome (ESLint replacement) | ESLint ecosystem is larger, typescript-eslint is mature, Biome still stabilizing |
-| TypeScript project references | Maintenance burden exceeds compile-time benefit at <15 packages |
-| Shared config packages | Overengineered for single-developer monorepo — root configs sufficient |
-| Changesets / version management | Not publishing to npm, no external consumers |
-| commitlint / conventional commits | Nice-to-have but adds friction without team coordination need |
-| CJS → ESM migration for API | NestJS 11 does not officially support ESM (issue #13319). High risk, zero user value |
+| Feature                           | Reason                                                                                 |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| pnpm 10 upgrade                   | Breaking changes (no hoisting, lifecycle script restrictions) — risk outweighs benefit |
+| Nx migration                      | Turbo is sufficient, already in use, lower migration cost                              |
+| Biome (ESLint replacement)        | ESLint ecosystem is larger, typescript-eslint is mature, Biome still stabilizing       |
+| TypeScript project references     | Maintenance burden exceeds compile-time benefit at <15 packages                        |
+| Shared config packages            | Overengineered for single-developer monorepo — root configs sufficient                 |
+| Changesets / version management   | Not publishing to npm, no external consumers                                           |
+| commitlint / conventional commits | Nice-to-have but adds friction without team coordination need                          |
+| CJS → ESM migration for API       | NestJS 11 does not officially support ESM (issue #13319). High risk, zero user value   |
 
 ### v3.0 Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| QUAL-01 | Phase 29 | Complete |
-| QUAL-02 | Phase 29 | Complete |
-| QUAL-03 | Phase 29 | Complete |
-| QUAL-04 | Phase 32 | Pending |
-| DEV-01 | Phase 30 | Complete |
-| DEV-02 | Phase 30 | Complete |
-| DEV-03 | Phase 30 | Complete |
-| DEV-04 | Phase 30 | Complete |
-| DOCK-01 | Phase 31 | Complete |
-| DOCK-02 | Phase 31 | Complete |
-| DOCK-03 | Phase 29 | Complete |
-| DOCK-04 | Phase 30 | Complete |
-| BUILD-01 | Phase 32 | Pending |
-| BUILD-02 | Phase 33 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| QUAL-01     | Phase 29 | Complete |
+| QUAL-02     | Phase 29 | Complete |
+| QUAL-03     | Phase 29 | Complete |
+| QUAL-04     | Phase 32 | Complete |
+| DEV-01      | Phase 30 | Complete |
+| DEV-02      | Phase 30 | Complete |
+| DEV-03      | Phase 30 | Complete |
+| DEV-04      | Phase 30 | Complete |
+| DOCK-01     | Phase 31 | Complete |
+| DOCK-02     | Phase 31 | Complete |
+| DOCK-03     | Phase 29 | Complete |
+| DOCK-04     | Phase 30 | Complete |
+| BUILD-01    | Phase 32 | Complete |
+| BUILD-02    | Phase 33 | Pending  |
 
 **v3.0 Coverage:**
+
 - v3.0 requirements: 14 total (QUAL: 4, DEV: 4, DOCK: 4, BUILD: 2)
 - Mapped to phases: 14 (Phases 29-33)
 - Unmapped: 0 ✓
@@ -306,14 +309,15 @@ Deferred to future releases. Tracked but not in current roadmap.
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Kubernetes / container orchestration | Single VPS is sufficient at this scale |
-| Custom domain per user | Single-tenant production deployment |
-| CDN / edge caching | Unnecessary for single-user production instance |
-| Multi-region deployment | Single VPS, single region |
-| Key escrow / password recovery | Zero-knowledge E2EE by design |
+| Feature                              | Reason                                          |
+| ------------------------------------ | ----------------------------------------------- |
+| Kubernetes / container orchestration | Single VPS is sufficient at this scale          |
+| Custom domain per user               | Single-tenant production deployment             |
+| CDN / edge caching                   | Unnecessary for single-user production instance |
+| Multi-region deployment              | Single VPS, single region                       |
+| Key escrow / password recovery       | Zero-knowledge E2EE by design                   |
 
 ---
-*Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after v2.1 roadmap created*
+
+_Requirements defined: 2026-03-08_
+_Last updated: 2026-03-08 after v2.1 roadmap created_

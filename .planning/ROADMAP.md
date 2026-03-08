@@ -243,7 +243,7 @@ Phase 10: Source Citations (deferred)
 - [x] **Phase 29: Foundation Config** - ESLint 9, Prettier, typecheck task, .env.example documentation (QUAL-01, QUAL-02, QUAL-03, DOCK-03) (completed 2026-03-08)
 - [x] **Phase 30: Dev Workflow Fix** - Replace nodemon, turbo watch, proper exports, health endpoint (DEV-01, DEV-02, DEV-03, DEV-04, DOCK-04) (completed 2026-03-08)
 - [x] **Phase 31: Docker & Infrastructure** - Compose profiles, Makefile, health checks on all services (DOCK-01, DOCK-02) (completed 2026-03-08)
-- [ ] **Phase 32: Build Optimization** - pnpm catalogs, Husky + lint-staged pre-commit/pre-push hooks (BUILD-01, QUAL-04)
+- [x] **Phase 32: Build Optimization** - pnpm catalogs, Husky + lint-staged pre-commit/pre-push hooks (BUILD-01, QUAL-04) (completed 2026-03-08)
 - [ ] **Phase 33: Production Docker** - Multi-stage build with turbo prune for minimal image size (BUILD-02)
 
 ## Phase Details (v2.0)
@@ -537,7 +537,7 @@ Plans:
 
 Plans:
 
-- [ ] 32-01-PLAN.md -- pnpm catalogs + Husky git hooks (BUILD-01, QUAL-04)
+- [x] 32-01-PLAN.md -- pnpm catalogs + Husky git hooks (BUILD-01, QUAL-04)
 
 ### Phase 33: Production Docker
 
@@ -586,7 +586,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 29. Foundation Config            | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
 | 30. Dev Workflow Fix             | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
 | 31. Docker & Infrastructure      | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
-| 32. Build Optimization           | v3.0      | 0/?            | Not started | -          |
+| 32. Build Optimization           | v3.0      | 1/1            | Complete    | 2026-03-08 |
 | 33. Production Docker            | v3.0      | 0/?            | Not started | -          |
 | 34. NestJS Best Practices        | v3.0      | 1/3            | In progress | -          |
 

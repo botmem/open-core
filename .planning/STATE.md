@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: in-progress
-stopped_at: Completed 34-01-PLAN.md
-last_updated: '2026-03-08T19:31:30Z'
-last_activity: 2026-03-08 -- Phase 34 Plan 01 complete (input validation + rate limiting)
+stopped_at: Completed 32-01-PLAN.md
+last_updated: '2026-03-08T19:34:00Z'
+last_activity: 2026-03-08 -- Phase 32 Plan 01 complete (pnpm catalogs + Husky git hooks)
 progress:
   total_phases: 27
-  completed_phases: 16
+  completed_phases: 17
   total_plans: 34
-  completed_plans: 32
+  completed_plans: 33
 ---
 
 # Project State
@@ -20,22 +20,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v3.0 NestJS Best Practices Maturation -- Phase 34 Plan 01 complete
+**Current focus:** v3.0 Monorepo & Developer Experience -- Phase 32 complete
 
 ## Current Position
 
-Phase: 34 (NestJS Best Practices Maturation)
-Plan: 01 (complete) -- Input Validation & Rate Limiting
-Status: Phase 34 Plan 01 complete, ready for Plan 02 (Structured Logging) or Plan 03 (Error Handling)
-Last activity: 2026-03-08 -- Phase 34 Plan 01 complete (input validation + rate limiting)
+Phase: 32 (Build Optimization) -- complete
+Plan: 01 (complete) -- pnpm catalogs + Husky git hooks
+Status: Phase 32 complete, ready for Phase 33 (Production Docker)
+Last activity: 2026-03-08 -- Phase 32 Plan 01 complete (pnpm catalogs + Husky git hooks)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 4min
-- Total execution time: 48min
+- Total execution time: 51min
 
 | Phase | Plan | Duration | Tasks | Files |
 | ----- | ---- | -------- | ----- | ----- |
@@ -52,6 +52,7 @@ Last activity: 2026-03-08 -- Phase 34 Plan 01 complete (input validation + rate 
 | 30    | 01   | 5min     | 2     | 27    |
 | 31    | 01   | 2min     | 2     | 2     |
 | 34    | 01   | 6min     | 2     | 29    |
+| 32    | 01   | 3min     | 2     | 14    |
 
 ## Accumulated Context
 
@@ -128,6 +129,12 @@ Recent decisions affecting current work:
 - [34-01]: Single default throttle tier (100/min) with per-route overrides for auth and AI endpoints
 - [34-01]: UpdateAccountDto uses SyncSchedule type from @botmem/shared for compile-time type safety
 
+### Decisions (Phase 32)
+
+- [32-01]: pnpm catalog for typescript, vitest, vite, @vitest/coverage-v8 -- four deps centralized
+- [32-01]: Pre-push hook uses turbo filter to only check changed packages, not full monorepo
+- [32-01]: lint-staged runs eslint --fix then prettier --write on .ts/.tsx files
+
 ### Pending Todos
 
 None yet.
@@ -143,6 +150,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-08T19:31:30Z
-Stopped at: Completed 34-01-PLAN.md
-Resume: /gsd:execute-phase 34-02
+Last session: 2026-03-08T19:34:00Z
+Stopped at: Completed 32-01-PLAN.md
+Resume: /gsd:execute-phase 33-01
