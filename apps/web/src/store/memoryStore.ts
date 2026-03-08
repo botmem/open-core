@@ -314,9 +314,7 @@ export const useMemoryStore = create<MemoryState>((set, get) => ({
       if (msg.event === 'graph:delta') {
         get().mergeGraphDelta(msg.data);
       }
-      if (msg.event === 'dashboard:stats') {
-        set({ memoryStats: msg.data as MemoryStats });
-      }
+      // dashboard:stats via WS removed — stats are user-scoped, fetched via REST only
     });
 
     // Fetch initial stats

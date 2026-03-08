@@ -3,8 +3,8 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { ConfigService } from '../config/config.service';
 import { Public } from '../user-auth/decorators/public.decorator';
+import { CurrentUser } from '../user-auth/decorators/current-user.decorator';
 
-@Public()
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -20,12 +20,14 @@ export class AuthController {
 
   @Post(':type/initiate')
   async initiate(
+    @CurrentUser() user: { id: string },
     @Param('type') type: string,
     @Body() body: { config: Record<string, unknown> },
   ) {
-    return this.authService.initiate(type, body.config || {});
+    return this.authService.initiate(type, body.config || {}, user.id);
   }
 
+  @Public()
   @Get(':type/callback')
   async callback(
     @Param('type') type: string,
@@ -41,9 +43,10 @@ export class AuthController {
 
   @Post(':type/complete')
   async complete(
+    @CurrentUser() user: { id: string },
     @Param('type') type: string,
     @Body() body: { accountId?: string; params: Record<string, unknown> },
   ) {
-    return this.authService.complete(type, body);
+    return this.authService.complete(type, body, user.id);
   }
 }

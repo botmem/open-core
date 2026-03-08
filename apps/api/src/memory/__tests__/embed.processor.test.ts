@@ -4,6 +4,7 @@ import { OllamaService } from '../ollama.service';
 import { QdrantService } from '../qdrant.service';
 import { createTestDb } from '../../__tests__/helpers/db.helper';
 import { rawEvents, accounts, memories } from '../../db/schema';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { eq } from 'drizzle-orm';
 
 function createMockOllama(): OllamaService {
@@ -35,7 +36,7 @@ function createMockQueue() {
 }
 
 function createMockEvents() {
-  return { emitToChannel: vi.fn() };
+  return { emitToChannel: vi.fn(), emitDebounced: vi.fn() };
 }
 
 function createMockLogsService() {
@@ -102,10 +103,23 @@ describe('EmbedProcessor', () => {
     events = createMockEvents();
     logsService = createMockLogsService();
 
+    const memoryService = {
+      getStats: vi.fn().mockResolvedValue({ total: 0 }),
+      buildGraphDelta: vi.fn().mockResolvedValue(null),
+    };
+
+    const cryptoService = {
+      encrypt: vi.fn().mockImplementation((v: string) => v),
+      decrypt: vi.fn().mockImplementation((v: string) => v),
+      encryptMemoryFields: vi.fn().mockImplementation((f: any) => f),
+      decryptMemoryFields: vi.fn().mockImplementation((m: any) => m),
+    };
+
     processor = new EmbedProcessor(
       { db } as any,
       ollama,
       qdrant,
+      memoryService as any,
       createMockConnectorsService() as any,
       createMockAccountsService() as any,
       contactsService as any,
@@ -115,6 +129,7 @@ describe('EmbedProcessor', () => {
       createMockSettingsService() as any,
       createMockPluginRegistry() as any,
       { capture: vi.fn() } as any,
+      cryptoService as any,
       enrichQueue as any,
     );
 

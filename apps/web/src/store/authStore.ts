@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '@botmem/shared';
-
 interface AuthState {
   user: User | null;
   accessToken: string | null;
