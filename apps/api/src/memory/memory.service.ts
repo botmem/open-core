@@ -7,12 +7,15 @@ import { QdrantService, ScoredPoint } from './qdrant.service';
 import { ConnectorsService } from '../connectors/connectors.service';
 import { PluginRegistry } from '../plugins/plugin-registry';
 import { memories, memoryLinks, memoryContacts, contacts, contactIdentifiers, accounts, settings } from '../db/schema';
+import { parseNlq } from './nlq-parser';
 
 interface SearchFilters {
   sourceType?: string;
   connectorType?: string;
   contactId?: string;
   factualityLabel?: string;
+  from?: string;
+  to?: string;
 }
 
 /** Strip accents/diacritics for fuzzy matching (amélie → amelie) */
@@ -50,10 +53,19 @@ export interface ResolvedEntities {
   topicMatchCount: number;
 }
 
+export interface ParsedQuery {
+  temporal: { from: string; to: string } | null;
+  temporalFallback?: boolean;
+  entities: { id: string; displayName: string }[];
+  intent: 'recall' | 'browse' | 'find';
+  cleanQuery: string;
+}
+
 export interface SearchResponse {
   items: SearchResult[];
   fallback: boolean;
   resolvedEntities?: ResolvedEntities;
+  parsed?: ParsedQuery;
 }
 
 /** Check if candidate words match as whole-word boundaries in a contact name.
@@ -176,17 +188,41 @@ export class MemoryService {
   async search(query: string, filters?: SearchFilters, limit = 20, rerank = false): Promise<SearchResponse> {
     if (!query.trim()) return { items: [], fallback: false };
 
+    // --- NLQ parsing (pure, synchronous) ---
+    const nlq = parseNlq(query);
+    const effectiveFilters: SearchFilters = { ...filters };
+
+    // Apply temporal filters from NLQ (only if caller didn't provide explicit from/to)
+    if (nlq.temporal && !filters?.from && !filters?.to) {
+      effectiveFilters.from = nlq.temporal.from;
+      effectiveFilters.to = nlq.temporal.to;
+    }
+
+    // Apply source type hint from NLQ (only if caller didn't provide explicit sourceType)
+    if (nlq.sourceTypeHint && !filters?.sourceType) {
+      effectiveFilters.sourceType = nlq.sourceTypeHint;
+    }
+
+    // Apply intent-based limit: find intent caps at 5
+    let effectiveLimit = limit;
+    if (nlq.intent === 'find') {
+      effectiveLimit = Math.min(limit, 5);
+    }
+
+    // Use clean query for embeddings (stripped of temporal tokens)
+    const embeddingQuery = nlq.cleanQuery;
+
     const db = this.dbService.db;
 
     // If filtering by contactId directly, skip hybrid and just fetch that contact's memories
-    if (filters?.contactId) {
-      const vector = await this.ollama.embed(query);
-      const qdrantFilter = filters ? this.buildQdrantFilter(filters) : undefined;
-      const qdrantResults = await this.qdrant.search(vector, limit * 3, qdrantFilter);
+    if (effectiveFilters.contactId) {
+      const vector = await this.ollama.embed(embeddingQuery);
+      const qdrantFilter = this.buildQdrantFilter(effectiveFilters);
+      const qdrantResults = await this.qdrant.search(vector, effectiveLimit * 3, qdrantFilter);
       const linkedMemoryIds = new Set(
         (await db.select({ memoryId: memoryContacts.memoryId })
           .from(memoryContacts)
-          .where(eq(memoryContacts.contactId, filters.contactId))
+          .where(eq(memoryContacts.contactId, effectiveFilters.contactId!))
         ).map((r) => r.memoryId),
       );
       const results: SearchResult[] = [];
@@ -194,16 +230,25 @@ export class MemoryService {
         if (!linkedMemoryIds.has(point.id)) continue;
         const row = await this.fetchMemoryRow(point.id);
         if (!row) continue;
-        const { score, weights } = this.computeWeights(point.score, 0, row.memory);
+        const { score, weights } = this.computeWeights(point.score, 0, row.memory, nlq.intent);
         results.push(this.toSearchResult(row, score, weights));
-        if (results.length >= limit) break;
+        if (results.length >= effectiveLimit) break;
       }
       const sorted = results.sort((a, b) => b.score - a.score);
       // Fire afterSearch hook (fire-and-forget)
       void this.pluginRegistry.fireHook('afterSearch', {
         query, resultCount: sorted.length, topScore: sorted[0]?.score,
       });
-      return { items: sorted, fallback: false };
+      return {
+        items: sorted,
+        fallback: false,
+        parsed: {
+          temporal: nlq.temporal,
+          entities: [],
+          intent: nlq.intent,
+          cleanQuery: nlq.cleanQuery,
+        },
+      };
     }
 
     // --- Entity-aware hybrid search ---
@@ -217,10 +262,10 @@ export class MemoryService {
     const hasContacts = resolvedContacts.length > 0;
     const hasTopics = topicWords.length > 0;
 
-    // Phase 2: Vector search (always use full query for best semantic matching)
-    const vector = await this.ollama.embed(query);
-    const qdrantFilter = filters ? this.buildQdrantFilter(filters) : undefined;
-    const qdrantResults = await this.qdrant.search(vector, limit * 2, qdrantFilter);
+    // Phase 2: Vector search (use clean query for embeddings, apply effectiveFilters)
+    const vector = await this.ollama.embed(embeddingQuery);
+    const qdrantFilter = this.buildQdrantFilter(effectiveFilters);
+    const qdrantResults = await this.qdrant.search(vector, effectiveLimit * 2, Object.keys(qdrantFilter).length ? qdrantFilter : undefined);
     const semanticScores = new Map<string, number>();
     for (const point of qdrantResults) semanticScores.set(point.id, point.score);
 
@@ -280,8 +325,10 @@ export class MemoryService {
           for (const word of searchWords) {
             textConditions.push(sql`LOWER(${memories.text}) LIKE ${'%' + word + '%'}` as any);
           }
-          if (filters?.sourceType) textConditions.push(eq(memories.sourceType, filters.sourceType));
-          if (filters?.connectorType) textConditions.push(eq(memories.connectorType, filters.connectorType));
+          if (effectiveFilters.sourceType) textConditions.push(eq(memories.sourceType, effectiveFilters.sourceType));
+          if (effectiveFilters.connectorType) textConditions.push(eq(memories.connectorType, effectiveFilters.connectorType));
+          if (effectiveFilters.from) textConditions.push(sql`${memories.eventTime} >= ${effectiveFilters.from}` as any);
+          if (effectiveFilters.to) textConditions.push(sql`${memories.eventTime} <= ${effectiveFilters.to}` as any);
           const textMatches = await db
             .select({ id: memories.id })
             .from(memories)
@@ -313,6 +360,12 @@ export class MemoryService {
         items: [],
         fallback: false,
         resolvedEntities: hasContacts ? { contacts: resolvedContacts, topicWords, topicMatchCount } : undefined,
+        parsed: {
+          temporal: nlq.temporal,
+          entities: resolvedContacts.map(c => ({ id: c.id, displayName: c.displayName })),
+          intent: nlq.intent,
+          cleanQuery: nlq.cleanQuery,
+        },
       };
     }
 
@@ -321,8 +374,11 @@ export class MemoryService {
     const batchRows = await this.fetchMemoryRowsBatch([...allCandidateIds]);
     for (const [id, row] of batchRows) {
       const mem = row.memory;
-      if (filters?.sourceType && mem.sourceType !== filters.sourceType) continue;
-      if (filters?.connectorType && mem.connectorType !== filters.connectorType) continue;
+      if (effectiveFilters.sourceType && mem.sourceType !== effectiveFilters.sourceType) continue;
+      if (effectiveFilters.connectorType && mem.connectorType !== effectiveFilters.connectorType) continue;
+      // Apply temporal filters in SQL-fetched rows
+      if (effectiveFilters.from && mem.eventTime < effectiveFilters.from) continue;
+      if (effectiveFilters.to && mem.eventTime > effectiveFilters.to) continue;
       candidateRows.push({ id, row });
     }
 
@@ -350,7 +406,7 @@ export class MemoryService {
       const textBoost = textMatchIds.has(id) ? 0.45 : 0;
       const contactBoost = contactMatchIds.has(id) ? 0.40 : 0;
 
-      const { score, weights } = this.computeWeights(semanticScore, rerankScore, row.memory);
+      const { score, weights } = this.computeWeights(semanticScore, rerankScore, row.memory, nlq.intent);
       const boostedScore = Math.min(score + textBoost + contactBoost, 1.0);
       const boostedWeights = { ...weights, final: boostedScore };
 
@@ -359,17 +415,48 @@ export class MemoryService {
 
     const MIN_SCORE = 0.35;
     const scored = results.filter((r) => r.score >= MIN_SCORE);
-    const finalItems = scored.sort((a, b) => b.score - a.score).slice(0, limit);
+    const finalItems = scored.sort((a, b) => b.score - a.score).slice(0, effectiveLimit);
+
+    // Temporal fallback: if NLQ temporal was applied and zero results, retry without temporal
+    let temporalFallback = false;
+    let returnItems = finalItems;
+    if (nlq.temporal && effectiveFilters.from && finalItems.length === 0) {
+      const fallbackFilters = { ...effectiveFilters };
+      delete fallbackFilters.from;
+      delete fallbackFilters.to;
+      const fallbackQdrantFilter = this.buildQdrantFilter(fallbackFilters);
+      const fallbackQdrantResults = await this.qdrant.search(vector, effectiveLimit * 2, Object.keys(fallbackQdrantFilter).length ? fallbackQdrantFilter : undefined);
+      const fallbackIds = new Set(fallbackQdrantResults.map(p => p.id));
+      const fallbackBatch = await this.fetchMemoryRowsBatch([...fallbackIds]);
+      const fallbackScores = new Map<string, number>();
+      for (const p of fallbackQdrantResults) fallbackScores.set(p.id, p.score);
+      const fallbackResults: SearchResult[] = [];
+      for (const [fid, frow] of fallbackBatch) {
+        if (fallbackFilters.sourceType && frow.memory.sourceType !== fallbackFilters.sourceType) continue;
+        if (fallbackFilters.connectorType && frow.memory.connectorType !== fallbackFilters.connectorType) continue;
+        const { score, weights } = this.computeWeights(fallbackScores.get(fid) ?? 0, 0, frow.memory, nlq.intent);
+        fallbackResults.push(this.toSearchResult(frow, score, weights));
+      }
+      returnItems = fallbackResults.filter(r => r.score >= MIN_SCORE).sort((a, b) => b.score - a.score).slice(0, effectiveLimit);
+      temporalFallback = true;
+    }
 
     // Fire afterSearch hook (fire-and-forget)
     void this.pluginRegistry.fireHook('afterSearch', {
-      query, resultCount: finalItems.length, topScore: finalItems[0]?.score,
+      query, resultCount: returnItems.length, topScore: returnItems[0]?.score,
     });
 
     return {
-      items: finalItems,
+      items: returnItems,
       fallback: !hasExactMatches,
       resolvedEntities: hasContacts ? { contacts: resolvedContacts, topicWords, topicMatchCount } : undefined,
+      parsed: {
+        temporal: nlq.temporal,
+        temporalFallback,
+        entities: resolvedContacts.map(c => ({ id: c.id, displayName: c.displayName })),
+        intent: nlq.intent,
+        cleanQuery: nlq.cleanQuery,
+      },
     };
   }
 
@@ -789,7 +876,7 @@ export class MemoryService {
     };
   }
 
-  private computeWeights(semanticScore: number, rerankScore: number, mem: any): {
+  private computeWeights(semanticScore: number, rerankScore: number, mem: any, intent?: 'recall' | 'browse' | 'find'): {
     score: number;
     weights: { semantic: number; rerank: number; recency: number; importance: number; trust: number; final: number };
   } {
@@ -811,9 +898,17 @@ export class MemoryService {
 
     // When reranker is available, use the full 5-weight formula.
     // When unavailable (rerankScore === 0), redistribute rerank weight to semantic.
-    let final = rerankScore > 0
-      ? 0.40 * semanticScore + 0.30 * rerankScore + 0.15 * recency + 0.10 * importance + 0.05 * trust
-      : 0.70 * semanticScore + 0.15 * recency + 0.10 * importance + 0.05 * trust;
+    // Browse intent boosts recency weight significantly.
+    let final: number;
+    if (intent === 'browse') {
+      final = rerankScore > 0
+        ? 0.25 * semanticScore + 0.20 * rerankScore + 0.40 * recency + 0.10 * importance + 0.05 * trust
+        : 0.40 * semanticScore + 0.40 * recency + 0.15 * importance + 0.05 * trust;
+    } else {
+      final = rerankScore > 0
+        ? 0.40 * semanticScore + 0.30 * rerankScore + 0.15 * recency + 0.10 * importance + 0.05 * trust
+        : 0.70 * semanticScore + 0.15 * recency + 0.10 * importance + 0.05 * trust;
+    }
 
     // Scorer plugin bonus (clamped to +/-0.05, averaged across plugins)
     const scorers = this.pluginRegistry.getScorers();
@@ -1095,6 +1190,12 @@ export class MemoryService {
     }
     if (filters.connectorType) {
       must.push({ key: 'connector_type', match: { value: filters.connectorType } });
+    }
+    if (filters.from || filters.to) {
+      const range: Record<string, string> = {};
+      if (filters.from) range.gte = filters.from;
+      if (filters.to) range.lte = filters.to;
+      must.push({ key: 'event_time', range });
     }
 
     return must.length ? { must } : {};
