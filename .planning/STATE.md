@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Search Intelligence
-status: completed
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-03-08T12:04:43.070Z"
-last_activity: 2026-03-08 -- Phase 8.1 Plan 02 complete (auto-merge with safety-tiered rules)
+status: executing
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-08T12:07:19.266Z"
+last_activity: 2026-03-08 -- Phase 9 Plan 01 complete (NLQ parser with chrono-node)
 progress:
   total_phases: 16
   completed_phases: 10
   total_plans: 23
-  completed_plans: 21
-  percent: 90
+  completed_plans: 22
+  percent: 96
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v1.4 Search Intelligence -- Phase 8.1 (Contact Auto-Merge) complete
+**Current focus:** v1.4 Search Intelligence -- Phase 9 (Temporal Reasoning) in progress
 
 ## Current Position
 
-Phase: 8.1 of 15 (Contact Auto-Merge)
-Plan: 2 of 2 complete
-Status: Phase Complete
-Last activity: 2026-03-08 -- Phase 8.1 Plan 02 complete (auto-merge with safety-tiered rules)
+Phase: 9 of 15 (Temporal Reasoning)
+Plan: 1 of 2 complete
+Status: In Progress
+Last activity: 2026-03-08 -- Phase 9 Plan 01 complete (NLQ parser with chrono-node)
 
-Progress: [█████████░] 90%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [█████████░] 90%
 | Phase 08.1 P01 | 11min | 2 tasks | 2 files |
 | Phase 08.1 P02 | 2min | 2 tasks | 2 files |
 | Phase 11 P02 | 1min | 2 tasks | 1 files |
+| Phase 09 P01 | 3min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,7 @@ Recent decisions affecting current work:
 - [Phase 08.1]: Strict 3x threshold for entity type reclassification to avoid false positives from noisy entity extraction data
 - [Phase 08.1]: Safety-tiered auto-merge: non-person exact-name and sparse-to-rich are auto-merged, person-to-person preserved for manual review
 - [Phase 11]: Keep origin remote as personal repo, open-core remote for org
+- [Phase 09]: Custom chrono-node wrappers for 'last week' (Mon-Sun) and 'between X and Y' (combine results)
 
 ### Pending Todos
 
@@ -99,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08T12:04:43.068Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-03-08T12:07:19.264Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None

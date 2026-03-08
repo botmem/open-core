@@ -14,9 +14,9 @@
 
 ### NLQ Parsing
 
-- [ ] **NLQ-01**: User can search with temporal references ("last week", "in January", "yesterday") and get date-filtered results via chrono-node deterministic parsing
+- [x] **NLQ-01**: User can search with temporal references ("last week", "in January", "yesterday") and get date-filtered results via chrono-node deterministic parsing
 - [ ] **NLQ-02**: User can search with person/place/org names in natural language and get entity-boosted results
-- [ ] **NLQ-03**: Search classifies query intent (recall/browse/find) to optimize result ranking and filtering
+- [x] **NLQ-03**: Search classifies query intent (recall/browse/find) to optimize result ranking and filtering
 
 ### Source Citations
 
@@ -24,7 +24,7 @@
 
 ### Performance
 
-- [ ] **PERF-01**: Search with NLQ enhancements completes in <500ms (no LLM calls in search hot path)
+- [x] **PERF-01**: Search with NLQ enhancements completes in <500ms (no LLM calls in search hot path)
 
 ### v1.4 Future (deferred to v1.5)
 
@@ -48,10 +48,10 @@
 | ENT-01 | Phase 8 | Complete |
 | ENT-02 | Phase 8 | Complete |
 | ENT-03 | Phase 8 | Complete |
-| NLQ-01 | Phase 9 | Pending |
+| NLQ-01 | Phase 9 | Complete |
 | NLQ-02 | Phase 9 | Pending |
-| NLQ-03 | Phase 9 | Pending |
-| PERF-01 | Phase 9 | Pending |
+| NLQ-03 | Phase 9 | Complete |
+| PERF-01 | Phase 9 | Complete |
 | CIT-01 | Phase 10 | Pending |
 
 **v1.4 Coverage:**
