@@ -17,6 +17,7 @@ import { AgentModule } from './agent/agent.module';
 import { MeModule } from './me/me.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { MailModule } from './mail/mail.module';
+import { UserAuthModule } from './user-auth/user-auth.module';
 import { VersionController } from './version.controller';
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -48,6 +49,7 @@ const isDev = process.env.NODE_ENV !== 'production';
     AgentModule,
     MeModule,
     MailModule,
+    UserAuthModule,
   ],
 })
 export class AppModule {}
