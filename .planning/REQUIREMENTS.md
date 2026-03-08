@@ -213,11 +213,78 @@
 - Mapped to phases: 18 (Phases 25-28)
 - Unmapped: 0
 
+## v3.0 Requirements -- Monorepo & Developer Experience
+
+**Defined:** 2026-03-08
+
+### Code Quality
+
+- [ ] **QUAL-01**: Developer can run ESLint across all packages with a single command and get consistent TypeScript linting
+- [ ] **QUAL-02**: All code is auto-formatted on save/commit with Prettier using consistent rules
+- [ ] **QUAL-03**: Developer can run typecheck across all packages as a standalone Turbo task
+- [ ] **QUAL-04**: Committing code automatically runs lint+format on staged files; pushing runs typecheck+tests on changed packages
+
+### Dev Workflow
+
+- [ ] **DEV-01**: Running `pnpm dev` starts the full dev environment without port conflicts or restart storms
+- [ ] **DEV-02**: File changes in workspace packages trigger dependency-aware restarts without manual pre-builds
+- [ ] **DEV-03**: Adding a new connector package requires zero changes to the root dev script or watch config
+- [ ] **DEV-04**: All library packages have proper conditional exports fields enabling clean resolution by both CJS and ESM consumers
+
+### Docker & Infrastructure
+
+- [ ] **DOCK-01**: Running `docker compose up` starts Redis + Qdrant with health checks; `--profile ollama` adds Ollama
+- [ ] **DOCK-02**: Developer can run `make dev` to start infrastructure + app with a single command
+- [ ] **DOCK-03**: New developers can read `.env.example` to understand all required and optional environment variables
+- [ ] **DOCK-04**: `GET /api/health` returns connectivity status of Redis, Qdrant, and SQLite
+
+### Build Optimization
+
+- [ ] **BUILD-01**: TypeScript, Vitest, and Vite versions are defined once in pnpm catalogs, referenced everywhere
+- [ ] **BUILD-02**: Production Docker image uses multi-stage build with turbo prune for minimal image size
+
+### v3.0 Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| pnpm 10 upgrade | Breaking changes (no hoisting, lifecycle script restrictions) — risk outweighs benefit |
+| Nx migration | Turbo is sufficient, already in use, lower migration cost |
+| Biome (ESLint replacement) | ESLint ecosystem is larger, typescript-eslint is mature, Biome still stabilizing |
+| TypeScript project references | Maintenance burden exceeds compile-time benefit at <15 packages |
+| Shared config packages | Overengineered for single-developer monorepo — root configs sufficient |
+| Changesets / version management | Not publishing to npm, no external consumers |
+| commitlint / conventional commits | Nice-to-have but adds friction without team coordination need |
+| CJS → ESM migration for API | NestJS 11 does not officially support ESM (issue #13319). High risk, zero user value |
+
+### v3.0 Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| QUAL-01 | Phase 29 | Pending |
+| QUAL-02 | Phase 29 | Pending |
+| QUAL-03 | Phase 29 | Pending |
+| QUAL-04 | Phase 32 | Pending |
+| DEV-01 | Phase 30 | Pending |
+| DEV-02 | Phase 30 | Pending |
+| DEV-03 | Phase 30 | Pending |
+| DEV-04 | Phase 30 | Pending |
+| DOCK-01 | Phase 31 | Pending |
+| DOCK-02 | Phase 31 | Pending |
+| DOCK-03 | Phase 31 | Pending |
+| DOCK-04 | Phase 30 | Pending |
+| BUILD-01 | Phase 32 | Pending |
+| BUILD-02 | Phase 33 | Pending |
+
+**v3.0 Coverage:**
+- v3.0 requirements: 14 total (QUAL: 4, DEV: 4, DOCK: 4, BUILD: 2)
+- Mapped to phases: 14 (Phases 29-33)
+- Unmapped: 0 ✓
+
 ## Future Requirements
 
 Deferred to future releases. Tracked but not in current roadmap.
 
-### v3.0 -- Production Deployment & CI/CD
+### v3.1 -- Production Deployment & CI/CD
 
 - **DEP-01**: Vultr VPS provisioning with Docker and swap
 - **DEP-02**: Multi-stage Dockerfile for API + web
