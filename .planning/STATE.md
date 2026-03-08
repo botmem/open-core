@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-03-08T13:37:43.000Z"
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-03-08T13:47:57.391Z"
 last_activity: 2026-03-08 -- Phase 16 Plan 01 complete (backend auth infrastructure)
 progress:
-  total_phases: 9
-  completed_phases: 0
-  total_plans: 3
-  completed_plans: 2
+  total_phases: 17
+  completed_phases: 9
+  total_plans: 20
+  completed_plans: 20
   percent: 22
 ---
 
@@ -43,6 +43,7 @@ Progress: [██░░░░░░░░] 22%
 |-------|------|----------|-------|-------|
 | 16 | 01 | 6min | 2 | 16 |
 | 16 | 02 | 4min | 2 | 7 |
+| Phase 16 P03 | 5min | 3 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -58,6 +59,9 @@ Recent decisions affecting current work:
 - [v2.0]: Memory bank selected at sync time (not auto-assigned per connector)
 - [v2.0]: PostgreSQL included because RLS depends on it
 - [v2.0]: Phase numbering continues from 15 (starts at 16)
+- [Phase 16]: Access token in memory only -- never persisted; session restored via httpOnly refresh cookie
+- [Phase 16]: 401 interceptor uses mutex Promise to prevent concurrent refresh races
+- [Phase 16]: Password reset token stored as SHA-256 hash with 1hr expiry; existing unused tokens invalidated
 
 ### Decisions (Phase 16)
 
@@ -83,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-08T13:37:43.000Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-03-08T13:47:57.390Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None

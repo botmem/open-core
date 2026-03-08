@@ -171,7 +171,7 @@ Phase 10: Source Citations (deferred)
 - Firebase auth (Phase 24) is last because it's prod-core only and builds on the local auth foundation
 
 **Summary:**
-- [ ] **Phase 16: User Authentication** - Register, login, JWT access+refresh tokens, password reset, session persistence (AUTH-01 through AUTH-05)
+- [x] **Phase 16: User Authentication** - Register, login, JWT access+refresh tokens, password reset, session persistence (AUTH-01 through AUTH-05) (completed 2026-03-08)
 - [ ] **Phase 17: API Security** - Global auth guard, CORS lockdown, @Public() decorator for health/version/auth endpoints (SEC-01, SEC-02)
 - [ ] **Phase 18: API Keys** - Named read-only API keys, cryptographic generation, bank scoping, Bearer header auth (KEY-01 through KEY-05)
 - [ ] **Phase 19: Memory Banks** - Create/list/rename/delete banks, sync-time selection, search scoping, default bank + data migration (BANK-01 through BANK-04)
@@ -326,7 +326,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. NLQ Parsing | v1.4 | 2/2 | Complete | 2026-03-08 |
 | 10. Source Citations | v1.4 | 0/? | Deferred | - |
 | 11. Repo & Infrastructure | v2.0 | 3/3 | Complete | 2026-03-08 |
-| 16. User Authentication | v2.0 | 2/3 | In Progress | - |
+| 16. User Authentication | 3/3 | Complete   | 2026-03-08 | - |
 | 17. API Security | v2.0 | 0/? | Not started | - |
 | 18. API Keys | v2.0 | 0/? | Not started | - |
 | 19. Memory Banks | v2.0 | 0/? | Not started | - |
