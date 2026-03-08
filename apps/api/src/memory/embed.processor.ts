@@ -18,6 +18,7 @@ import { PluginRegistry } from '../plugins/plugin-registry';
 import { AnalyticsService } from '../analytics/analytics.service';
 import { rawEvents, memories, memoryLinks, settings, accounts, memoryBanks } from '../db/schema';
 import { photoDescriptionPrompt } from './prompts';
+import { normalizeEntities } from './entity-normalizer';
 import type { ConnectorDataEvent, PipelineContext, ConnectorLogger } from '@botmem/connector-sdk';
 
 const MAX_CONTENT_LENGTH = 10_000;
@@ -95,10 +96,20 @@ export class EmbedProcessor extends WorkerHost implements OnModuleInit {
     const embedResult = await connector.embed(event, text, ctx);
     const embedText = embedResult.text || text;
 
+    // Convert embed entities to normalized {type, value} format for metadata persistence
+    const embedEntities = normalizeEntities(
+      embedResult.entities.map(e => {
+        // Extract human-readable value from compound ID (e.g., "name:John|email:john@x.com")
+        const namePart = e.id.split('|').find((p: string) => p.startsWith('name:'));
+        const value = namePart ? namePart.slice(5) : e.id.split('|')[0].replace(/^\w+:/, '');
+        return { type: e.type, value };
+      })
+    );
+
     // Create memory record — resolve memoryBankId from account's user
     const memoryId = randomUUID();
     const now = new Date().toISOString();
-    const mergedMetadata = { ...metadata, ...(embedResult.metadata || {}) };
+    const mergedMetadata = { ...metadata, ...(embedResult.metadata || {}), embedEntities };
 
     // Look up the account's userId to find their default memory bank
     let memoryBankId: string | null = null;
