@@ -156,7 +156,7 @@ Plans:
 **Depends on**: Phase 7 (test infrastructure must be stable)
 **Requirements**: ENT-01, ENT-02, ENT-03
 **Success Criteria** (what must be TRUE):
-  1. Running enrichment on a new memory produces entities with types from the canonical set only (person, organization, location, event, product, topic, pet) -- no freeform or inconsistent types
+  1. Running enrichment on a new memory produces entities with types from the canonical set only (person, organization, location, event, product, topic, pet, group, device, other) -- no freeform or inconsistent types
   2. Querying existing memories shows zero entities with non-canonical types (backfill has normalized all legacy data)
   3. Searching `/entities/search?q=Nugget&type=pet` returns only entities matching that type, and omitting the type parameter returns all matching entities regardless of type
 **Plans**: 2 plans

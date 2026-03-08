@@ -8,7 +8,7 @@
 
 ### Entity Classification
 
-- [ ] **ENT-01**: Entity extraction uses canonical type taxonomy (person, organization, location, event, product, topic, pet) enforced via Ollama structured output (`format` parameter)
+- [ ] **ENT-01**: Entity extraction uses canonical type taxonomy (person, organization, location, event, product, topic, pet, group, device, other) enforced via Ollama structured output (`format` parameter)
 - [ ] **ENT-02**: All existing memories have entity types backfilled to canonical taxonomy via SQL string replacement (no LLM re-run)
 - [ ] **ENT-03**: User can filter entity search by type (e.g. `/entities/search?q=Nugget&type=pet`)
 
