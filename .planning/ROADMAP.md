@@ -212,7 +212,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 17-01-PLAN.md -- Global auth guard, CORS lockdown, WebSocket JWT auth, health endpoint
+- [x] 17-01-PLAN.md -- Global auth guard, CORS lockdown, WebSocket JWT auth, health endpoint
 
 ### Phase 18: API Keys
 **Goal**: Users can create named, read-only API keys for programmatic access (CLI, agents), scoped to specific memory banks
@@ -224,7 +224,11 @@ Plans:
   3. API keys created with bank scope only see data in those banks -- cross-bank requests return empty results
   4. `GET /api-keys` lists all keys (name, created, last used, banks), `DELETE /api-keys/:id` revokes a key
   5. `Authorization: Bearer <api-key>` header authenticates as the key's owner with read-only + bank-scoped permissions
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 18-01-PLAN.md -- Backend: schema, service, controller, dual auth guard, @RequiresJwt enforcement
+- [ ] 18-02-PLAN.md -- Frontend: Settings page tabs, API Keys management UI
 
 ### Phase 19: Memory Banks
 **Goal**: Memories are organized into banks for logical data isolation, with bank selection at sync time and search scoping
@@ -329,9 +333,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 9. NLQ Parsing | v1.4 | 2/2 | Complete | 2026-03-08 |
 | 10. Source Citations | v1.4 | 0/? | Deferred | - |
 | 11. Repo & Infrastructure | v2.0 | 3/3 | Complete | 2026-03-08 |
-| 16. User Authentication | 3/3 | Complete   | 2026-03-08 | - |
-| 17. API Security | 1/1 | Complete    | 2026-03-08 | - |
-| 18. API Keys | v2.0 | 0/? | Not started | - |
+| 16. User Authentication | v2.0 | 3/3 | Complete | 2026-03-08 |
+| 17. API Security | v2.0 | 1/1 | Complete | 2026-03-08 |
+| 18. API Keys | v2.0 | 0/2 | Not started | - |
 | 19. Memory Banks | v2.0 | 0/? | Not started | - |
 | 20. Encryption at Rest | v2.0 | 0/? | Not started | - |
 | 21. E2EE (Prod-Core) | v2.0 | 0/? | Not started | - |
