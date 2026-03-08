@@ -1,68 +1,67 @@
-# Research Summary: Botmem Extensions
+# Research Summary: Botmem v1.4 Search Intelligence
 
-**Domain:** Personal Memory RAG System -- extending beyond core functionality
-**Researched:** 2026-03-07
-**Overall confidence:** MEDIUM-HIGH
+**Domain:** Search intelligence layer (NLQ parsing, LLM summarization, entity classification) for personal memory RAG system
+**Researched:** 2026-03-08
+**Overall confidence:** HIGH
 
 ## Executive Summary
 
-Botmem has a solid foundation with 6 connectors, a working pipeline (sync -> embed -> enrich), vector search via Qdrant, and a React frontend with graph visualization. The next phase focuses on search quality improvements (reranking, importance reinforcement), operational maturity (analytics, scheduled jobs), and extensibility (plugin system evolution).
+The v1.4 Search Intelligence milestone requires surprisingly few stack additions. The existing Ollama infrastructure (qwen3:0.6b text model, already loaded in VRAM on the RTX 3070) handles all three target features: natural language query parsing, search result summarization, and entity type classification. The only new dependency is `chrono-node` (zero-dependency temporal parsing library) because deterministic date parsing is strictly better than LLM-based date extraction for expressions like "last week" or "in January."
 
-The most impactful addition is **reranker integration**, which fills the currently-empty 0.30 weight slot in the scoring formula. However, this comes with a significant caveat: Ollama does not have a native rerank API endpoint as of March 2026, despite having reranker models available in its registry. Implementation must use the generate API with prompt-based scoring, which introduces latency that needs careful management.
+The most impactful technical change is adopting Ollama's `format` parameter (available since Ollama v0.5) for structured JSON output. Currently, `enrich.service.ts` uses regex-based extraction (`parseJsonArray`/`parseJsonObject`) to pull JSON from freeform LLM responses. The `format` parameter constrains generation at the grammar level, making invalid JSON impossible. This single change fixes entity type inconsistency (the root cause of the entity classification problem) and enables reliable NLQ query parsing without any new libraries.
 
-The second key finding is that **PostHog self-hosting is a trap** for a single-user system. It requires 16GB RAM and a full ClickHouse/Kafka/Postgres stack -- more infrastructure than Botmem itself. The cloud free tier (1M events/month) is the right choice.
+The current search pipeline (`MemoryService.search()`) already has the building blocks: entity resolution via `resolveEntities()`, FTS5 text search, Qdrant vector search, and temporal filtering via `timeline()`. The NLQ parser's job is to decompose a freeform query into these existing primitives -- entities, topics, date ranges, and intent -- then route through the existing search infrastructure.
 
-Everything else (importance reinforcement, memory pinning, nightly decay, plugin hooks) requires no new external dependencies -- just application logic changes using the existing stack.
+Summarization is a new capability but architecturally simple: take the top N search results, format them as context, and call `ollama.generate()` with a summarization prompt. No new services, no new queues -- just a new prompt and a `summary` field on the search response.
 
 ## Key Findings
 
-**Stack:** Add `posthog-node@^5.28`, `@nestjs/schedule@^5.0`, and pull `sam860/qwen3-reranker:0.6b-Q8_0` on Ollama. No other new dependencies needed.
+**Stack:** Add only `chrono-node@^2.9.0`. Use existing Ollama `format` parameter for structured output. No NLP libraries needed.
 
-**Architecture:** Reranking is a generate-based workaround (not native API). Limit to top 10-15 candidates to manage latency. Analytics wraps gracefully (no-op when unconfigured).
+**Architecture:** NLQ parser is a new service that wraps chrono-node (temporal) + Ollama structured output (entities/topics/intent), feeding results into existing `MemoryService.search()` and `timeline()`. Summarization is a post-processing step on search results.
 
-**Critical pitfall:** Ollama has no `/api/rerank` endpoint despite listing reranker models. Build against `/api/generate` with a scoring prompt.
+**Critical pitfall:** qwen3:0.6b summarization quality degrades with context length. Limit to top 5-10 results, each truncated to ~200 chars, keeping total context under 2K tokens.
 
 ## Implications for Roadmap
 
 Based on research, suggested phase structure:
 
-1. **Search Quality** -- Reranker + importance reinforcement + memory pinning
-   - Addresses: Reranker scoring, importance tracking, pin UX
-   - Avoids: Latency issues by making reranking opt-in and limited to top candidates
-   - This phase has the highest impact on user experience
+1. **Entity type taxonomy + structured output** - Lowest risk, highest immediate value
+   - Addresses: Entity classification consistency
+   - Avoids: Changing search behavior before entities are clean
+   - Tasks: Update `entityExtractionPrompt`, add `generateStructured()` to OllamaService, backfill existing entities
 
-2. **Operational Maturity** -- Analytics + scheduled jobs + decay
-   - Addresses: PostHog integration, nightly decay, auto-sync scheduling
-   - Avoids: Self-hosting PostHog (use cloud); over-complicated cron setup
-   - Depends on: Schema changes from Phase 1 (recallCount, pinned columns)
+2. **Temporal parsing + NLQ decomposition** - Core query intelligence
+   - Addresses: Natural language query parsing, temporal reference resolution
+   - Avoids: Building summarization before queries are properly parsed
+   - Tasks: Add chrono-node, build NLQ parser service, integrate with search pipeline
 
-3. **Extensibility** -- Plugin hooks + enricher plugins
-   - Addresses: Hook system for memory lifecycle events, enricher plugin type
-   - Avoids: Over-engineering (no marketplace, no hot-reload, no sandboxing)
-   - Depends on: Stability from Phases 1-2 before opening extension points
+3. **Search result summarization** - User-facing payoff
+   - Addresses: LLM summarization of search results
+   - Avoids: Over-engineering (no streaming, no multi-turn)
+   - Tasks: Summarization prompt, `summary` field on search response, source citations
 
 **Phase ordering rationale:**
-- Search quality first because the rerank weight is already allocated but empty -- this is visible technical debt
-- Analytics second because you need the improved search running before you can measure its effectiveness
-- Plugin extensibility last because no external plugins exist yet; build the hook system when you have a concrete enricher to plug in
+- Entity cleanup first because NLQ parsing quality depends on consistent entity types for filtering
+- Temporal parsing before summarization because time-bounded queries are a prerequisite for meaningful summaries
+- Summarization last because it builds on top of improved search quality from phases 1-2
 
 **Research flags for phases:**
-- Phase 1 (Search Quality): Needs validation -- the generate-based reranking approach should be prototyped and benchmarked before committing to the full integration. Latency on RTX 3070 with model swapping is unknown.
-- Phase 2 (Analytics): Standard patterns, unlikely to need further research
-- Phase 3 (Plugins): May need research when the first enricher plugin is designed
+- Phase 1: Standard pattern, unlikely to need research. Ollama `format` parameter is well-documented.
+- Phase 2: chrono-node is battle-tested, but NLQ prompt engineering for qwen3:0.6b may need iteration. Flag for prompt quality validation.
+- Phase 3: Summarization prompt quality with 0.6b model is the main risk. May need to test with qwen3:1.7b if quality is insufficient.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Only 2 new npm packages, both well-documented; reranker model confirmed on Ollama |
-| Features | HIGH | Clear feature list from PROJECT.md active items; dependencies mapped |
-| Architecture | MEDIUM | Reranking via generate API is a community workaround, not officially supported pattern; latency implications need benchmarking |
-| Pitfalls | HIGH | Ollama rerank gap confirmed via multiple sources; PostHog requirements verified from official docs |
+| Stack | HIGH | Only 1 new dependency, verified via npm/docs |
+| Features | HIGH | All features achievable with existing infrastructure + chrono-node |
+| Architecture | HIGH | Clear integration points with existing MemoryService |
+| Pitfalls | MEDIUM | qwen3:0.6b quality for summarization is the main unknown |
 
 ## Gaps to Address
 
-- **Reranker latency benchmarking:** Unknown how fast Qwen3-Reranker-0.6B runs via generate on RTX 3070. Needs a prototype to measure before committing to the UX pattern (synchronous vs. async reranking).
-- **Ollama rerank API timeline:** PR #7219 may merge soon. If it does, the implementation can simplify significantly. Worth checking before building the generate-based workaround.
-- **PostHog event schema:** Which specific events to track needs product thinking, not research. Recommendation: start with 10-15 events (search, sync, pin, error) and expand based on what's useful.
-- **Importance formula tuning:** The decay rate (0.998/day) and reinforcement amount (how much a click boosts importance) will need empirical tuning after deployment. Start conservative and adjust.
+- **qwen3:0.6b summarization quality**: Not benchmarked for summarizing personal memory search results. If quality is poor, consider upgrading to qwen3:1.7b or 4b for the summarization prompt only.
+- **Ollama `format` + array schemas**: The `format` parameter documentation focuses on object schemas. Array schemas (needed for entity extraction) may need testing to confirm they work correctly.
+- **NLQ prompt engineering**: The quality of query decomposition depends heavily on prompt design. This needs iterative testing with real queries from the user's data, not just synthetic examples.

@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import type { Memory } from '@botmem/shared';
+import type { Memory, SourceType } from '@botmem/shared';
 import { PageContainer } from '../components/layout/PageContainer';
 import { MemorySearchBar } from '../components/memory/MemorySearchBar';
+import { SearchResultsBanner } from '../components/memory/SearchResultsBanner';
 import { MemoryCard } from '../components/memory/MemoryCard';
 import { MemoryDetailPanel } from '../components/memory/MemoryDetailPanel';
 import { useMemories } from '../hooks/useMemories';
@@ -14,7 +15,21 @@ export function MemoryExplorerPage() {
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
-  const { filtered, query, filters, setQuery, setFilters, loading } = useMemories();
+  const prevQueryRef = useRef(undefined as string | undefined);
+  const prevSourceRef = useRef<SourceType | null | undefined>(undefined);
+  const { filtered, query, filters, setQuery, setFilters, loading, searchFallback, resolvedEntities } = useMemories();
+
+  // Reset to page 1 when filters/query change (synchronous state adjustment during render)
+  if (prevQueryRef.current !== query || prevSourceRef.current !== filters.source) {
+    prevQueryRef.current = query;
+    prevSourceRef.current = filters.source;
+    if (page !== 1) setPage(1);
+  }
+
+  const availableSources = useMemo(
+    () => [...new Set(filtered.map((m) => m.source))] as SourceType[],
+    [filtered],
+  );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = useMemo(
@@ -22,11 +37,15 @@ export function MemoryExplorerPage() {
     [filtered, page],
   );
 
-  // Reset to page 1 when filters/query change
-  useEffect(() => { setPage(1); }, [filters.source, query]);
-
   // Scroll list to top on page change
   useEffect(() => { listRef.current?.scrollTo(0, 0); }, [page]);
+
+  // Auto-select top result when search completes
+  useEffect(() => {
+    if (!loading && query.trim() && filtered.length > 0) {
+      setSelectedMemory(filtered[0]);
+    }
+  }, [loading, query, filtered]);
 
   return (
     <PageContainer>
@@ -39,6 +58,7 @@ export function MemoryExplorerPage() {
               onSourceChange={(s) => setFilters({ source: s })}
               resultCount={filtered.length}
               loading={loading}
+              availableSources={availableSources}
             />
 
             <div className="mt-4 flex gap-4 min-h-0 flex-1">
@@ -46,13 +66,22 @@ export function MemoryExplorerPage() {
                 ref={listRef}
                 className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2"
               >
+                {!loading && query.trim() && (
+                  <SearchResultsBanner
+                    resolvedEntities={resolvedEntities}
+                    resultCount={filtered.length}
+                    searchFallback={searchFallback}
+                    query={query}
+                  />
+                )}
                 {loading && <Skeleton variant="card" count={3} />}
-                {!loading && paged.map((m) => (
+                {!loading && paged.map((m, i) => (
                   <MemoryCard
                     key={m.id}
                     memory={m}
                     onClick={() => setSelectedMemory(m)}
                     selected={selectedMemory?.id === m.id}
+                    topResult={i === 0 && page === 1 && !!query.trim()}
                   />
                 ))}
                 {!loading && filtered.length === 0 && (

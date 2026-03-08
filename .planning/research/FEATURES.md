@@ -1,73 +1,80 @@
-# Feature Landscape — Botmem Extensions
+# Feature Landscape
 
-**Domain:** Personal Memory RAG System (extending existing)
-**Researched:** 2026-03-07
+**Domain:** Search intelligence layer for a personal memory RAG system (NLQ parsing, LLM summarization, entity classification)
+**Researched:** 2026-03-08
 
 ## Table Stakes
 
-Features that are expected once the core system is working. Missing = system feels incomplete.
+Features users expect from an intelligent search layer in a personal memory system. Missing any of these makes the search feel "dumb" compared to asking ChatGPT.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Reranker scoring | The scoring formula already has a `rerank` weight (0.30) hardcoded to 0 | Medium | Requires Ollama generate-based scoring; no native rerank API |
-| Importance reinforcement | Memories accessed often should rank higher over time | Low | Schema change + counter increment on search access |
-| Memory pinning | Users need to mark important memories manually | Low | Boolean column + UI toggle + importance override |
-| Nightly decay job | Without decay, old irrelevant memories compete with fresh ones | Low | BullMQ repeatable job, simple exponential decay |
-| Search result feedback | "Was this result helpful?" improves ranking over time | Medium | UI component + importance adjustment |
-| Product analytics | Understanding which connectors/features get used | Low | PostHog JS already installed; needs API key + backend SDK |
+| Natural language query decomposition | Users type "what did Harry say about the project?" not keyword searches. System must extract entities + topics from freeform text | Med | Already partially done: `resolveEntities()` in MemoryService does greedy span matching against contacts. Needs expansion to extract temporal refs, topics, and intent. |
+| Temporal reference parsing | "last week", "in January", "yesterday" must resolve to date ranges automatically | Med | Pure rule-based approach via chrono-node. No LLM needed. Feeds directly into existing `timeline()` API's `from`/`to` params. |
+| Search result summarization | Top N memories returned as a coherent paragraph, not just a raw list. Users want "Harry mentioned security concerns about the API on Jan 15" not 20 JSON objects | Med | Use qwen3:0.6b (already available) to summarize top results. Keep raw results available alongside summary for transparency. |
+| Consistent entity type taxonomy | Currently entities have random types (the prompt says "person, location, time, organization, amount, product, event, metric" but qwen3:0.6b output is inconsistent). Entities must have a fixed, closed set of types | Low | Fix the prompt + use Ollama structured output (`format` param with JSON schema) to enforce `{type: enum, value: string, confidence: number}`. Backfill existing entities via a migration job. |
+| Entity-filtered search | "messages from Harry" should automatically filter by contact, not just boost. "meetings in London" should filter by location entity | Low | Contact filtering already works (`contactId` filter path in search). Entity type filtering needs a new code path that queries the `entities` JSON column by type + value. |
+| Query intent classification | Distinguish "recall" (find specific memory), "summarize" (aggregate answer), "count" (how many), "timeline" (chronological) intents to route queries differently | Med | Simple classification: if query starts with "how many" -> count intent; "when did" -> timeline; "what did X say about Y" -> recall + summarize. Rule-based first, LLM fallback for ambiguous queries. |
 
 ## Differentiators
 
-Features that set the system apart. Not expected, but high value.
+Features that set Botmem apart from generic RAG search. Not expected, but create real value for a personal memory system.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Cross-connector timeline | "What was I doing on March 5?" -- unified timeline across all sources | Medium | Query by date range across all connector types, group by time |
-| Conversational memory query | Natural language follow-up questions ("Tell me more about that email") | High | Requires conversation context, memory of previous search results |
-| Memory contradictions view | Surface memories that contradict each other (FACT vs FICTION) | Medium | Already have factuality labels; need UI to surface `contradicts` links |
-| Enricher plugins | Custom entity extractors, sentiment analysis, topic classification | Medium | Extend plugin system beyond connectors |
-| Scheduled auto-sync | Connectors sync on schedule without manual triggering | Low | BullMQ repeatable jobs per account |
-| Memory export | Export memories as JSON/CSV for backup or migration | Low | API endpoint + CLI command |
-| Contact merge UI | Review and approve/reject contact merge suggestions | Medium | Already have contact dedup; needs approval workflow |
+| Cross-connector corroboration in summaries | Summary notes when the same event appears in email AND Slack, boosting confidence | Low | Already have factuality labels and connector tracking. Summarization prompt can mention "confirmed across N sources" when multiple connectors reference the same event/topic. |
+| Negative/absence answers | "Did I ever discuss X with Y?" -> "No matching memories found for X with Y" as a clear negative rather than empty results | Low | When search returns 0 results with resolved entities, generate an explicit "I found no memories about {topic} involving {contact}" response instead of empty JSON. |
+| Source attribution in summaries | Each claim in the summary links back to the specific memory ID that supports it | Med | Summarization prompt instructs model to cite `[1]`, `[2]` etc. Post-process to map citations to memory IDs. Critical for trust in a factuality-aware system. |
+| Entity type normalization across existing data | Backfill all existing memories with consistent entity types using the new taxonomy | Med | Batch job via BullMQ. Re-run entity extraction with improved prompt + structured output on all memories where `entities` column has inconsistent types. Use `backfill` queue. |
 
 ## Anti-Features
 
-Features to explicitly NOT build.
+Features to explicitly NOT build during this milestone.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Real-time chat ingestion | Massive complexity, battery drain, privacy concerns | Batch sync is sufficient; users can re-sync when needed |
-| Multi-user support | Adds auth complexity, data isolation, permissions | Single-user personal tool; deploy separate instances |
-| Plugin marketplace | Premature; no user base to justify distribution infra | Load from local directory, document the interface |
-| AI chat interface (general) | Botmem is a memory system, not a chatbot | Expose memories as context for external AI tools via CLI/API |
-| Automatic memory deletion | Risk of data loss; goes against "store everything" philosophy | Provide manual delete + archive; label confidence instead |
-| Mobile app | Web works on mobile; native app is huge effort | Responsive web design is sufficient |
-| Native image similarity search | Requires CLIP or similar; adds model complexity | Image retrieval via OCR/caption/metadata (current approach) |
+| Full SQL/structured query language | Building a query DSL ("from:harry topic:security after:2024-01-01") adds parser complexity and confuses users who just want to type naturally | Decompose natural language into the existing filter structure (contactId, sourceType, connectorType, date range). The NLQ parser IS the query language. |
+| Multi-turn conversation with persistent memory | Chat-style interaction with memory of previous queries requires session management, context windows, and significantly more LLM calls | Single-query-in, answer-out for this milestone. Conversational follow-up is a future milestone. |
+| Fine-tuning qwen3:0.6b for entity extraction | Fine-tuning requires training data, GPU time, and creates a model dependency that complicates updates | Use better prompts + Ollama structured output (JSON schema enforcement). The 0.6B model is good enough with proper constraints. |
+| External NER service (spaCy, Hugging Face NER pipeline) | Adds a Python dependency to a TypeScript monorepo, complicates deployment, and the LLM already does NER adequately | Keep NER in the Ollama generate call. Use structured output to enforce consistency. |
+| Real-time streaming summaries | SSE/WebSocket streaming of the summary as it generates looks cool but adds complexity for a single-user system | Return the complete summary in the HTTP response. Summarization of 5-10 memories via qwen3:0.6b takes <3 seconds -- streaming is unnecessary. |
+| Agentic search (multi-step retrieval with tool use) | The system deciding to run multiple searches, check facts, and compose answers is a rabbit hole of complexity | Keep it simple: one NLQ parse -> one search -> one summarization pass. |
 
 ## Feature Dependencies
 
 ```
-Reranker scoring --> (none, independent)
-Importance reinforcement --> (none, independent)
-Memory pinning --> Importance reinforcement (pinned = max importance)
-Nightly decay job --> @nestjs/schedule (new dep)
-Search result feedback --> Importance reinforcement (feedback adjusts importance)
-Enricher plugins --> Plugin system extension (hook system)
-Scheduled auto-sync --> @nestjs/schedule + BullMQ repeatable jobs
-Cross-connector timeline --> (none, API query change)
-Conversational memory query --> Search result feedback (needs session context)
+Temporal parsing ------> NLQ parser (temporal refs feed date range filters)
+Entity type taxonomy --> Structured output enforcement --> Entity extraction prompt update
+Entity extraction prompt update --> Backfill job (re-extract entities for existing memories)
+NLQ parser --> Intent classification (parser output determines intent routing)
+Intent classification --> Search result summarization (only "recall" and "summarize" intents get LLM summary)
+Entity-filtered search --> NLQ parser (parser identifies entity filters to apply)
+Contact resolution (EXISTING) --> NLQ parser (reuses resolveEntities() logic)
+Search pipeline (EXISTING) --> Summarization (summary operates on search results)
+Ollama generate (EXISTING) --> Summarization (uses same qwen3:0.6b model)
+Ollama structured output --> Entity extraction (enforces consistent JSON schema)
 ```
 
-## MVP Recommendation (Next Milestone)
+Critical path: **Entity type taxonomy** must come first (makes entity data reliable), then **NLQ parser** (central dependency for temporal parsing, intent classification, and entity filtering), then **summarization** (builds on improved search quality).
 
-Prioritize:
-1. **Reranker scoring** -- Fills the empty 0.30 weight in the formula; biggest search quality improvement
-2. **Importance reinforcement** -- Low effort, high impact on result quality over time
-3. **Memory pinning** -- Simple UX, users expect manual control
-4. **Nightly decay job** -- Prevents stale memories from dominating results
-5. **PostHog integration** -- Completes the already-started analytics setup
+## MVP Recommendation
+
+Prioritize in this order:
+
+1. **Entity type taxonomy + structured output enforcement** -- Lowest risk, highest immediate value. Fix the `entityExtractionPrompt` to use a closed enum, add Ollama `format` param with JSON schema. This makes all entity data consistent going forward.
+2. **Temporal reference parsing** -- Rule-based via chrono-node, no LLM calls, predictable behavior. Parse "last week", "in January 2025", "yesterday" into `{from, to}` date ranges.
+3. **NLQ query decomposition** -- Core feature. Parse freeform queries into `{entities: [], topics: [], temporal: {from, to}, intent: string}`. Extend existing `resolveEntities()` to also extract topics and temporal refs.
+4. **Intent classification** -- Route queries to the right handler. Rule-based for obvious patterns, LLM fallback for ambiguous.
+5. **Search result summarization** -- The user-facing payoff. Take top 10 search results, format as context, ask qwen3:0.6b to produce a 2-3 sentence answer with source citations.
+6. **Entity backfill job** -- Re-extract entities for all existing memories using the improved prompt + structured output.
+7. **Negative/absence answers** -- Small but important UX win.
 
 Defer:
-- **Conversational memory query** -- High complexity, needs clear UX design first
-- **Enricher plugins** -- Useful but no external demand yet; current enrichment pipeline works
-- **Contact merge UI** -- Functional without it; merge suggestions work automatically
+- **Conversational follow-up**: Requires session state management. Future milestone.
+- **Smart query expansion**: Marginal value since vector search already handles synonyms.
+
+## Sources
+
+- [Ollama Structured Outputs](https://docs.ollama.com/capabilities/structured-outputs) -- HIGH confidence
+- [chrono-node on npm](https://www.npmjs.com/package/chrono-node) -- HIGH confidence
+- Existing codebase: `apps/api/src/memory/prompts.ts`, `enrich.service.ts`, `memory.service.ts`, `ollama.service.ts` -- HIGH confidence

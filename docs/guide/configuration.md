@@ -8,11 +8,11 @@ Botmem is configured through environment variables. All variables have sensible 
 
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `3001` | API server port |
+| `PORT` | `12412` | API server port |
 | `REDIS_URL` | `redis://localhost:6379` | Redis connection URL for BullMQ job queues |
 | `DB_PATH` | `./data/botmem.db` | Path to the SQLite database file |
 | `QDRANT_URL` | `http://localhost:6333` | Qdrant vector database URL |
-| `FRONTEND_URL` | `http://localhost:5173` | Frontend origin for CORS and OAuth redirects |
+| `FRONTEND_URL` | `http://localhost:12412` | Frontend origin for CORS and OAuth redirects |
 | `PLUGINS_DIR` | `./plugins` | Directory for external connector plugins |
 
 ### Ollama (AI Inference)
@@ -35,7 +35,7 @@ Some settings can be changed at runtime via the Settings API without restarting 
 
 ```bash
 # Update runtime settings
-curl -X PATCH http://localhost:3001/api/settings \
+curl -X PATCH http://localhost:12412/api/settings \
   -H 'Content-Type: application/json' \
   -d '{"embed_concurrency": "8", "enrich_concurrency": "4"}'
 ```
@@ -72,7 +72,7 @@ Ollama is expected to run separately -- either locally or on a dedicated GPU mac
 
 ```bash
 # Infrastructure
-PORT=3001
+PORT=12412
 REDIS_URL=redis://localhost:6379
 DB_PATH=./data/botmem.db
 QDRANT_URL=http://localhost:6333
@@ -84,7 +84,7 @@ OLLAMA_TEXT_MODEL=qwen3:4b
 OLLAMA_VL_MODEL=qwen3-vl:4b
 
 # Frontend
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:12412
 ```
 
 ## Required Ollama Models

@@ -10,6 +10,7 @@ const DEFAULTS: Record<string, string> = {
   embed_concurrency: '12',
   enrich_concurrency: '6',
   file_concurrency: '4',
+  sync_debug_limit: '0',
 };
 
 @Injectable()

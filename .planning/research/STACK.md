@@ -1,250 +1,197 @@
-# Technology Stack — Extensions & Improvements
+# Technology Stack: Search Intelligence Layer
 
-**Project:** Botmem Personal Memory RAG System
-**Researched:** 2026-03-07
-**Scope:** Additive stack recommendations for existing system (core stack is decided)
+**Project:** Botmem v1.4 Search Intelligence
+**Researched:** 2026-03-08
+**Scope:** Additions/changes for NLQ parsing, LLM summarization, entity type classification
 
-## Existing Stack (Not Re-Researched)
+## Recommended Stack Additions
 
-NestJS 11, SQLite/Drizzle, Qdrant, BullMQ/Redis, React 19, Vite 6, Zustand 5, Tailwind 4, Ollama (nomic-embed-text, qwen3:0.6b, qwen3-vl:2b), pnpm 9.15, Turbo 2.4, Vitest 3.
-
----
-
-## Recommended Additions
-
-### 1. Reranker — Qwen3-Reranker-0.6B via Ollama Generate API
-
+### NLQ Temporal Parsing
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Qwen3-Reranker-0.6B | Q8_0 quant | Second-pass reranking of search results | Same Qwen3 family as existing models, fits on RTX 3070 alongside current models, 0.6B matches text model size budget |
+| chrono-node | ^2.9.0 | Extract temporal references from natural language queries | Zero dependencies, TypeScript native, handles "last week", "in January", "3 days ago" etc. deterministically without LLM. Parsing dates via LLM is wasteful when a 0-dependency library does it perfectly. |
 
-**CRITICAL FINDING:** Ollama does NOT have a native `/api/rerank` endpoint as of March 2026. The PR (#7219) is still pending. Reranking must be implemented via the `/api/generate` endpoint with a prompt-based scoring approach.
-
-**Implementation approach:** Use the existing `OllamaService.generate()` method with a cross-encoder-style prompt that asks the model to score query-document relevance on a 0-1 scale. This is how the community implements reranking with Ollama today.
-
-```
-Model tag: sam860/qwen3-reranker:0.6b-Q8_0
-    — or: dengcao/Qwen3-Reranker-0.6B:Q8_0
-```
-
-**Alternatives considered:**
-
-| Option | Why Not |
-|--------|---------|
-| Qwen3-Reranker-8B | Too large for RTX 3070 alongside embedding + text + VL models |
-| BAAI/bge-reranker via ONNX/FastEmbed | Requires separate Python service; adds deployment complexity |
-| vLLM with /v1/rerank endpoint | Overkill for single-user system; Ollama already running |
-| No reranker (current state) | The `rerank` weight slot in the scoring formula is already allocated at 0.30 but hardcoded to 0 |
-
-**Confidence:** MEDIUM — Model availability confirmed on Ollama registry. Generate-based reranking is a workaround, not native API. Performance with prompt-based scoring vs. true cross-encoder needs validation.
-
-**Env var to add:**
-```
-OLLAMA_RERANK_MODEL=sam860/qwen3-reranker:0.6b-Q8_0
-```
-
----
-
-### 2. Analytics — PostHog (Self-Hosted or Cloud)
-
+### Structured LLM Output (NO new dependency)
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| posthog-js | ^1.225.0 (already installed) | Frontend event tracking | Already in web package.json |
-| posthog-node | ^5.28.0 | Backend event tracking | Official Node SDK, batched async capture, NestJS-compatible |
+| Ollama `format` parameter | Ollama v0.5+ (already deployed) | Force JSON schema compliance from qwen3:0.6b | Already available in current Ollama. Pass `format: { type: "object", properties: {...}, required: [...] }` to `/api/chat`. Eliminates regex-based JSON extraction in `enrich.service.ts` (`parseJsonArray`/`parseJsonObject`). |
 
-**Current state:** `posthog-js` is already a dependency in `apps/web/package.json`. Backend SDK is not yet installed.
+### NO new NLP library needed
+| Considered | Why Not |
+|------------|---------|
+| compromise (NLP) | Entity extraction already done by Ollama in EnrichProcessor. Adding a second NER system creates conflicting outputs. Compromise's entity types (person/place/organization) are a subset of what Ollama already extracts (person, location, time, organization, amount, product, event, metric). |
+| wink-nlp | Same reasoning. Ollama is already the NER engine. |
+| nlp.js | Overkill; requires training data, intent classification we don't need. |
 
-**Self-hosting verdict: Use PostHog Cloud free tier, not self-hosted.** Self-hosted PostHog requires 4 vCPU, 16GB RAM, and runs ClickHouse + Kafka + Postgres + Redis + Zookeeper + MinIO. This is wildly disproportionate for a single-user personal tool. The free cloud tier (1M events/month) is more than sufficient.
+## Existing Stack (Use As-Is, No Changes)
 
-**Backend integration approach:** Wrap `posthog-node` in a NestJS provider (simple injectable service). Do NOT use the third-party `nestjs-posthog` package — it's community-maintained with low adoption. A 20-line wrapper is simpler and more maintainable.
+### Ollama qwen3:0.6b for NLQ Parsing and Summarization
+| Capability | How to Use | Why Not Add a Separate Model |
+|------------|-----------|------------------------------|
+| NLQ intent parsing | New prompt in `prompts.ts`: parse query into `{entities, topics, temporal, intent}` | qwen3:0.6b is already loaded in VRAM, ~100ms inference. Adding a separate model would double VRAM usage for marginal quality gain on short queries. |
+| Search result summarization | New prompt in `prompts.ts`: summarize top-N results into a natural language answer | Same model, same reasoning. Summarization of 5-10 search results is well within 0.6b capability for personal memory context. |
+| Entity type classification | Update `entityExtractionPrompt()` with stricter type enum + use Ollama `format` parameter | Current prompt allows freeform types. Constraining via JSON schema + clearer prompt fixes inconsistency without any new tech. |
+
+**Key insight:** The existing Ollama infrastructure handles all three features. The only code-level addition is `chrono-node` for temporal parsing, because regex/heuristic date parsing is more reliable and faster than LLM for temporal expressions.
+
+## Integration Architecture
+
+### Where Each Piece Fits
+
+```
+User Query: "What did Assad tell me about the car last week?"
+          |
+          v
+  [chrono-node] --> temporal: { from: "2026-03-01", to: "2026-03-08" }
+          |
+          v
+  [Ollama qwen3:0.6b + format param] --> { entities: ["Assad"], topics: ["car"], intent: "recall" }
+          |
+          v
+  [Existing MemoryService.search()] --> with temporal filter + entity resolution
+          |
+          v
+  [Ollama qwen3:0.6b] --> summarize top results into answer
+          |
+          v
+  Response: { answer: "Assad mentioned...", items: [...], parsedQuery: {...} }
+```
+
+### OllamaService Changes
+
+Add a `generateStructured<T>()` method alongside existing `generate()`:
 
 ```typescript
-// PosthogService — thin wrapper
-import { PostHog } from 'posthog-node';
-
-@Injectable()
-export class PosthogService {
-  private client: PostHog;
-  constructor(config: ConfigService) {
-    this.client = new PostHog(config.posthogApiKey, { host: config.posthogHost });
-  }
-  capture(distinctId: string, event: string, properties?: Record<string, any>) {
-    this.client.capture({ distinctId, event, properties });
-  }
-  async shutdown() { await this.client.shutdown(); }
+async generateStructured<T>(prompt: string, schema: object): Promise<T> {
+  const res = await fetch(`${this.baseUrl}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: this.textModel,
+      messages: [{ role: 'user', content: prompt }],
+      stream: false,
+      think: false,
+      format: schema,  // Ollama v0.5+ JSON schema constraint
+    }),
+    signal: AbortSignal.timeout(60_000),
+  });
+  const data = await res.json();
+  return JSON.parse(data.message.content);
 }
 ```
 
-**Env vars to add:**
-```
-POSTHOG_API_KEY=phc_...
-POSTHOG_HOST=https://us.i.posthog.com   # or EU: https://eu.i.posthog.com
-```
+This replaces the brittle `parseJsonArray()` / `parseJsonObject()` regex extraction in `enrich.service.ts` with schema-enforced output.
 
-**Alternatives considered:**
+**Known issue:** Ollama has a bug with `think: true` + `format` producing malformed JSON. The existing code already sets `think: false`, so this is not a concern.
 
-| Option | Why Not |
-|--------|---------|
-| PostHog self-hosted | Requires 16GB RAM, ClickHouse, Kafka — overkill for single-user |
-| Plausible | Web analytics only, no product analytics (funnels, user properties) |
-| Umami | Same — web analytics, not product analytics |
-| nestjs-posthog (npm) | Low adoption community package; trivial to wrap yourself |
-| No analytics | Missing visibility into what connectors/features are actually used |
+### NLQ Query Parsing Schema
 
-**Confidence:** HIGH — posthog-js already installed, posthog-node is well-documented official SDK.
-
----
-
-### 3. Scheduled Jobs — @nestjs/schedule + BullMQ Repeatable Jobs
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| @nestjs/schedule | ^5.0.0 | Cron-based job scheduling (nightly decay, periodic tasks) | Official NestJS package, decorator-based, zero config |
-| BullMQ repeatable jobs | (already have bullmq ^5) | Distributed-safe recurring jobs | Already using BullMQ; repeatable jobs are built-in |
-
-**Use both together:** `@nestjs/schedule` for simple cron triggers (nightly decay calculation, importance score refresh), which then enqueue BullMQ jobs for the actual work. This gives you cron scheduling with BullMQ's retry/monitoring for the heavy lifting.
-
-**Why not node-cron:** @nestjs/schedule wraps node-cron with NestJS DI integration and decorators. No reason to use raw node-cron in a NestJS app.
-
-**Single instance note:** Botmem is single-user, single-instance. The multi-instance scheduling problem (where @nestjs/schedule fires on every instance) does not apply here.
-
-**Confidence:** HIGH — Official NestJS package, well-documented.
-
----
-
-### 4. Plugin System — NestJS Dynamic Modules + DiscoveryService
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| NestJS DiscoveryModule | (built into @nestjs/core) | Scan and discover plugin providers at runtime | Zero dependency, built into NestJS core |
-
-**Current state:** The plugin system (`plugins.service.ts`) already works but is connector-only. It loads connector packages from a directory and registers them. This is a good foundation.
-
-**Extension strategy:** Evolve the existing pattern rather than replacing it:
-
-1. **Plugin manifest format** — Each plugin directory contains a `botmem-plugin.json` with type (`connector` | `enricher` | `hook`), entry point, and dependency declarations
-2. **Hook system** — Define lifecycle hooks (`onMemoryCreated`, `onSearchQuery`, `onContactMerged`) that plugins can subscribe to via decorators
-3. **Enricher plugins** — Plugins that add to the enrich pipeline (e.g., custom entity extractors, sentiment analysis)
-
-**Do NOT build:**
-- Hot-reloading of plugins at runtime — unnecessary complexity for a personal tool
-- Plugin marketplace/registry — premature
-- Plugin sandboxing — plugins run with full trust (it's your own machine)
-
-**Confidence:** HIGH — NestJS dynamic modules are well-documented and the existing plugin loader already uses this pattern.
-
----
-
-### 5. Importance Reinforcement — No New Dependencies
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| (none needed) | — | Track recall count, boost importance on access | Pure application logic using existing SQLite + Drizzle |
-
-**Implementation requires only schema changes:**
-- Add `recallCount` integer column to `memories` table
-- Add `lastRecalledAt` timestamp column
-- Increment on search result access
-- Factor into importance: `importance = base + min(recallCount * 0.05, 0.3)`
-
-**No external library needed.** This is pure business logic.
-
-**Confidence:** HIGH — straightforward schema addition.
-
----
-
-### 6. Memory Pinning — No New Dependencies
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| (none needed) | — | User-pinned memories get permanent importance boost | Pure schema change |
-
-**Add `pinned` boolean to memories table.** Pinned memories get importance = 1.0, bypassing decay.
-
-**Confidence:** HIGH.
-
----
-
-### 7. Nightly Decay Job — No New Dependencies
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| (none needed) | — | Refresh recency scores, apply importance decay | BullMQ repeatable job + @nestjs/schedule trigger |
-
-**The recency score is already computed at query time** (`Math.exp(-0.015 * ageDays)`). A nightly job is only needed if you want to:
-- Pre-compute and cache scores in SQLite (avoid per-query computation)
-- Apply importance decay for memories not recalled recently
-- Update Qdrant payload metadata with fresh scores
-
-**Recommendation:** Keep recency as query-time computation (it's fast). Use the nightly job only for importance decay:
-```
-newImportance = importance * 0.998  // ~50% after 1 year of no recall
+```typescript
+const NLQ_SCHEMA = {
+  type: "object",
+  properties: {
+    entities: {
+      type: "array",
+      items: { type: "string" },
+      description: "Person names, organization names mentioned"
+    },
+    topics: {
+      type: "array",
+      items: { type: "string" },
+      description: "Subject matter keywords"
+    },
+    temporalExpression: {
+      type: "string",
+      description: "Any time reference like 'last week', 'in January', 'yesterday'"
+    },
+    intent: {
+      type: "string",
+      enum: ["recall", "find", "summarize", "count", "list"],
+      description: "What the user wants to do"
+    },
+    sourceHint: {
+      type: "string",
+      enum: ["email", "message", "photo", "location", "any"],
+      description: "Implied data source"
+    }
+  },
+  required: ["entities", "topics", "intent"]
+};
 ```
 
-**Confidence:** HIGH.
+### Entity Type Classification Fix
 
----
+Current `entityExtractionPrompt` allows freeform types. Fix by:
 
-## Supporting Libraries (Optional/Future)
+1. Using Ollama `format` parameter with strict schema:
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| zod | ^3.24 | Runtime schema validation for plugin manifests, API inputs | When adding plugin manifest validation or tightening API input validation |
-| pino | ^9.6 | Structured JSON logging | When you need log aggregation or want machine-readable logs; NestJS Logger is fine for now |
-| ioredis (already installed) | ^5.0 | Redis client | Already in use for BullMQ |
+```typescript
+const ENTITY_SCHEMA = {
+  type: "array",
+  items: {
+    type: "object",
+    properties: {
+      type: { type: "string", enum: ["person", "organization", "location", "event", "product", "date", "amount"] },
+      value: { type: "string" },
+      confidence: { type: "number" }
+    },
+    required: ["type", "value", "confidence"]
+  }
+};
+```
 
----
+2. This eliminates inconsistent types like "metric", "time" vs "date", or freeform strings that currently pollute the entities column.
 
-## What NOT to Use
+## Alternatives Considered
 
-| Technology | Why Not |
-|------------|---------|
-| LangChain / LlamaIndex | Massive dependency trees, abstractions over simple HTTP calls to Ollama. Your OllamaService is 100 lines and does exactly what you need. |
-| PostgreSQL / pgvector | SQLite + Qdrant is working. Adding Postgres adds operational complexity for no benefit in single-user system. |
-| Prisma | Already using Drizzle. Switching ORMs mid-project is pointless churn. |
-| Elasticsearch | Qdrant handles vector search. SQLite LIKE handles text search. Adding ES is massive overhead. |
-| FastEmbed / ONNX rerankers | Requires Python runtime or ONNX bindings. Stay in the Node.js + Ollama ecosystem. |
-| GraphQL | REST API is working, single consumer (web + CLI). GraphQL adds complexity without benefit. |
-| Redis Streams (for event bus) | BullMQ already provides pub/sub via Redis. WebSocket gateway handles real-time. No need for another event layer. |
-| Weaviate / Milvus / Pinecone | Already on Qdrant, which is working well. No reason to switch. |
-
----
+| Category | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| Temporal parsing | chrono-node | LLM-based date extraction | LLM is slower (100ms+), non-deterministic, can hallucinate dates. chrono-node is instant and correct. |
+| Temporal parsing | chrono-node | date-fns / dayjs parse | These parse formatted dates, not natural language ("last Tuesday"). |
+| NLQ parsing | Ollama qwen3:0.6b | Separate NLQ model (e.g., T5-small) | Adds model management complexity, extra VRAM. qwen3:0.6b is already loaded and handles short prompt parsing fine. |
+| NLQ parsing | Ollama qwen3:0.6b | Rule-based regex parser | Too brittle for varied natural language. "emails from John about invoices" vs "what John said about invoices in emails" -- regex can't handle this reliably. |
+| Summarization | Ollama qwen3:0.6b | Upgrade to qwen3:1.7b or larger | 0.6b is sufficient for summarizing 5-10 short memory snippets (personal context, not academic papers). Larger model doubles VRAM for marginal quality gain. |
+| Structured output | Ollama `format` param | Zod + manual validation | Ollama's grammar-constrained generation is strictly better -- invalid JSON literally cannot be produced. Zod validation is a fallback, not a replacement. |
+| Entity classification | Prompt + schema fix | Separate classification model | Over-engineering. The current model extracts entities fine; the problem is freeform type labels, solved by constraining the schema. |
 
 ## Installation
 
 ```bash
-# New backend dependencies
-pnpm --filter @botmem/api add posthog-node@^5.28.0 @nestjs/schedule@^5.0.0
-
-# Pull reranker model on Ollama host
-# (run on the machine at 192.168.10.250)
-ollama pull sam860/qwen3-reranker:0.6b-Q8_0
+# Only ONE new dependency
+cd /Users/amr/Projects/botmem
+pnpm --filter @botmem/api add chrono-node
 ```
 
----
+No other packages needed. Everything else is prompt engineering + using existing Ollama `format` parameter.
 
-## Environment Variables Summary (New)
+## What NOT to Add
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `OLLAMA_RERANK_MODEL` | `sam860/qwen3-reranker:0.6b-Q8_0` | Reranker model for second-pass scoring |
-| `POSTHOG_API_KEY` | (none) | PostHog project API key |
-| `POSTHOG_HOST` | `https://us.i.posthog.com` | PostHog ingest endpoint |
+| Technology | Why Not |
+|------------|---------|
+| LangChain / LlamaIndex | Massive dependency for what amounts to 3 prompt templates and 1 Ollama API call. Botmem already has direct Ollama integration. |
+| OpenAI SDK | Project uses local Ollama; adding OpenAI SDK adds unnecessary abstraction. v2.0 will use OpenRouter which is OpenAI-compatible anyway. |
+| Vector DB query language | Qdrant's filter API is already sufficient. No need for a query DSL layer. |
+| compromise / wink-nlp | Duplicate NER engine alongside Ollama. Creates conflicting entity outputs. |
+| Zod | Not needed for runtime validation when Ollama `format` parameter guarantees schema compliance at generation time. If needed later, it's a dev-time convenience, not a search intelligence dependency. |
+| Instructor (structured output lib) | Python-first library. The JS port wraps OpenAI SDK. Ollama's native `format` parameter does the same thing with zero dependencies. |
 
----
+## Confidence Assessment
+
+| Decision | Confidence | Reasoning |
+|----------|------------|-----------|
+| chrono-node for temporal | HIGH | Zero-dependency, TypeScript, 7M+ weekly downloads, handles all needed temporal expressions. Verified via npm and GitHub. |
+| Ollama `format` parameter | HIGH | Documented in official Ollama docs since v0.5. Already works with qwen3:0.6b (with `think: false`). Verified via official docs. |
+| qwen3:0.6b for NLQ parsing | MEDIUM | Not benchmarked for short-query intent parsing specifically, but the model is already proven for entity extraction and factuality in this codebase. Query parsing prompts are simpler than entity extraction. |
+| qwen3:0.6b for summarization | MEDIUM | 0.6b models can summarize short texts well, but quality degrades with longer context. Limiting to top 5-10 results (each truncated to ~200 chars) keeps total context under 2K tokens, well within capability. |
+| No NLP library needed | HIGH | Examined compromise, wink-nlp, nlp.js. All would duplicate existing Ollama NER. The entity type problem is a prompt/schema issue, not a library issue. |
 
 ## Sources
 
-- [Ollama reranker model search](https://ollama.com/search?q=rerank) — confirmed model availability
-- [sam860/qwen3-reranker on Ollama](https://ollama.com/sam860/qwen3-reranker) — model tags and sizes
-- [Ollama rerank API issue #3368](https://github.com/ollama/ollama/issues/3368) — no native rerank endpoint
-- [Ollama rerank PR #7219](https://github.com/ollama/ollama/pull/7219) — pending merge
-- [PostHog Node.js SDK docs](https://posthog.com/docs/libraries/node) — official documentation
-- [posthog-node on npm](https://www.npmjs.com/package/posthog-node) — version 5.28.0
-- [PostHog self-host requirements](https://posthog.com/docs/self-host) — 4 vCPU, 16GB RAM minimum
-- [NestJS task scheduling docs](https://docs.nestjs.com/techniques/task-scheduling) — @nestjs/schedule
-- [NestJS dynamic modules docs](https://docs.nestjs.com/fundamentals/dynamic-modules) — plugin architecture patterns
-- [NestJS DiscoveryModule](https://docs.nestjs.com/) — built-in provider scanning
-- [Qdrant reranking guide](https://qdrant.tech/documentation/search-precision/reranking-semantic-search/) — two-stage reranking best practices
-- [Qwen3-Reranker-0.6B on HuggingFace](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B) — model documentation
-- [Reranking with Ollama and Qwen3](https://www.glukhov.org/post/2025/06/qwen3-embedding-qwen3-reranker-on-ollama/) — implementation patterns
+- [Ollama Structured Outputs Documentation](https://docs.ollama.com/capabilities/structured-outputs)
+- [Ollama Blog: Structured Outputs](https://ollama.com/blog/structured-outputs)
+- [chrono-node on npm](https://www.npmjs.com/package/chrono-node)
+- [chrono-node GitHub](https://github.com/wanasit/chrono)
+- [Ollama JSON + thinking mode issue #10929](https://github.com/ollama/ollama/issues/10929)
+- [Constraining LLMs with Structured Output: Ollama + Qwen3](https://medium.com/@rosgluk/constraining-llms-with-structured-output-ollama-qwen3-python-or-go-2f56ff41d720)
+- [qwen3:0.6b on Ollama](https://ollama.com/library/qwen3:0.6b)
+- [compromise NLP on GitHub](https://github.com/spencermountain/compromise)

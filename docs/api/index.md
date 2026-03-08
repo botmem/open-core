@@ -1,8 +1,8 @@
 # API Reference
 
-The Botmem REST API is served by a NestJS application on port 3001 (configurable via the `PORT` environment variable). All endpoints are prefixed with `/api`.
+The Botmem REST API is served by a NestJS application on port 12412 (configurable via the `PORT` environment variable). All endpoints are prefixed with `/api`.
 
-**Base URL:** `http://localhost:3001/api`
+**Base URL:** `http://localhost:12412/api`
 
 ## Authentication
 
@@ -113,7 +113,7 @@ Successful responses vary by endpoint -- see the individual reference pages.
 
 | Path | Description |
 |---|---|
-| `ws://localhost:3001/events` | Real-time event gateway |
+| `ws://localhost:12412/events` | Real-time event gateway |
 
 [Full reference](/api/websocket)
 

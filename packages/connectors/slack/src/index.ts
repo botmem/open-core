@@ -44,7 +44,7 @@ export class SlackConnector extends BaseConnector {
         token: { type: 'string', title: 'User Token', description: 'xoxp-...' },
         clientId: { type: 'string', title: 'Slack App Client ID' },
         clientSecret: { type: 'string', title: 'Slack App Client Secret' },
-        redirectUri: { type: 'string', title: 'Redirect URI', default: 'http://localhost:3001/api/auth/slack/callback' },
+        redirectUri: { type: 'string', title: 'Redirect URI', default: 'http://localhost:12412/api/auth/slack/callback' },
       },
       required: [],
     },
@@ -68,14 +68,14 @@ export class SlackConnector extends BaseConnector {
 
     // OAuth flow
     this.config = config as Record<string, string>;
-    const redirectUri = (config.redirectUri as string) || 'http://localhost:3001/api/auth/slack/callback';
+    const redirectUri = (config.redirectUri as string) || 'http://localhost:12412/api/auth/slack/callback';
     const url = getSlackAuthUrl(config.clientId as string, redirectUri);
     return { type: 'redirect', url };
   }
 
   async completeAuth(params: Record<string, unknown>): Promise<AuthContext> {
     const code = params.code as string;
-    const redirectUri = (this.config.redirectUri as string) || 'http://localhost:3001/api/auth/slack/callback';
+    const redirectUri = (this.config.redirectUri as string) || 'http://localhost:12412/api/auth/slack/callback';
     const data = await exchangeSlackCode(
       (params.clientId as string) || this.config.clientId,
       (params.clientSecret as string) || this.config.clientSecret,

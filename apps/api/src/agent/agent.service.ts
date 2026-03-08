@@ -73,7 +73,7 @@ export class AgentService {
     options?: { filters?: { sourceType?: string; connectorType?: string; contactId?: string }; limit?: number },
   ): Promise<{ results: EnrichedMemory[]; query: string }> {
     const limit = options?.limit ?? 20;
-    const searchResults = await this.memoryService.search(query, options?.filters, limit);
+    const { items: searchResults } = await this.memoryService.search(query, options?.filters, limit);
 
     const enriched = await Promise.all(
       searchResults.map((r) => this.enrichMemory(r.id, r.score)),
@@ -308,7 +308,7 @@ export class AgentService {
     query: string,
     maxResults = 10,
   ): Promise<{ summary: string | null; memories: EnrichedMemory[]; sourceIds: string[] }> {
-    const searchResults = await this.memoryService.search(query, undefined, maxResults);
+    const { items: searchResults } = await this.memoryService.search(query, undefined, maxResults);
 
     const enriched: EnrichedMemory[] = [];
     for (const r of searchResults) {

@@ -1,205 +1,256 @@
-
-# Personal Memory RAG System (Single-Person, Multimodal, Fact/Fiction-Aware)
+# Botmem — Personal Memory RAG System (Single-Person, Multimodal, Fact/Fiction-Aware)
 
 ## Summary
-Build a local-first memory platform that ingests atomic events (emails, messages, photos, locations), normalizes them into a unified memory schema, and supports cross-modal retrieval with weighted ranking (semantic relevance + recency + importance + trust).  
-Use Qwen embedding/reranker models via Ollama at `192.168.10.250` (configured by env var), optimized for latency on RTX 3070.  
-Add a separate fact/fiction pipeline that stores all memories but labels confidence and provenance.
+
+Local-first memory platform that ingests atomic events from multiple data sources (emails, messages, photos, locations), normalizes them into a unified memory schema, and provides cross-modal retrieval with weighted ranking (semantic relevance + recency + importance + trust).
+Uses Ollama models on a remote server at `192.168.10.250` — `nomic-embed-text` for embeddings, `qwen3:0.6b` for text enrichment, `qwen3-vl:2b` for vision.
+Includes a fact/fiction pipeline that stores all memories but labels confidence and provenance.
 
 ## Scope and Goals
+
 1. In scope:
-1. Ingest and normalize messages, emails, photos (textified), and locations.
-2. Store searchable memory with vector + metadata + relationship links.
-3. Retrieve memory from text, message snippets, contact context, image-derived text, and location/time filters.
-4. Compute memory weights for relevance, recency, importance, and trust.
-5. Classify incoming memory as `FACT`, `UNVERIFIED`, or `FICTION` with confidence.
-6. Ship a Docker Compose stack with DB, vector DB, visualization, workers, and API.
+  1. Ingest and normalize messages, emails, photos (textified), and locations.
+  2. Store searchable memory with vector + metadata + relationship links.
+  3. Retrieve memory from text, message snippets, contact context, image-derived text, and location/time filters.
+  4. Compute memory weights for relevance, recency, importance, and trust.
+  5. Classify incoming memory as `FACT`, `UNVERIFIED`, or `FICTION` with confidence.
+  6. Ship a Docker Compose stack with Redis, Qdrant, and application services.
+  7. Contacts as first-class entities: deduplicated across connectors with avatars, metadata, and all identifiers.
 2. Out of scope (v1):
-1. Native image embedding retrieval (deferred; image retrieval via OCR/caption/metadata).
-2. Multi-person identity graph (single target person only).
-3. Automatic deletion policy engine (manual/admin-driven in v1).
+  1. Native image embedding retrieval (deferred; image retrieval via OCR/caption/metadata).
+  2. Multi-person identity graph (single target person only).
+  3. Automatic deletion policy engine (manual/admin-driven in v1).
 
 ## System Architecture
-1. `ingest-api`:
-1. Receives connector events and manual uploads.
-2. Validates, deduplicates, and enqueues normalization jobs.
-2. `normalizer-worker`:
-1. Converts raw input into canonical `MemoryEvent`.
-2. Extracts entities, claims, and evidence references.
-3. Generates embeddings and sparse terms.
-3. `retrieval-api`:
-1. Handles query parsing, ANN/hybrid retrieval, reranking, weighted scoring, and response assembly.
-4. `fact-fiction-worker`:
-1. Runs claim extraction + evidence retrieval + factuality inference.
-2. Persists label, confidence, and explanation.
-5. Storage:
-1. PostgreSQL for canonical memory/events/claims/weights/audit.
-2. Qdrant for dense vectors and filtered ANN search.
-3. MinIO for raw artifacts (image/email attachments).
-4. Redis for queue/cache/job state.
-6. Visualization:
-1. `vector-viz` service (Streamlit) for PCA/UMAP projection from Qdrant + metadata overlays.
-2. `pgadmin` for relational inspection.
-3. Qdrant dashboard for collection-level ops.
 
-## Public APIs / Interfaces / Types
-1. `POST /v1/memories/ingest`
-1. Input: `source_type`, `source_id`, `person_id`, `event_time`, `payload`, `provenance`.
-2. Output: `memory_id`, `status`, `dedupe_status`.
-2. `POST /v1/memories/query`
-1. Input: `query`, optional `query_type` (`text|image_text|location|contact|hybrid`), filters, `top_k`.
-2. Output: ranked list with `memory_id`, `score_breakdown`, `fact_label`, `confidence`, `citations`.
-3. `GET /v1/memories/{id}`
-1. Returns canonical event + linked claims + source artifacts + weight timeline.
-4. `POST /v1/factuality/evaluate`
-1. Re-evaluates factuality for one memory or a set.
-5. `POST /v1/weights/recompute`
-1. Recomputes recency/importance/trust scores in batch.
-6. Core types:
-1. `MemoryEvent`: atomic normalized unit (message/email/photo/location event).
-2. `MemoryClaim`: extracted proposition linked to event.
-3. `EvidenceLink`: supports/contradicts/related references.
-4. `MemoryWeight`: `{semantic, rerank, recency, importance, trust, final}`.
-5. `FactualityLabel`: `FACT | UNVERIFIED | FICTION`.
+### Monorepo Structure (pnpm workspaces + Turbo)
 
-## Data Model (Decision Complete)
-1. PostgreSQL tables:
-1. `persons(id, display_name, timezone, created_at)`
-2. `memories(id, person_id, source_type, source_id, event_time, ingest_time, canonical_text, metadata_json, dedupe_hash, artifact_uri, status)`
-3. `memory_entities(memory_id, entity_type, entity_value, confidence)`
-4. `memory_claims(id, memory_id, claim_text, claim_type, extracted_at)`
-5. `memory_evidence(id, claim_id, evidence_memory_id, relation, score)`
-6. `memory_weights(memory_id, semantic, rerank, recency, importance, trust, final, computed_at)`
-7. `factuality(memory_id, label, confidence, rationale_json, model_version, evaluated_at)`
-8. `memory_links(src_memory_id, dst_memory_id, link_type, strength)`
-9. `ingest_audit(id, source_type, source_id, outcome, reason, created_at)`
-2. Qdrant collections:
-1. `memory_dense_v1`: vector + payload (`memory_id`, `person_id`, `source_type`, `event_time`, tags).
-2. `memory_sparse_v1` (optional v1.1 for hybrid sparse+dense if needed).
+```
+apps/
+  api/          NestJS 11 backend (REST + WebSocket)
+  web/          React 19 + React Router 7 + Zustand 5 + Tailwind 4
+packages/
+  cli/          CLI tool (`botmem`) — human + JSON output for querying memories
+  connector-sdk/   BaseConnector abstract class + ConnectorRegistry
+  connectors/
+    gmail/         OAuth2, imports emails + contacts
+    slack/         User token, workspace messages
+    whatsapp/      QR-code auth (Baileys v6), message history
+    imessage/      Local tool, reads iMessage DB
+    photos-immich/ Local tool, Immich photo library
+    locations/     OwnTracks location history
+  shared/          Cross-layer types (Memory, Job, ConnectorManifest, etc.)
+```
 
-## Ingestion and Normalization
-1. Connector adapters:
-1. Email (IMAP/API export), message exports/APIs, photo library metadata, location history.
-2. Normalize all to event schema with strict UTC timestamps + source provenance.
-2. Content extraction:
-1. Messages/emails: clean text, participants, thread ids.
-2. Photos: OCR text + caption generation + EXIF + geodata.
-3. Locations: semantic place label + lat/lon + dwell intervals.
-3. Dedupe:
-1. Deterministic hash on `(source_type, source_id, canonical_text_digest, event_time_bucket)`.
-2. Near-duplicate detection via embedding cosine threshold for merge candidates.
-4. Embedding instruction strategy (from Qwen paper direction):
-1. Use task instruction prefixes consistently by memory/query type.
-2. Store normalized vectors and keep room for Matryoshka-style dim truncation policy later.
+### Services
+
+1. **API** (`apps/api`):
+  - NestJS 11 REST + WebSocket gateway (`/events`) for real-time updates.
+  - Handles connector orchestration, auth flows, memory search, and job management.
+  - Drizzle ORM + SQLite (better-sqlite3, WAL mode) for relational data.
+  - BullMQ on Redis for async job processing.
+2. **Frontend** (`apps/web`):
+  - React 19 + Vite 6 + React Router 7 + Zustand 5 + Tailwind 4.
+  - Pages: Dashboard, Connectors, Memory Explorer (force-directed graph), Contacts, Settings, Me.
+  - PostHog JS SDK for product analytics (pageview tracking on route change).
+3. **CLI** (`packages/cli`):
+  - `botmem` binary for humans and AI agents.
+  - Supports `--json` flag for machine-readable output, `--api-url` for non-default API.
+
+### Storage
+
+1. **SQLite** (Drizzle ORM, WAL mode) — canonical memory, events, contacts, jobs, settings.
+2. **Qdrant** — dense vectors (768d, cosine similarity), auto-created `memories` collection.
+3. **Redis** — BullMQ queue backend for async job processing.
+
+### External Dependencies
+
+- **Ollama** (remote at `192.168.10.250:11434`) — embedding, text enrichment, vision models.
+- **PostHog** — product analytics (client-side JS SDK, optional).
+
+## Environment Variables
+
+
+| Variable               | Default                       | Purpose                                  |
+| ---------------------- | ----------------------------- | ---------------------------------------- |
+| `PORT`                 | `12412`                       | API server port                          |
+| `REDIS_URL`            | `redis://localhost:6379`      | BullMQ queue backend                     |
+| `DB_PATH`              | `./data/botmem.db`            | SQLite database file                     |
+| `QDRANT_URL`           | `http://localhost:6333`       | Vector DB                                |
+| `OLLAMA_BASE_URL`      | `http://192.168.10.250:11434` | Remote Ollama inference                  |
+| `OLLAMA_EMBED_MODEL`   | `nomic-embed-text`            | Embedding model (768d)                   |
+| `OLLAMA_TEXT_MODEL`    | `qwen3:0.6b`                  | Text enrichment model (uses /no_think)   |
+| `OLLAMA_VL_MODEL`      | `qwen3-vl:2b`                 | Vision-language model (photo enrichment) |
+| `FRONTEND_URL`         | `http://localhost:12412`       | CORS / OAuth redirect origin             |
+| `PLUGINS_DIR`          | `./plugins`                   | External plugin directory                |
+| `VITE_POSTHOG_API_KEY` | (none)                        | PostHog project API key (frontend)       |
+| `VITE_POSTHOG_HOST`    | `http://localhost:8000`       | PostHog API host (frontend)              |
+
+
+## Connectors
+
+A connector is a pluggable data source adapter extending `BaseConnector` from `@botmem/connector-sdk`.
+
+### Implemented Connectors
+
+
+| Connector             | Auth Type            | Data                  | Contacts                                      |
+| --------------------- | -------------------- | --------------------- | --------------------------------------------- |
+| Gmail                 | OAuth2               | Emails (full history) | Yes (names, emails, avatars)                  |
+| Slack                 | User token           | Workspace messages    | Yes (profiles, avatars)                       |
+| WhatsApp              | QR code (Baileys v6) | Message history       | Partial (LID-based, limited phone resolution) |
+| iMessage              | Local tool           | iMessage DB           | Yes                                           |
+| Photos-Immich         | Local tool           | Immich photo library  | No                                            |
+| Locations (OwnTracks) | HTTP auth            | GPS location history  | No                                            |
+
+
+### Connector Interface
+
+Every connector must implement:
+
+- `manifest` — metadata (id, name, authType, configSchema)
+- `initiateAuth(config)` / `completeAuth(params)` / `validateAuth(auth)` / `revokeAuth(auth)`
+- `sync(ctx: SyncContext)` — pull data, emit `ConnectorDataEvent` objects via `this.emitData()`
+
+Connectors are EventEmitters. During sync they emit `data`, `progress`, and `log` events.
+Default sync behavior: pull maximum data available (full history, not limited/recent).
+`BaseConnector.DEBUG_SYNC_LIMIT` must be 0 (disabled) in production.
+
+## Jobs & Queue System (BullMQ)
+
+
+| Queue      | Worker            | Purpose                                                                                 |
+| ---------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `sync`     | `SyncProcessor`   | Orchestrates `connector.sync()`, writes to `rawEvents`                                  |
+| `embed`    | `EmbedProcessor`  | Parses raw event, creates Memory, generates embedding, resolves contacts                |
+| `enrich`   | `EnrichProcessor` | Extracts entities/claims, classifies factuality, computes importance, upserts to Qdrant |
+| `backfill` | —                 | Retroactive enrichment of older memories                                                |
+
+
+Job statuses: `queued → running → done | failed | cancelled`
+Jobs table tracks progress (`progress`/`total` fields) and errors.
+The `EventsGateway` (WebSocket at `/events`) broadcasts real-time job progress to the frontend.
+
+## Pipeline: Raw Event → Queryable Memory
+
+```
+Connector.sync()
+  → rawEvents table (immutable payload store)
+  → [sync queue] SyncProcessor
+  → [embed queue] EmbedProcessor
+      ├ Parse raw event payload
+      ├ Create Memory record in SQLite
+      ├ Generate embedding via Ollama (nomic-embed-text, 768d)
+      ├ Resolve participants → Contacts (dedup by email/phone/handle)
+      └ Enqueue enrich job
+  → [enrich queue] EnrichProcessor
+      ├ Extract entities (via Ollama VL + prompts)
+      ├ Extract claims
+      ├ Classify factuality (FACT / UNVERIFIED / FICTION)
+      ├ Compute importance baseline
+      ├ Update Memory with metadata
+      └ Upsert vector → Qdrant collection
+```
+
+## Data Model
+
+### SQLite Tables (Drizzle ORM)
+
+- `accounts` — connector accounts + encrypted auth context + sync cursor
+- `jobs` — sync job tracking (status, progress, errors)
+- `logs` — per-job log entries (info/warn/error/debug)
+- `connectorCredentials` — OAuth credentials cache per connector type
+- `rawEvents` — immutable ingested payloads (before normalization)
+- `memories` — normalized events with text, weights, entities, claims, factuality
+- `memoryLinks` — relationship graph (related / supports / contradicts)
+- `contacts` — deduplicated people (displayName, entityType, avatars, metadata)
+- `contactIdentifiers` — email/phone/name/slack_id mappings to contact (with confidence)
+- `memoryContacts` — memory ↔ contact associations with role (sender/recipient/mentioned/participant)
+- `mergeDismissals` — dismissed contact merge suggestions
+- `settings` — key-value application settings
+
+### Qdrant Collection
+
+- `memories`: dense vectors (768d, cosine), payload includes `memory_id`, `source_type`, `connector_type`, `event_time`.
+
+### Key Design Decisions
+
+- All IDs are UUIDs (text primary keys in SQLite).
+- All timestamps are ISO 8601 strings.
+- JSON columns stored as text, parsed at application layer.
+- Auth context is encrypted at rest.
+- Contact resolution skips `name` type identifiers to prevent false merges.
 
 ## Retrieval and Ranking
-1. Query understanding:
-1. Detect intent type (`who/when/where/what/media`) and constraints.
-2. Convert image/text/location input into text query + structured filters.
-2. Candidate generation:
-1. Qdrant ANN top `N=200`.
-2. Postgres metadata filter pre/post ANN (`person_id`, date range, source type, contact ids, location bbox).
-3. Optional lexical boost from Postgres FTS.
-3. Reranking:
-1. Qwen reranker on top `K=50` candidate memory snippets.
-2. Return rerank logits and normalized rerank score.
-4. Final weighted score:
-1. `final = 0.40*semantic + 0.30*rerank + 0.15*recency + 0.10*importance + 0.05*trust` (v1 defaults).
-2. `recency = exp(-lambda * age_days)` with `lambda=0.015`.
-3. `importance` boosted by repeated recall, direct person mention, and user pinning.
-4. `trust` from provenance reliability + factuality confidence.
-5. Reinforcement:
-1. Each successful retrieval click/save raises `importance` with capped increment.
-2. Nightly decay job updates recency and final score.
+
+### Scoring Formula
+
+```
+final = 0.40×semantic + 0.30×rerank + 0.15×recency + 0.10×importance + 0.05×trust
+recency = exp(-0.015 × age_days)
+```
+
+- `semantic` — Qdrant cosine similarity score
+- `rerank` — optional second-pass reranker score
+- `recency` — exponential decay from event time
+- `importance` — boosted by repeated recall, direct mention, user pinning
+- `trust` — connector base trust + factuality confidence
+
+### Search Filters
+
+- `sourceType` — email, message, photo, location
+- `connectorType` — gmail, slack, whatsapp, imessage, etc.
+- `contactId` — filter by associated contact
+- `factualityLabel` — FACT, UNVERIFIED, FICTION
 
 ## Fact/Fiction Subsystem
-1. Policy:
-1. Always store memories.
-2. Label memories with factuality instead of dropping.
-2. Pipeline:
-1. Extract claims from canonical text.
-2. Retrieve internal evidence memories relevant to each claim.
-3. Score support/contradiction using reranker + LLM judge prompt.
-4. Produce `FACT`, `UNVERIFIED`, or `FICTION` with confidence and rationale.
-3. Provenance-driven truth weighting:
-1. Each source has base trust weight (manual config).
-2. Contradictions resolved by weighted evidence and recency.
-4. UI/Query behavior:
-1. Default retrieval includes all labels.
-2. Filters: `facts_only`, `exclude_fiction`, `confidence >= x`.
-3. Result cards show provenance and factuality explanation.
 
-## Model Strategy for RTX 3070 + Remote Ollama
-1. Connection:
-1. Use env var `OLLAMA_BASE_URL=http://192.168.10.250:11434`.
-2. No Ollama container in compose; app points to external endpoint.
-2. Latency-first model defaults:
-1. Embedding: smallest available new Qwen embedding variant (`0.6B` class) on Ollama.
-2. Reranker: smallest available new Qwen reranker variant (`0.6B` class) on Ollama.
-3. Quantization:
-1. Prefer `Q8_0` if latency target is met.
-2. Fallback to `Q4_K_M` when VRAM pressure appears.
-4. Startup benchmark gate (automatic):
-1. Run fixed micro-benchmark on service boot over 200 sample chunks.
-2. Select fastest model tag meeting minimum quality threshold.
-3. Persist chosen tags in DB/settings for reproducibility.
+1. **Policy:** Always store memories. Label with factuality instead of dropping.
+2. **Labels:** `FACT` (corroborated), `UNVERIFIED` (default, single-source), `FICTION` (contradicted).
+3. **Each memory carries:** `{label, confidence, rationale}`.
 
-## Docker Compose Dependencies (v1)
-1. Services:
-1. `api` (FastAPI)
-2. `worker` (Celery/Arq)
-3. `postgres` (+ `pgvector`)
-4. `qdrant`
-5. `redis`
-6. `minio`
-7. `pgadmin`
-8. `vector-viz` (Streamlit + UMAP/Plotly)
-9. `prometheus` + `grafana` (basic observability)
-2. Volumes:
-1. Persistent volumes for Postgres, Qdrant, MinIO.
-3. Secrets/config:
-1. `.env` includes `OLLAMA_BASE_URL`, model tags, trust weights, and connector creds.
-2. App startup fails fast if Ollama endpoint is unreachable.
+## Docker Compose (Infrastructure)
 
-## Testing and Acceptance Criteria
-1. Ingestion tests:
-1. Each modality maps to valid `MemoryEvent`.
-2. Dedupe blocks exact duplicates and flags near duplicates.
-2. Retrieval tests:
-1. Text query retrieves expected memory in top 5 for curated benchmark set.
-2. Contact/time/location filters strictly constrain results.
-3. Image-textified query returns relevant photos via OCR/caption fields.
-3. Ranking tests:
-1. Recency decay changes ordering as expected.
-2. Importance reinforcement increases rank after repeated access.
-4. Fact/fiction tests:
-1. Conflicting claims produce non-default label and confidence.
-2. Low-evidence claims become `UNVERIFIED`, not forced `FACT`.
-5. Performance tests (3070 + remote Ollama):
-1. P95 query latency target: `<1200ms` for `top_k=10`.
-2. Ingest embedding throughput target: `>=40 memory events/sec` batch mode.
-6. Reliability tests:
-1. Ollama endpoint down triggers clear error and retry behavior.
-2. Queue backpressure does not lose ingest events.
+```yaml
+services:
+  redis       # Redis 7 Alpine — BullMQ queue backend
+  qdrant      # Qdrant latest — vector DB
+```
 
-## Rollout Plan
-1. Phase 0: skeleton services, schemas, compose stack, health checks.
-2. Phase 1: ingestion + normalization + embedding + ANN retrieval.
-3. Phase 2: reranker integration + weighted scoring + recency/importance jobs.
-4. Phase 3: fact/fiction labeling pipeline + query filters + rationale exposure.
-5. Phase 4: vector visualization dashboards + tuning + benchmark harness.
+Ollama runs externally at `192.168.10.250:11434` (not containerized).
+Application services (API, web) run via `pnpm dev` in development.
 
-## Assumptions and Defaults Locked
-1. Single-person memory system in v1.
-2. Modalities in v1: messages, emails, photos (textified), locations.
-3. Memory unit: atomic events.
-4. Fact/fiction policy: store all, label with confidence.
-5. Truth conflict policy: provenance-weighted evidence + recency.
-6. Deployment: external Ollama endpoint via env var; testing on RTX 3070 host.
-7. Priority: latency-first model selection.
+## Frontend Pages
 
-## Source References
-1. Qwen paper you provided: [arXiv 2601.04720 PDF](https://arxiv.org/pdf/2601.04720)
-2. Qwen official model repo/docs: [QwenLM GitHub](https://github.com/QwenLM/Qwen3-Embedding)
-3. Ollama model library reference (for tag availability/workflow): [Ollama Library](https://ollama.com/library)
+- **Me** — personal overview (default route)
+- **Dashboard** — system status and stats
+- **Connectors** — setup, OAuth, QR auth, sync progress
+- **Memory Explorer** — search + force-directed graph visualization (react-force-graph-2d)
+- **Contacts** — deduplicated contact list with merge suggestions
+- **Settings** — application configuration
+
+## CLI
+
+- Binary: `npx botmem` or `node packages/cli/dist/cli.js`
+- Commands: search memories, query contacts
+- Flags: `--json` (machine-readable), `--api-url` (non-default API)
+
+## Known Issues & Constraints
+
+- WhatsApp uses LID format (`@lid`) — opaque identifiers, NOT phone numbers. LID→phone resolution is NOT possible through Baileys v6 API.
+- WhatsApp history is ONLY delivered to the first socket that links (QR auth). Subsequent connections get nothing.
+- NestJS watch mode doesn't detect changes in external packages — touch `apps/api/src/main.ts` to trigger rebuild.
+- No git remote configured — commits are local only.
+
+## Rollout Status
+
+- ✓ Phase 0: Skeleton services, schemas, compose stack, health checks.
+- ✓ Phase 1: Ingestion + normalization + embedding + ANN retrieval.
+- ✓ Phase 2: Weighted scoring + recency/importance.
+- ✓ Phase 3: Fact/fiction labeling pipeline + factuality classification.
+- ✓ Phase 4: Force-directed graph visualization + memory explorer.
+- ✓ Connectors: Gmail, Slack, WhatsApp, iMessage, Photos-Immich, Locations.
+- ✓ Contacts: First-class entity with dedup, avatars, identifiers, merge suggestions.
+- ✓ CLI: Human + agent queryable interface.
+- ◆ Analytics: PostHog JS SDK integrated (frontend), needs API key configuration.
 
