@@ -44,18 +44,20 @@ Every piece of personal communication and digital interaction is searchable, con
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] GitHub org with open-core (public) and prod-core (private) repos
-- [ ] PostgreSQL database layer (replacing SQLite for production)
-- [ ] Firebase authentication
-- [ ] OpenRouter inference API integration
-- [ ] Vultr VPS provisioned and configured
-- [ ] Docker Compose production stack
-- [ ] Caddy reverse proxy with SSL
-- [ ] DNS (botmem.xyz) pointed to Vultr
-- [ ] CI/CD pipelines for open-core and prod-core
-- [ ] Production end-to-end verification
+- [ ] Natural language query parsing (entity/topic/temporal extraction from freeform questions)
+- [ ] LLM summarization of search results (assistant-style answers)
+- [ ] Entity type classification cleanup (consistent typing across enrichment pipeline)
 
-## Current Milestone: v2.0 Production Deployment & Open-Core Split
+## Current Milestone: v1.4 Search Intelligence
+
+**Goal:** Make Botmem's search layer intelligent enough for a personal AI assistant — parse natural language queries into structured filters, summarize search results via LLM, and fix inconsistent entity type classification so entities are reliable for filtering and display.
+
+**Target features:**
+- Natural language query parsing (extract entities, topics, temporal references from freeform questions)
+- LLM summarization of search results (assistant-style answers, not just raw memory list)
+- Entity type classification cleanup (consistent typing: person, organization, location, event, product)
+
+## Queued Milestone: v2.0 Production Deployment & Open-Core Split
 
 **Goal:** Deploy Botmem to production on a Vultr VPS with proper infrastructure (Postgres, Firebase auth, Caddy SSL, OpenRouter inference), split the monorepo into open-core (public) and prod-core (private) under a GitHub org, and wire CI/CD pipelines for automatic deployment.
 
@@ -124,4 +126,4 @@ Every piece of personal communication and digital interaction is searchable, con
 | Caddy over Nginx | Automatic HTTPS, simpler config, built-in Let's Encrypt | — Pending |
 
 ---
-*Last updated: 2026-03-08 after v2.0 milestone start*
+*Last updated: 2026-03-08 after v1.4 milestone start*

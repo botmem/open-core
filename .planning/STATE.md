@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Production Deployment & Open-Core Split
+milestone: v1.4
+milestone_name: Search Intelligence
 status: active
 stopped_at: null
-last_updated: "2026-03-08T12:00:00Z"
-last_activity: 2026-03-08 -- Milestone v2.0 started
+last_updated: "2026-03-08T01:00:00Z"
+last_activity: 2026-03-08 -- Milestone v1.4 started
 progress:
   total_phases: 0
   completed_phases: 0
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v2.0 Production Deployment & Open-Core Split
+**Current focus:** v1.4 Search Intelligence
 
 ## Current Position
 
 Phase: Not started (defining requirements)
 Plan: —
 Status: Defining requirements
-Last activity: 2026-03-08 — Milestone v2.0 started
+Last activity: 2026-03-08 — Milestone v1.4 started
 
-Progress: [##########] v1.0 complete | [##########] v1.1 complete | [##########] v1.2 complete | [░░░░░░░░░░] 0% v2.0
+Progress: [##########] v1.0 complete | [##########] v1.1 complete | [##########] v1.2 complete | [░░░░░░░░░░] 0% v1.4
 
 ## Performance Metrics
 
@@ -60,13 +60,8 @@ Progress: [##########] v1.0 complete | [##########] v1.1 complete | [##########]
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [v2.0]: SQLite → PostgreSQL for production (concurrent writes, proper migrations)
-- [v2.0]: Firebase auth (Google ecosystem, generous free tier)
-- [v2.0]: OpenRouter for production inference, keep Ollama for open-core
-- [v2.0]: Open-core (public) / prod-core (private) repo split under `botmem` GitHub org
-- [v2.0]: Caddy over Nginx (automatic HTTPS, simpler config)
-- [v2.0]: Vultr $5 VPS for production hosting
-- [v2.0]: botmem.xyz domain (Spaceship DNS)
+- [v1.4]: Use Ollama (qwen3:0.6b) for query parsing and summarization — already available, no new deps
+- [v1.4]: Fix entity classification at enrichment time — re-enrich existing memories via backfill
 
 ### Pending Todos
 
@@ -85,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08T12:00:00Z
-Stopped at: Milestone v2.0 started
+Last session: 2026-03-08T01:00:00Z
+Stopped at: Milestone v1.4 started — defining requirements
 Resume file: None
