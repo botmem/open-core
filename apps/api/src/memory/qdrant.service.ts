@@ -25,6 +25,8 @@ export class QdrantService implements OnModuleInit {
       await this.ensureCollection(768);
       // Ensure HNSW index is built even for small collections
       await this.ensureIndexed();
+      // Create datetime payload index on event_time for temporal filtering
+      await this.ensureTemporalIndex();
     } catch (err) {
       console.error('Qdrant collection init failed (will retry on first embed):', err);
     }
@@ -37,6 +39,21 @@ export class QdrantService implements OnModuleInit {
         vectors: { size: vectorSize, distance: 'Cosine' },
         optimizers_config: { indexing_threshold: 1000 },
       });
+    }
+  }
+
+  /** Create datetime payload index on event_time for efficient temporal range queries */
+  async ensureTemporalIndex(): Promise<void> {
+    try {
+      await this.client.createPayloadIndex(QdrantService.COLLECTION, {
+        field_name: 'event_time',
+        field_schema: 'datetime',
+      });
+    } catch (err: any) {
+      // 400 = index already exists, safe to ignore
+      if (err?.status !== 400 && !err?.message?.includes('already exists')) {
+        console.error('Failed to create event_time payload index:', err);
+      }
     }
   }
 
