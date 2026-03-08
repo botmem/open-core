@@ -177,7 +177,7 @@ Phase 10: Source Citations (deferred)
 - [ ] **Phase 19: Memory Banks** - Create/list/rename/delete banks, sync-time selection, search scoping, default bank + data migration (BANK-01 through BANK-04)
 - [ ] **Phase 20: Encryption at Rest** - AES-256-GCM for authContext + connectorCredentials, APP_SECRET key, migration script (ENC-01, ENC-02)
 - [ ] **Phase 21: End-to-End Encryption** - Argon2id key derivation, client-side memory encryption, vectors plaintext, password change re-encryption (E2EE-01 through E2EE-04)
-- [ ] **Phase 22: PostgreSQL Dual-Driver** - Postgres schema, shared DB interface, conditional driver, FTS5→tsvector (DB-01 through DB-04)
+- [ ] **Phase 22: PostgreSQL Dual-Driver** - Postgres schema, shared DB interface, conditional driver, FTS5->tsvector (DB-01 through DB-04)
 - [ ] **Phase 23: Row Level Security** - Postgres RLS policies for user data isolation (DB-05)
 - [ ] **Phase 24: Firebase Auth (Prod-Core)** - Firebase guard, React Firebase UI, AUTH_PROVIDER switch, social login (FBAUTH-01 through FBAUTH-04)
 
@@ -198,7 +198,7 @@ Phase 10: Source Citations (deferred)
 Plans:
 - [x] 16-01-PLAN.md -- Backend auth infrastructure: schema, JWT, register/login/refresh/logout
 - [x] 16-02-PLAN.md -- Password reset infrastructure: passwordResets table, MailService
-- [ ] 16-03-PLAN.md -- Frontend auth rewrite + password reset endpoints wiring
+- [x] 16-03-PLAN.md -- Frontend auth rewrite + password reset endpoints wiring
 
 ### Phase 17: API Security
 **Goal**: All API endpoints require authentication except explicitly public ones, and CORS is locked to the frontend origin
@@ -209,7 +209,10 @@ Plans:
   2. WebSocket connections require valid JWT token in handshake
   3. CORS only allows requests from FRONTEND_URL origin(s), with credentials mode enabled
   4. OAuth callback endpoints for connectors still work (they are marked @Public)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 17-01-PLAN.md -- Global auth guard, CORS lockdown, WebSocket JWT auth, health endpoint
 
 ### Phase 18: API Keys
 **Goal**: Users can create named, read-only API keys for programmatic access (CLI, agents), scoped to specific memory banks
@@ -310,7 +313,7 @@ Phases 12-15 (DB, Inference, Docker, CI/CD) are restructured:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 8.1 → 9 → 10 → 11 → 16 → 17 → 18 → 19 → 20 → 21 → 22 → 23 → 24
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 9 -> 10 -> 11 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -327,7 +330,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 10. Source Citations | v1.4 | 0/? | Deferred | - |
 | 11. Repo & Infrastructure | v2.0 | 3/3 | Complete | 2026-03-08 |
 | 16. User Authentication | 3/3 | Complete   | 2026-03-08 | - |
-| 17. API Security | v2.0 | 0/? | Not started | - |
+| 17. API Security | v2.0 | 0/1 | Not started | - |
 | 18. API Keys | v2.0 | 0/? | Not started | - |
 | 19. Memory Banks | v2.0 | 0/? | Not started | - |
 | 20. Encryption at Rest | v2.0 | 0/? | Not started | - |
