@@ -90,8 +90,12 @@ export class ConfigService {
 
   // --- JWT config ---
 
-  get jwtSecret(): string {
-    return process.env.JWT_SECRET || 'dev-jwt-secret-change-in-production';
+  get jwtAccessSecret(): string {
+    return process.env.JWT_ACCESS_SECRET || 'dev-access-secret-change-in-production';
+  }
+
+  get jwtRefreshSecret(): string {
+    return process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-in-production';
   }
 
   get jwtAccessExpiresIn(): string {
