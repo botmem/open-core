@@ -9,14 +9,16 @@ interface MemorySearchBarProps {
   onSourceChange: (s: SourceType | null) => void;
   resultCount?: number;
   loading?: boolean;
+  availableSources?: SourceType[];
 }
 
-const sources: Array<{ value: SourceType; label: string }> = [
-  { value: 'email', label: 'EMAIL' },
-  { value: 'message', label: 'MESSAGE' },
-  { value: 'photo', label: 'PHOTO' },
-  { value: 'location', label: 'LOCATION' },
-];
+const sourceLabels: Partial<Record<SourceType, string>> = {
+  email: 'EMAIL',
+  message: 'MESSAGE',
+  photo: 'PHOTO',
+  location: 'LOCATION',
+  file: 'FILE',
+};
 
 export function MemorySearchBar({
   query,
@@ -25,6 +27,7 @@ export function MemorySearchBar({
   onSourceChange,
   resultCount,
   loading,
+  availableSources,
 }: MemorySearchBarProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -35,18 +38,18 @@ export function MemorySearchBar({
         className="text-lg py-4"
       />
       <div className="flex items-center gap-2 flex-wrap">
-        {sources.map((s) => (
+        {availableSources && availableSources.map((value) => (
           <button
-            key={s.value}
-            onClick={() => onSourceChange(sourceFilter === s.value ? null : s.value)}
+            key={value}
+            onClick={() => onSourceChange(sourceFilter === value ? null : value)}
             className={cn(
               'border-2 border-nb-border px-3 py-1 font-mono text-xs font-bold uppercase cursor-pointer transition-all',
-              sourceFilter === s.value
+              sourceFilter === value
                 ? 'bg-nb-text text-nb-bg'
                 : 'bg-nb-surface hover:bg-nb-surface-hover text-nb-text'
             )}
           >
-            {s.label}
+            {sourceLabels[value] || value.toUpperCase()}
           </button>
         ))}
         {resultCount !== undefined && (

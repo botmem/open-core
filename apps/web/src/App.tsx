@@ -9,8 +9,10 @@ import { MemoryExplorerPage } from './pages/MemoryExplorerPage';
 import { ContactsPage } from './pages/ContactsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { MePage } from './pages/MePage';
+import { LandingPage } from './pages/LandingPage';
 import { Shell } from './components/layout/Shell';
 import { AuthGuard } from './components/auth/AuthGuard';
+import { useAuth } from './hooks/useAuth';
 import { posthog, identifyUser } from './lib/posthog';
 
 function PostHogIdentifier() {
@@ -41,13 +43,27 @@ function PostHogPageviewTracker() {
   return null;
 }
 
+function LandingOrApp() {
+  const { user } = useAuth();
+  if (!user) return <LandingPage />;
+  if (!user.onboarded) return <Navigate to="/onboarding" replace />;
+  return (
+    <>
+      <PostHogIdentifier />
+      <Navigate to="/me" replace />
+    </>
+  );
+}
+
 export function App() {
   return (
     <BrowserRouter>
       <PostHogPageviewTracker />
       <Routes>
+        <Route index element={<LandingOrApp />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route
           path="/onboarding"
           element={
@@ -57,7 +73,6 @@ export function App() {
           }
         />
         <Route
-          path="/"
           element={
             <AuthGuard requireOnboarded>
               <>
@@ -67,7 +82,6 @@ export function App() {
             </AuthGuard>
           }
         >
-          <Route index element={<Navigate to="/me" replace />} />
           <Route path="me" element={<MePage />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="connectors" element={<ConnectorsPage />} />
@@ -75,7 +89,7 @@ export function App() {
           <Route path="contacts" element={<ContactsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

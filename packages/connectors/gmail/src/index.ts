@@ -35,7 +35,7 @@ export class GmailConnector extends BaseConnector {
       properties: {
         clientId: { type: 'string', title: 'Google Client ID' },
         clientSecret: { type: 'string', title: 'Google Client Secret' },
-        redirectUri: { type: 'string', title: 'Redirect URI', default: 'http://localhost:3001/api/auth/gmail/callback' },
+        redirectUri: { type: 'string', title: 'Redirect URI', default: 'http://localhost:12412/api/auth/gmail/callback' },
       },
       required: ['clientId', 'clientSecret'],
     },
@@ -48,7 +48,7 @@ export class GmailConnector extends BaseConnector {
 
   async initiateAuth(config: Record<string, unknown>): Promise<AuthInitResult> {
     this.config = config as Record<string, string>;
-    const redirectUri = (config.redirectUri as string) || 'http://localhost:3001/api/auth/gmail/callback';
+    const redirectUri = (config.redirectUri as string) || 'http://localhost:12412/api/auth/gmail/callback';
     const client = createOAuth2Client(config.clientId as string, config.clientSecret as string, redirectUri);
     const url = getAuthUrl(client);
     return { type: 'redirect', url };
@@ -58,7 +58,7 @@ export class GmailConnector extends BaseConnector {
     const code = params.code as string;
     const clientId = (params.clientId as string) || this.config.clientId;
     const clientSecret = (params.clientSecret as string) || this.config.clientSecret;
-    const redirectUri = (params.redirectUri as string) || this.config.redirectUri || 'http://localhost:3001/api/auth/gmail/callback';
+    const redirectUri = (params.redirectUri as string) || this.config.redirectUri || 'http://localhost:12412/api/auth/gmail/callback';
     const client = createOAuth2Client(clientId, clientSecret, redirectUri);
     const tokens = await exchangeCode(client, code);
 

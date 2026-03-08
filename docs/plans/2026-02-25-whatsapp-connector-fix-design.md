@@ -65,7 +65,7 @@ WhatsApp connector doesn't work. Baileys warm session fails silently, QR code ne
 - Build passes
 
 ### Task 5: End-to-end verification with agent-browser
-1. Open http://localhost:5173/connectors
+1. Open http://localhost:12412/connectors
 2. Verify WhatsApp readiness indicator shows
 3. Click "+ ADD ACCOUNT" on WhatsApp
 4. Verify QR code appears in modal

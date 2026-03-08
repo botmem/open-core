@@ -142,7 +142,7 @@ Botmem detects potential duplicate contacts and suggests merges:
 
 ```bash
 # Get merge suggestions
-curl http://localhost:3001/api/contacts/suggestions
+curl http://localhost:12412/api/contacts/suggestions
 ```
 
 Suggestions are based on:
@@ -154,7 +154,7 @@ Suggestions are based on:
 
 ```bash
 # Merge contact B into contact A
-curl -X POST http://localhost:3001/api/contacts/<contact-a-id>/merge \
+curl -X POST http://localhost:12412/api/contacts/<contact-a-id>/merge \
   -H 'Content-Type: application/json' \
   -d '{"sourceId": "<contact-b-id>"}'
 ```
@@ -170,7 +170,7 @@ Merging:
 If two contacts are genuinely different people:
 
 ```bash
-curl -X POST http://localhost:3001/api/contacts/suggestions/dismiss \
+curl -X POST http://localhost:12412/api/contacts/suggestions/dismiss \
   -H 'Content-Type: application/json' \
   -d '{"contactId1": "<id-1>", "contactId2": "<id-2>"}'
 ```

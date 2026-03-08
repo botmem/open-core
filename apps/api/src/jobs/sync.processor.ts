@@ -38,10 +38,17 @@ export class SyncProcessor extends WorkerHost implements OnModuleInit {
     this.worker.on('error', (err) => console.warn('[sync worker]', err.message));
     const concurrency = parseInt(this.settingsService.get('sync_concurrency'), 10) || 2;
     this.worker.concurrency = concurrency;
-    BaseConnector.DEBUG_SYNC_LIMIT = this.configService.syncDebugLimit;
+    // Settings-based sync_debug_limit takes priority over env var
+    const settingsLimit = parseInt(this.settingsService.get('sync_debug_limit'), 10);
+    BaseConnector.DEBUG_SYNC_LIMIT = !isNaN(settingsLimit) && settingsLimit > 0
+      ? settingsLimit
+      : this.configService.syncDebugLimit;
     this.settingsService.onChange((key, value) => {
       if (key === 'sync_concurrency') {
         this.worker.concurrency = parseInt(value, 10) || 2;
+      }
+      if (key === 'sync_debug_limit') {
+        BaseConnector.DEBUG_SYNC_LIMIT = parseInt(value, 10) || 0;
       }
     });
   }

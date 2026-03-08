@@ -1449,15 +1449,15 @@ Then hit `GET /api/version` to confirm.
 
 **Step 2: Verify contacts API works**
 
-Run: `curl http://localhost:3001/api/contacts?limit=5`
+Run: `curl http://localhost:12412/api/contacts?limit=5`
 Expected: Returns `{ items: [...], total: N }` with contacts having `avatars` (JSON string), `identifiers` array.
 
-Run: `curl http://localhost:3001/api/contacts/suggestions`
+Run: `curl http://localhost:12412/api/contacts/suggestions`
 Expected: Returns array of suggestions (may be empty if no cross-connector name overlaps exist yet).
 
 **Step 3: Take screenshot of contacts page**
 
-Open `http://localhost:5173/contacts` in browser.
+Open `http://localhost:12412/contacts` in browser.
 Verify:
 - Neobrutal design matches existing pages
 - Search bar works

@@ -25,6 +25,9 @@ docs/.vitepress/cache/
 # Screenshots / images (not source)
 *.png
 
+# Business / GTM
+business/
+
 # Tooling state
 .claude-flow/
 .hive-mind/

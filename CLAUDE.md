@@ -7,7 +7,7 @@ Local-first platform that ingests events from multiple data sources (emails, mes
 ```bash
 docker compose up -d          # Redis + Qdrant
 pnpm install                  # Install all workspace deps
-pnpm dev                      # API on :3001, web on :5173
+pnpm dev                      # API on :12412, web on :12412
 ```
 
 ## Monorepo Structure
@@ -42,7 +42,7 @@ packages/
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `PORT` | `3001` | API server port |
+| `PORT` | `12412` | API server port |
 | `REDIS_URL` | `redis://localhost:6379` | BullMQ queue backend |
 | `DB_PATH` | `./data/botmem.db` | SQLite database file |
 | `QDRANT_URL` | `http://localhost:6333` | Vector DB |
@@ -50,7 +50,7 @@ packages/
 | `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Embedding model (768d) |
 | `OLLAMA_TEXT_MODEL` | `qwen3:0.6b` | Text enrichment model (uses /no_think) |
 | `OLLAMA_VL_MODEL` | `qwen3-vl:2b` | Vision-language model (photo enrichment) |
-| `FRONTEND_URL` | `http://localhost:5173` | CORS / OAuth redirect origin |
+| `FRONTEND_URL` | `http://localhost:12412` | CORS / OAuth redirect origin |
 | `PLUGINS_DIR` | `./plugins` | External plugin directory |
 
 Config lives in `apps/api/src/config/config.service.ts`.

@@ -15,7 +15,7 @@ npx botmem --help
 
 | Flag | Description |
 |---|---|
-| `--api-url <url>` | API base URL (env: `BOTMEM_API_URL`, default: `http://localhost:3001/api`) |
+| `--api-url <url>` | API base URL (env: `BOTMEM_API_URL`, default: `http://localhost:12412/api`) |
 | `--json` | Output raw JSON for piping to `jq` or scripts |
 | `-h, --help` | Show help |
 

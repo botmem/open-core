@@ -181,29 +181,39 @@ export class AuthService {
       this.activeQrListeners.delete(connectorType);
       connector.removeListener('connected', handler);
 
+      // Step 1: QR scanned, device linked
+      this.events.emitToChannel(wsChannel, 'auth:status', {
+        status: 'connecting',
+        step: 'Device linked, connecting...',
+      });
+
       try {
         const auth = payload.auth;
         const jid = auth?.raw?.jid || '';
-        // Use the JID (WhatsApp phone number) as the identifier
-        // Strip device suffix (e.g. "971502284498:24@s.whatsapp.net" → "971502284498")
         const identifier = jid.split('@')[0]?.split(':')[0] || connectorType;
         console.log(`[Auth] Creating account for ${connectorType} identifier=${identifier}`);
+
+        // Step 2: Creating account
+        this.events.emitToChannel(wsChannel, 'auth:status', {
+          status: 'connecting',
+          step: `Connected as ${identifier}, setting up...`,
+        });
 
         const account = await this.createAndSync(connectorType, identifier, auth as Record<string, unknown>);
         console.log(`[Auth] Account created: id=${account.id}, identifier=${identifier}`);
 
-        // Broadcast completion to the frontend via WebSocket
-        this.events.emitToChannel(wsChannel, 'auth:complete', {
-          connectorType,
+        // Step 3: Done — broadcast completion
+        this.events.emitToChannel(wsChannel, 'auth:status', {
+          status: 'success',
+          step: 'Connected! Starting sync...',
           accountId: account.id,
           identifier,
         });
       } catch (err: any) {
         console.error(`[Auth] QR completion error for ${connectorType}:`, err.message);
-        // Broadcast error to the frontend
-        this.events.emitToChannel(wsChannel, 'auth:error', {
-          connectorType,
-          error: err.message || 'Failed to complete authentication',
+        this.events.emitToChannel(wsChannel, 'auth:status', {
+          status: 'failed',
+          step: err.message || 'Failed to complete authentication',
         });
       }
     };
@@ -213,7 +223,7 @@ export class AuthService {
     // Forward QR refreshes to the frontend
     const qrHandler = (payload: { wsChannel: string; qrData: string }) => {
       if (payload.wsChannel === wsChannel) {
-        this.events.emitToChannel(wsChannel, 'qr:update', { qrData: payload.qrData });
+        this.events.emitToChannel(wsChannel, 'auth:status', { status: 'pending', qrData: payload.qrData });
       }
     };
     connector.on('qr:update', qrHandler);

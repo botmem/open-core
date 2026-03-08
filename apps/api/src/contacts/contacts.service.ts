@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { and, eq, like, or, sql, inArray } from 'drizzle-orm';
 import { DbService } from '../db/db.service';
-import { contacts, contactIdentifiers, memoryContacts, memories, accounts, mergeDismissals } from '../db/schema';
+import { contacts, contactIdentifiers, memoryContacts, memories, accounts, mergeDismissals, settings } from '../db/schema';
 
 export interface IdentifierInput {
   type: string;
@@ -285,11 +285,33 @@ export class ContactsService {
       .where(where);
     const total = countResult[0].count;
 
-    // Paginate with SQL LIMIT/OFFSET
+    // Get selfContactId to pin it first
+    const selfRow = await db
+      .select({ value: settings.value })
+      .from(settings)
+      .where(eq(settings.key, 'selfContactId'))
+      .limit(1);
+    const selfContactId = selfRow[0]?.value || '';
+
+    // Paginate: self-contact first, then by linked memory count desc
     const paged = await db
-      .select()
+      .select({
+        id: contacts.id,
+        displayName: contacts.displayName,
+        entityType: contacts.entityType,
+        avatars: contacts.avatars,
+        metadata: contacts.metadata,
+        createdAt: contacts.createdAt,
+        updatedAt: contacts.updatedAt,
+      })
       .from(contacts)
+      .leftJoin(memoryContacts, eq(contacts.id, memoryContacts.contactId))
       .where(where)
+      .groupBy(contacts.id)
+      .orderBy(
+        sql`CASE WHEN ${contacts.id} = ${selfContactId} THEN 0 ELSE 1 END`,
+        sql`COUNT(${memoryContacts.memoryId}) DESC`,
+      )
       .limit(limit)
       .offset(offset);
 

@@ -42,7 +42,7 @@ The MCP server exposes tools that let AI agents search your memory, recall speci
                                  |
                         +--------+---------+
                         |    NestJS API    |
-                        |   port 3001     |
+                        |   port 12412     |
                         +--------+---------+
                           /      |       \
                +---------+  +---+---+  +--+--------+

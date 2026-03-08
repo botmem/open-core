@@ -125,7 +125,7 @@ Contact nodes are also assigned to clusters when their display name matches an e
 
 ```bash
 # Get the full graph (up to 500 recent memories)
-curl http://localhost:3001/api/memories/graph
+curl http://localhost:12412/api/memories/graph
 ```
 
 Returns:

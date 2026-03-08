@@ -4,7 +4,7 @@ import { Job } from 'bullmq';
 import { eq } from 'drizzle-orm';
 import { DbService } from '../db/db.service';
 import { ContactsService, IdentifierInput } from '../contacts/contacts.service';
-import { memories, rawEvents, memoryContacts } from '../db/schema';
+import { memories, rawEvents, memoryContacts, settings } from '../db/schema';
 
 @Processor('backfill')
 export class BackfillProcessor extends WorkerHost implements OnModuleInit {
@@ -164,6 +164,19 @@ export class BackfillProcessor extends WorkerHost implements OnModuleInit {
     participants: string[],
   ): Promise<number> {
     let linked = 0;
+
+    // Always link self-contact — you are sender or recipient of every iMessage
+    const selfRow = await this.dbService.db
+      .select({ value: settings.value })
+      .from(settings)
+      .where(eq(settings.key, 'selfContactId'))
+      .limit(1);
+    const selfContactId = selfRow[0]?.value;
+    if (selfContactId) {
+      await this.contactsService.linkMemory(memoryId, selfContactId, metadata.isFromMe ? 'sender' : 'recipient');
+      linked++;
+    }
+
     for (const participant of participants) {
       if (!participant) continue;
       const identifiers: IdentifierInput[] = [];
