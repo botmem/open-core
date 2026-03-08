@@ -8,11 +8,11 @@
 
 ### User Auth (Open-Core) — always required, no bypass
 
-- [ ] **AUTH-01**: Register with email + password (bcrypt hash, minimum 8 chars)
-- [ ] **AUTH-02**: Login → JWT access token (15min) + httpOnly refresh cookie (7d)
-- [ ] **AUTH-03**: Refresh access token via `POST /auth/refresh` using refresh cookie
+- [x] **AUTH-01**: Register with email + password (bcrypt hash, minimum 8 chars)
+- [x] **AUTH-02**: Login → JWT access token (15min) + httpOnly refresh cookie (7d)
+- [x] **AUTH-03**: Refresh access token via `POST /auth/refresh` using refresh cookie
 - [x] **AUTH-04**: Password reset via email link (cryptographic token, 1hr expiry)
-- [ ] **AUTH-05**: Session persistence via refresh token rotation (old token invalidated on use)
+- [x] **AUTH-05**: Session persistence via refresh token rotation (old token invalidated on use)
 
 ### Firebase Auth (Prod-Core)
 
@@ -77,11 +77,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 16 | Pending |
-| AUTH-02 | Phase 16 | Pending |
-| AUTH-03 | Phase 16 | Pending |
+| AUTH-01 | Phase 16 | Complete |
+| AUTH-02 | Phase 16 | Complete |
+| AUTH-03 | Phase 16 | Complete |
 | AUTH-04 | Phase 16 | Complete |
-| AUTH-05 | Phase 16 | Pending |
+| AUTH-05 | Phase 16 | Complete |
 | SEC-01 | Phase 17 | Pending |
 | SEC-02 | Phase 17 | Pending |
 | KEY-01 | Phase 18 | Pending |

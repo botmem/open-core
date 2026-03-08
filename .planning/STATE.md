@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: executing
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-03-08T13:35:46.000Z"
-last_activity: 2026-03-08 -- Phase 16 Plan 02 complete (password reset infrastructure)
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-08T13:37:43.000Z"
+last_activity: 2026-03-08 -- Phase 16 Plan 01 complete (backend auth infrastructure)
 progress:
   total_phases: 9
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 11
+  completed_plans: 2
+  percent: 22
 ---
 
 # Project State
@@ -25,22 +25,23 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 16-user-authentication (Plan 2 of 3)
-Plan: 16-02 (complete)
+Phase: 16-user-authentication (Plan 3 of 3)
+Plan: 16-03 (next)
 Status: Executing
-Last activity: 2026-03-08 -- Phase 16 Plan 02 complete (password reset infrastructure)
+Last activity: 2026-03-08 -- Phase 16 Plan 01 complete (backend auth infrastructure)
 
-Progress: [█░░░░░░░░░] 11%
+Progress: [██░░░░░░░░] 22%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 4min
-- Total execution time: 4min
+- Total plans completed: 2
+- Average duration: 5min
+- Total execution time: 10min
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 16 | 01 | 6min | 2 | 16 |
 | 16 | 02 | 4min | 2 | 7 |
 
 ## Accumulated Context
@@ -60,6 +61,10 @@ Recent decisions affecting current work:
 
 ### Decisions (Phase 16)
 
+- [16-01]: Separate jwtAccessSecret/jwtRefreshSecret instead of single JWT_SECRET for defense-in-depth
+- [16-01]: SHA-256 hash of refresh token stored in DB, raw token never persisted
+- [16-01]: Dummy bcrypt hash comparison on non-existent users prevents timing-based email enumeration
+- [16-01]: Token family UUID tracks refresh chain -- replaying revoked token kills entire family
 - [16-02]: Lazy nodemailer transporter -- only create SMTP connection on first send
 - [16-02]: Graceful mail failure -- log errors but never throw from sendResetEmail
 - [16-02]: Console fallback in dev -- log reset URL to stdout when SMTP not configured
@@ -74,10 +79,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- TypeScript errors in user-auth.service.ts from Plan 01 (JWT sign overload) -- needs resolution in Plan 01 or 03
+None.
 
 ## Session Continuity
 
-Last session: 2026-03-08T13:35:46.000Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-03-08T13:37:43.000Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None
