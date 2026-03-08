@@ -204,10 +204,8 @@ export class MemoryService {
     }
 
     // Apply source type hint from NLQ (only if caller didn't provide explicit sourceType)
-    // Map user-friendly NLQ terms to actual DB source_type values
-    const SOURCE_TYPE_ALIASES: Record<string, string> = { photo: 'file' };
     if (nlq.sourceTypeHint && !filters?.sourceType) {
-      effectiveFilters.sourceType = SOURCE_TYPE_ALIASES[nlq.sourceTypeHint] ?? nlq.sourceTypeHint;
+      effectiveFilters.sourceType = nlq.sourceTypeHint;
     }
 
     // Apply intent-based limit: find intent caps at 5
