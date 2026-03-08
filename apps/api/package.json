@@ -22,7 +22,6 @@
     "@botmem/connector-slack": "workspace:*",
     "@botmem/connector-whatsapp": "workspace:*",
     "@botmem/shared": "workspace:*",
-    "@botmem/web": "workspace:*",
     "@nestjs/bullmq": "^11.0.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
