@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: completed
-stopped_at: Completed 19-02-PLAN.md
-last_updated: '2026-03-09T07:09:07.893Z'
+stopped_at: Completed 19-01-PLAN.md
+last_updated: '2026-03-09T07:12:11.557Z'
 last_activity: '2026-03-09 - Docs audit: fixed 6 roadmap discrepancies, marked v2.1 + v3.0 + v3.0.1 shipped, Phase 18 complete'
 progress:
   total_phases: 27
   completed_phases: 22
   total_plans: 43
-  completed_plans: 41
+  completed_plans: 42
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Last activity: 2026-03-09 - Docs audit: fixed 6 roadmap discrepancies, marked v2
 | 22           | 02   | 16min    | 2       | 26    |
 | 10           | UAT  | 15min    | 2       | 3     |
 | Phase 19 P02 | 2min | 2 tasks  | 5 files |
+| Phase 19 P01 | 6min | 2 tasks  | 9 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 16]: Password reset token stored as SHA-256 hash with 1hr expiry; existing unused tokens invalidated
 - [Phase 19]: Qdrant bulk update uses REST API directly in standalone migration scripts (no NestJS DI)
 - [Phase 19]: isDefault typed as boolean throughout frontend to match Postgres boolean column
+- [Phase 19]: Job-level memoryBankId override takes priority over default bank lookup in embed processor
+- [Phase 19]: Bank ownership validated via MemoryBanksService.getById before sync trigger
+- [Phase 19]: API key bank IDs validated with inArray query against user's banks before creation
 
 ### Decisions (Phase 16)
 
@@ -211,6 +215,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T07:09:07.888Z
-Stopped at: Completed 19-02-PLAN.md
+Last session: 2026-03-09T07:12:11.554Z
+Stopped at: Completed 19-01-PLAN.md
 Resume: After user completes checkpoint steps, push to main and verify Watchtower auto-deploys.

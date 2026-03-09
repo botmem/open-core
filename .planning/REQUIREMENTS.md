@@ -37,8 +37,8 @@
 ### Memory Banks
 
 - [x] **BANK-01**: Create, list, rename, and delete memory banks per user
-- [ ] **BANK-02**: Select target memory bank at sync time (connector sync config)
-- [ ] **BANK-03**: Search scoped to accessible bank(s) — user's own banks + API key bank scope
+- [x] **BANK-02**: Select target memory bank at sync time (connector sync config)
+- [x] **BANK-03**: Search scoped to accessible bank(s) — user's own banks + API key bank scope
 - [x] **BANK-04**: Default bank created on registration + migration of existing data into default bank
 
 ### Encryption at Rest (Open-Core)
@@ -90,8 +90,8 @@
 | KEY-04      | Phase 18 | Pending  |
 | KEY-05      | Phase 18 | Pending  |
 | BANK-01     | Phase 19 | Complete |
-| BANK-02     | Phase 19 | Pending  |
-| BANK-03     | Phase 19 | Pending  |
+| BANK-02     | Phase 19 | Complete |
+| BANK-03     | Phase 19 | Complete |
 | BANK-04     | Phase 19 | Complete |
 | ENC-01      | Phase 20 | Pending  |
 | ENC-02      | Phase 20 | Pending  |
