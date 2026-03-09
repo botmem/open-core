@@ -43,8 +43,8 @@
 
 ### Encryption at Rest (Open-Core)
 
-- [ ] **ENC-01**: AES-256-GCM encryption for `authContext` (accounts table) and `connectorCredentials` table, key derived from `APP_SECRET` env var
-- [ ] **ENC-02**: Migration script to encrypt existing plaintext credentials with zero downtime
+- [x] **ENC-01**: AES-256-GCM encryption for `authContext` (accounts table) and `connectorCredentials` table, key derived from `APP_SECRET` env var
+- [x] **ENC-02**: Migration script to encrypt existing plaintext credentials with zero downtime
 
 ### E2EE (Prod-Core)
 
@@ -93,8 +93,8 @@
 | BANK-02     | Phase 19 | Complete |
 | BANK-03     | Phase 19 | Complete |
 | BANK-04     | Phase 19 | Complete |
-| ENC-01      | Phase 20 | Pending  |
-| ENC-02      | Phase 20 | Pending  |
+| ENC-01      | Phase 20 | Complete |
+| ENC-02      | Phase 20 | Complete |
 | E2EE-01     | Phase 21 | Pending  |
 | E2EE-02     | Phase 21 | Pending  |
 | E2EE-03     | Phase 21 | Pending  |

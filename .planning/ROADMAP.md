@@ -201,7 +201,7 @@ Phase 10: Source Citations (deferred)
 - [x] **Phase 17: API Security** - Global auth guard, CORS lockdown, @Public() decorator for health/version/auth endpoints (SEC-01, SEC-02) (completed 2026-03-08)
 - [x] **Phase 18: API Keys** - Named read-only API keys, cryptographic generation, bank scoping, Bearer header auth (KEY-01 through KEY-05) (completed 2026-03-08)
 - [x] **Phase 19: Memory Banks** - Create/list/rename/delete banks, sync-time selection, search scoping, default bank + data migration (BANK-01 through BANK-04) (completed 2026-03-09)
-- [ ] **Phase 20: Encryption at Rest** - AES-256-GCM for authContext + connectorCredentials, APP_SECRET key, migration script (ENC-01, ENC-02)
+- [x] **Phase 20: Encryption at Rest** - AES-256-GCM for authContext + connectorCredentials, APP_SECRET key, migration script (ENC-01, ENC-02) (completed 2026-03-09)
 - [ ] **Phase 21: End-to-End Encryption** - Argon2id key derivation, client-side memory encryption, vectors plaintext, password change re-encryption (E2EE-01 through E2EE-04)
 - [x] **Phase 22: PostgreSQL Dual-Driver** - Postgres schema, pg Pool, DATABASE_URL, Docker Compose postgres service (DB-01 through DB-04) -- Complete
 - [ ] **Phase 23: Row Level Security** - Postgres RLS policies for user data isolation (DB-05)
@@ -423,7 +423,7 @@ Phases 12-15 (DB, Inference, Docker, CI/CD) are restructured:
 
 ### Phase 11: Repository & Infrastructure Foundation (COMPLETE)
 
-**Plans:** 3/3 plans complete
+**Plans:** 1/1 plans complete
 
 - [x] 11-01: Clean inline secrets and sanitize git history (REPO-04)
 - [x] 11-02: Create GitHub org, open-core and prod-core repos (REPO-01, REPO-02, REPO-03)
@@ -614,7 +614,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 17. API Security                 | v2.0      | 1/1            | Complete    | 2026-03-08 |
 | 18. API Keys                     | v2.0      | 2/2            | Complete    | 2026-03-08 |
 | 19. Memory Banks                 | 3/3       | Complete       | 2026-03-09  | -          |
-| 20. Encryption at Rest           | v2.0      | 0/?            | Not started | -          |
+| 20. Encryption at Rest           | 1/1       | Complete       | 2026-03-09  | -          |
 | 21. E2EE (Prod-Core)             | v2.0      | 0/?            | Not started | -          |
 | 22. PostgreSQL Dual-Driver       | v2.0      | 2/2            | Complete    | 2026-03-09 |
 | 23. Row Level Security           | v2.0      | 0/?            | Not started | -          |
