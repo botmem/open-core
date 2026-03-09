@@ -48,7 +48,7 @@ export class FirebaseAuthService implements OnModuleInit {
    * Find existing user by firebaseUid or create a new local user record.
    * Returns recoveryKey for new users (shown once), needsRecoveryKey for existing users with cold cache.
    */
-  async findOrCreateUser(decoded: admin.auth.DecodedIdToken) {
+  async findOrCreateUser(decoded: admin.auth.DecodedIdToken, overrideName?: string) {
     const user = await this.usersService.findByFirebaseUid(decoded.uid);
     if (user) {
       // Existing user — try 2-tier DEK lookup
@@ -59,7 +59,7 @@ export class FirebaseAuthService implements OnModuleInit {
 
     // New user — create account + generate recovery key
     const email = decoded.email ?? `${decoded.uid}@firebase.user`;
-    const name = decoded.name ?? decoded.email?.split('@')[0] ?? 'User';
+    const name = overrideName || decoded.name || decoded.email?.split('@')[0] || 'User';
     const passwordHash = `firebase:${decoded.uid}`; // sentinel — never compared via bcrypt
 
     const salt = randomBytes(16);
