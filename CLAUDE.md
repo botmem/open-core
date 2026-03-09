@@ -31,7 +31,7 @@ packages/
 ## Stack
 
 - **Runtime**: Node, TypeScript (ES2022, strict, ESNext modules)
-- **Backend**: NestJS 11, Drizzle ORM + SQLite (better-sqlite3, WAL mode)
+- **Backend**: NestJS 11, Drizzle ORM + PostgreSQL
 - **Queue**: BullMQ on Redis
 - **Vector DB**: Qdrant (cosine similarity, auto-created collection)
 - **AI**: Ollama (remote) — `nomic-embed-text` for embeddings, `qwen3:0.6b` for text enrichment, `qwen3-vl:2b` for vision
@@ -40,19 +40,19 @@ packages/
 
 ## Environment Variables
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PORT` | `12412` | API server port |
-| `REDIS_URL` | `redis://localhost:6379` | BullMQ queue backend |
-| `DB_PATH` | `./data/botmem.db` | SQLite database file |
-| `QDRANT_URL` | `http://localhost:6333` | Vector DB |
-| `OLLAMA_BASE_URL` | `http://192.168.10.250:11434` | Remote Ollama inference |
-| `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Embedding model (768d) |
-| `OLLAMA_TEXT_MODEL` | `qwen3:0.6b` | Text enrichment model (uses /no_think) |
-| `OLLAMA_VL_MODEL` | `qwen3-vl:2b` | Vision-language model (photo enrichment) |
-| `FRONTEND_URL` | `http://localhost:12412` | CORS / OAuth redirect origin |
-| `APP_SECRET` | `dev-app-secret-change-in-production` | AES-256-GCM key for encrypting credentials at rest |
-| `PLUGINS_DIR` | `./plugins` | External plugin directory |
+| Variable             | Default                                            | Purpose                                            |
+| -------------------- | -------------------------------------------------- | -------------------------------------------------- |
+| `PORT`               | `12412`                                            | API server port                                    |
+| `REDIS_URL`          | `redis://localhost:6379`                           | BullMQ queue backend                               |
+| `DATABASE_URL`       | `postgresql://botmem:botmem@localhost:5432/botmem` | PostgreSQL database connection                     |
+| `QDRANT_URL`         | `http://localhost:6333`                            | Vector DB                                          |
+| `OLLAMA_BASE_URL`    | `http://192.168.10.250:11434`                      | Remote Ollama inference                            |
+| `OLLAMA_EMBED_MODEL` | `nomic-embed-text`                                 | Embedding model (768d)                             |
+| `OLLAMA_TEXT_MODEL`  | `qwen3:0.6b`                                       | Text enrichment model (uses /no_think)             |
+| `OLLAMA_VL_MODEL`    | `qwen3-vl:2b`                                      | Vision-language model (photo enrichment)           |
+| `FRONTEND_URL`       | `http://localhost:12412`                           | CORS / OAuth redirect origin                       |
+| `APP_SECRET`         | `dev-app-secret-change-in-production`              | AES-256-GCM key for encrypting credentials at rest |
+| `PLUGINS_DIR`        | `./plugins`                                        | External plugin directory                          |
 
 Config lives in `apps/api/src/config/config.service.ts`.
 
@@ -63,6 +63,7 @@ A connector is a pluggable data source adapter extending `BaseConnector` from `@
 ### Connector interface
 
 Every connector must implement:
+
 - `manifest` — metadata (id, name, authType: `oauth2 | qr-code | api-key | local-tool`, configSchema)
 - `initiateAuth(config)` — start auth flow (returns redirect URL or QR data)
 - `completeAuth(params)` — finalize auth (returns tokens/credentials)
@@ -83,12 +84,12 @@ Connectors are EventEmitters. During sync they emit `data`, `progress`, and `log
 
 BullMQ queues process work asynchronously through Redis:
 
-| Queue | Worker | Purpose |
-|---|---|---|
-| `sync` | `SyncProcessor` | Orchestrates `connector.sync()`, writes to `rawEvents` |
-| `embed` | `EmbedProcessor` | Parses raw event, creates Memory, generates embedding, resolves contacts |
-| `enrich` | `EnrichProcessor` | Extracts entities/claims, classifies factuality, computes importance, upserts to Qdrant |
-| `backfill` | — | Retroactive enrichment of older memories |
+| Queue      | Worker            | Purpose                                                                                 |
+| ---------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `sync`     | `SyncProcessor`   | Orchestrates `connector.sync()`, writes to `rawEvents`                                  |
+| `embed`    | `EmbedProcessor`  | Parses raw event, creates Memory, generates embedding, resolves contacts                |
+| `enrich`   | `EnrichProcessor` | Extracts entities/claims, classifies factuality, computes importance, upserts to Qdrant |
+| `backfill` | —                 | Retroactive enrichment of older memories                                                |
 
 Job statuses: `queued → running → done | failed | cancelled`
 
@@ -135,6 +136,7 @@ recency = exp(-0.015 × age_days)
 ### Factuality labels
 
 Every memory carries `{label, confidence, rationale}`:
+
 - `FACT` — corroborated by multiple sources or high-trust connectors
 - `UNVERIFIED` — default; single-source, no contradiction
 - `FICTION` — contradicted by evidence or flagged by model
@@ -160,19 +162,19 @@ Qdrant collection `memories`: dense vectors (cosine), payload includes `memory_i
 
 All under `apps/api/src/`:
 
-| Module | Purpose |
-|---|---|
-| `config/` | Environment + ConfigService |
-| `db/` | SQLite init, Drizzle schema, DbService |
-| `connectors/` | Connector registry + factory |
-| `accounts/` | Account CRUD, credential management |
-| `auth/` | OAuth flow orchestration, callback handling |
-| `jobs/` | Job CRUD, sync triggering, status tracking |
-| `logs/` | Log persistence + retrieval |
-| `events/` | WebSocket gateway (`/events`) for real-time updates |
-| `memory/` | Search, ranking, embedding (OllamaService, QdrantService), BullMQ processors |
-| `contacts/` | Contact dedup, identifier merging |
-| `plugins/` | Plugin/extension system (stub) |
+| Module        | Purpose                                                                      |
+| ------------- | ---------------------------------------------------------------------------- |
+| `config/`     | Environment + ConfigService                                                  |
+| `db/`         | SQLite init, Drizzle schema, DbService                                       |
+| `connectors/` | Connector registry + factory                                                 |
+| `accounts/`   | Account CRUD, credential management                                          |
+| `auth/`       | OAuth flow orchestration, callback handling                                  |
+| `jobs/`       | Job CRUD, sync triggering, status tracking                                   |
+| `logs/`       | Log persistence + retrieval                                                  |
+| `events/`     | WebSocket gateway (`/events`) for real-time updates                          |
+| `memory/`     | Search, ranking, embedding (OllamaService, QdrantService), BullMQ processors |
+| `contacts/`   | Contact dedup, identifier merging                                            |
+| `plugins/`    | Plugin/extension system (stub)                                               |
 
 ## Frontend
 
