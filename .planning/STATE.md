@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Security, Auth & Encryption
-status: Defining requirements. Execution blocked on v2.0 phases 21 (E2EE), 23 (RLS), 24 (Firebase)
-stopped_at: Completed 21-02-PLAN.md
+milestone: v4.0
+milestone_name: E2E Testing & Test Infrastructure
+status: planned
+stopped_at: Roadmap defined — phases 35-39 created with success criteria
 last_updated: '2026-03-09T08:41:24.308Z'
-last_activity: 2026-03-09 — Milestone v4.0 started
+last_activity: '2026-03-09 - Roadmap v4.0 finalized: phases 35-39 defined with success criteria'
 progress:
-  total_phases: 32
+  total_phases: 37
   completed_phases: 25
   total_plans: 46
   completed_plans: 46
@@ -20,22 +20,31 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v4.0 E2E Testing & Test Infrastructure — Phase 35 (Fixture Capture) is first, but blocked until v2.0 phases 21, 23, 24 complete
+**Current focus:** v4.0 E2E Testing & Test Infrastructure — Phase 35 (Fixture Capture) is first, but blocked until v2.0 phases 23, 24 complete
 
 ## Current Position
 
-Phase: Not started (requirements and roadmap defined)
+Phase: Not started (roadmap defined, execution blocked)
 Plan: —
-Status: Defining requirements. Execution blocked on v2.0 phases 21 (E2EE), 23 (RLS), 24 (Firebase)
-Last activity: 2026-03-09 — Milestone v4.0 started
+Status: Execution blocked on v2.0 phases 23 (RLS) and 24 (Firebase). Roadmap and success criteria are fully defined. Phase 21 (E2EE) is complete.
+Last activity: 2026-03-09 — Roadmap v4.0 finalized (phases 35-39)
+
+```
+v4.0 Progress: [..........] 0/5 phases complete
+Phase 35: Fixture Capture          [ ] Not started
+Phase 36: Pipeline Integration     [ ] Not started
+Phase 37: API HTTP Integration     [ ] Not started
+Phase 38: Connector Parsing        [ ] Not started
+Phase 39: CI Gates & Coverage      [ ] Not started
+```
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 19
+- Total plans completed: 46
 - Average duration: 5min
-- Total execution time: 99min
+- Total execution time: ~230min
 
 | Phase        | Plan | Duration | Tasks    | Files |
 | ------------ | ---- | -------- | -------- | ----- |
@@ -101,6 +110,10 @@ Recent decisions affecting current work:
 - [Phase 21]: decryptMemoryAuto routes decryption based on memory.keyVersion (0=APP_SECRET, >=1=user key)
 - [Phase 21]: EncryptionKeyMissingError triggers BullMQ exponential backoff retry (30s base, 48 attempts ~24h)
 - [Phase 21]: ReencryptProcessor updates keyVersion even on per-row errors to prevent infinite loops
+- [v4.0]: Fixture-based testing chosen to handle Ollama non-determinism -- tests never call live LLM
+- [v4.0]: Fixture capture runs against live Ollama once; subsequent test runs use recorded responses
+- [v4.0]: Pipeline integration tests use a real isolated Postgres schema (not mocks) -- each suite gets fresh schema
+- [v4.0]: Connector parsing tests are pure data-transform tests -- no BullMQ, no Postgres, no Qdrant needed
 
 ### Decisions (Phase 16)
 
@@ -216,10 +229,11 @@ None yet.
 
 - v2.0 paused at 26% (phases 16-17 complete, 25 complete, 18-24 + 26-28 remaining)
 - v3.0 inserted for monorepo/DX work before resuming security milestone
+- v4.0 roadmap defined 2026-03-09 (phases 35-39); execution blocked on v2.0 phases 23, 24
 
 ### Blockers/Concerns
 
-None.
+- v4.0 execution blocked: phases 23 (RLS) and 24 (Firebase) must complete before Phase 35 can begin -- test infrastructure must be built against the final auth/DB architecture.
 
 ### Quick Tasks Completed
 
@@ -231,6 +245,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T08:39:05.803Z
-Stopped at: Completed 21-02-PLAN.md
+Last session: 2026-03-09T08:41:24.308Z
+Stopped at: Roadmap v4.0 defined (phases 35-39)
 Resume file: None
