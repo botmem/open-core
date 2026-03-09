@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: E2E Testing & Test Infrastructure
-status: planned
-stopped_at: Roadmap defined — phases 35-39 created with success criteria
-last_updated: '2026-03-09T08:41:24.308Z'
-last_activity: '2026-03-09 - Roadmap v4.0 finalized: phases 35-39 defined with success criteria'
+milestone: v2.0
+milestone_name: Security, Auth & Encryption
+status: completed
+stopped_at: Completed 23-01-PLAN.md
+last_updated: '2026-03-09T09:06:14.850Z'
+last_activity: 2026-03-09 — Roadmap v4.0 finalized (phases 35-39)
 progress:
-  total_phases: 37
+  total_phases: 32
   completed_phases: 25
-  total_plans: 46
-  completed_plans: 46
+  total_plans: 49
+  completed_plans: 47
 ---
 
 # Project State
@@ -76,6 +76,7 @@ Phase 39: CI Gates & Coverage      [ ] Not started
 | Phase 20 P01 | 2min | 2 tasks  | 3 files  |
 | Phase 21 P01 | 4min | 2 tasks  | 11 files |
 | Phase 21 P02 | 6min | 2 tasks  | 7 files  |
+| Phase 23 P01 | 2min | 1 tasks  | 1 files  |
 
 ## Accumulated Context
 
@@ -114,6 +115,10 @@ Recent decisions affecting current work:
 - [v4.0]: Fixture capture runs against live Ollama once; subsequent test runs use recorded responses
 - [v4.0]: Pipeline integration tests use a real isolated Postgres schema (not mocks) -- each suite gets fresh schema
 - [v4.0]: Connector parsing tests are pure data-transform tests -- no BullMQ, no Postgres, no Qdrant needed
+- [Phase 23]: RLS policies use NULL-safe current_setting('app.current_user_id', true) — returns NULL not ERROR if session var unset
+- [Phase 23]: FORCE ROW LEVEL SECURITY added to every RLS table so table owner role also obeys policies in production
+- [Phase 23]: users, settings, connector_credentials excluded from RLS — users needed for auth lookups, others are global not per-user
+- [Phase 23]: createRlsPolicies() idempotent: DROP POLICY IF EXISTS before every CREATE POLICY, runs on every onModuleInit()
 
 ### Decisions (Phase 16)
 
@@ -245,6 +250,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T08:41:24.308Z
-Stopped at: Roadmap v4.0 defined (phases 35-39)
+Last session: 2026-03-09T09:06:14.848Z
+Stopped at: Completed 23-01-PLAN.md
 Resume file: None
