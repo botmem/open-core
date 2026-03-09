@@ -18,10 +18,10 @@ export class FirebaseAuthController {
   @Public()
   @Post('sync')
   @HttpCode(200)
-  async syncUser(@Body() body: { idToken: string }) {
+  async syncUser(@Body() body: { idToken: string; name?: string }) {
     if (!body.idToken) throw new UnauthorizedException('idToken is required');
     const decoded = await this.firebaseAuthService.verifyIdToken(body.idToken);
-    const result = await this.firebaseAuthService.findOrCreateUser(decoded);
+    const result = await this.firebaseAuthService.findOrCreateUser(decoded, body.name);
     if (!result.user) throw new UnauthorizedException('User sync failed');
     return {
       user: {

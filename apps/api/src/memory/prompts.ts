@@ -10,6 +10,7 @@ export const ENTITY_FORMAT_SCHEMA = {
             type: 'string',
             enum: [
               'person',
+              'group',
               'organization',
               'location',
               'date',
@@ -35,7 +36,8 @@ export function entityExtractionPrompt(text: string): string {
 
 Allowed types and examples:
 - person: named people ("John Smith", "Dr. Lee", "Mom")
-- organization: companies, teams, institutions ("Google", "UN", "Engineering Team")
+- group: chat groups, channels, mailing lists ("Family Group", "#engineering", "Project Team Chat")
+- organization: companies, institutions ("Google", "UN", "Stanford University")
 - location: places, addresses, regions ("New York", "Building 42", "Japan")
 - date: named temporal references ("March 2024", "next Tuesday", "Q3") — NOT relative words like "yesterday" or "now"
 - event: named occurrences ("board meeting", "product launch", "wedding")
@@ -68,11 +70,7 @@ ${existingText}
 Return a concise 2-3 sentence description. Add NEW visual information not already present in the metadata. Do not repeat metadata fields like dates, locations, or camera info — but DO use people's names from the metadata when describing them.`;
 }
 
-export function factualityPrompt(
-  text: string,
-  sourceType: string,
-  connectorType: string,
-): string {
+export function factualityPrompt(text: string, sourceType: string, connectorType: string): string {
   return `Classify this memory's factuality. Consider the source and content.
 Source: ${sourceType} from ${connectorType}
 Text: "${text}"

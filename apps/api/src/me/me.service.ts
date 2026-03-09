@@ -410,13 +410,19 @@ export class MeService {
     // Build accounts list with stats — user-scoped
     const accountFilter = userId ? eq(accounts.userId, userId) : undefined;
     const userAccounts = await db.select().from(accounts).where(accountFilter);
+    // Count actual memories per account from DB (not raw events)
+    const memCountRows = await db
+      .select({ accountId: memories.accountId, count: sql<number>`count(*)::int` })
+      .from(memories)
+      .groupBy(memories.accountId);
+    const memCountMap = new Map(memCountRows.map((r) => [r.accountId, r.count]));
     const accountsList = userAccounts.map((acct) => ({
       id: acct.id,
       connectorType: acct.connectorType,
       identifier: acct.identifier,
       status: acct.status,
       lastSyncAt: acct.lastSyncAt,
-      itemsSynced: acct.itemsSynced,
+      memoriesCount: memCountMap.get(acct.id) ?? 0,
     }));
 
     const userAccountIds = userAccounts.map((a) => a.id);

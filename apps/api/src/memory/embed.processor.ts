@@ -226,11 +226,21 @@ export class EmbedProcessor extends WorkerHost implements OnModuleInit {
 
       for (const { entityType, role, identifiers } of buckets) {
         const resolveType = entityType === 'person' ? undefined : entityType;
-        const contact = await this.contactsService.resolveContact(
-          identifiers,
-          resolveType as any,
-          ownerUserId || undefined,
-        );
+        const contact = await Promise.race([
+          this.contactsService.resolveContact(
+            identifiers,
+            resolveType as any,
+            ownerUserId || undefined,
+          ),
+          new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error('Contact resolution timed out after 30s')), 30_000),
+          ),
+        ]).catch((err) => {
+          this.logger.warn(
+            `[embed] Contact resolution failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          return null;
+        });
         if (contact) {
           resolvedContacts.push({ contactId: contact.id, role });
 

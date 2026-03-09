@@ -1,4 +1,10 @@
-export type BuiltinConnectorType = 'gmail' | 'whatsapp' | 'slack' | 'imessage' | 'photos' | 'locations';
+export type BuiltinConnectorType =
+  | 'gmail'
+  | 'whatsapp'
+  | 'slack'
+  | 'imessage'
+  | 'photos'
+  | 'locations';
 export type ConnectorType = BuiltinConnectorType | (string & {});
 
 export type AuthType = 'oauth2' | 'qr-code' | 'api-key' | 'local-tool';
@@ -38,6 +44,8 @@ export interface ConnectorAccount {
   schedule: SyncSchedule;
   lastSync: string | null;
   memoriesIngested: number;
+  contactsCount: number;
+  groupsCount: number;
   lastError: string | null;
 }
 

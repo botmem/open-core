@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 interface Contact {
   id: string;
   displayName: string;
+  entityType: string;
   avatars: Array<{ url: string; source: string }>;
   identifiers: Array<{ id: string; type: string; value: string; isPrimary: boolean }>;
   connectorSources: string[];
@@ -25,9 +26,11 @@ interface ContactState {
   selectedId: string | null;
   searchQuery: string;
   loading: boolean;
-  loadContacts: () => Promise<void>;
+  entityFilter: string;
+  loadContacts: (entityType?: string) => Promise<void>;
   searchContacts: (query: string) => Promise<void>;
   setSearchQuery: (q: string) => void;
+  setEntityFilter: (filter: string) => void;
   loadSuggestions: () => Promise<void>;
   selectContact: (id: string | null) => void;
   updateContact: (id: string, data: { displayName?: string }) => Promise<void>;
@@ -47,14 +50,15 @@ function parseContact(raw: any): Contact {
     value: i.identifierValue || i.value,
     isPrimary: i.isPrimary || false,
   }));
-  const connectorSources = [...new Set(
-    (raw.identifiers || []).map((i: any) => i.connectorType).filter(Boolean),
-  )] as string[];
+  const connectorSources = [
+    ...new Set((raw.identifiers || []).map((i: any) => i.connectorType).filter(Boolean)),
+  ] as string[];
 
   return {
     id: raw.id,
     displayName: raw.displayName || '',
-    avatars: typeof raw.avatars === 'string' ? JSON.parse(raw.avatars) : (raw.avatars || []),
+    entityType: raw.entityType || 'person',
+    avatars: typeof raw.avatars === 'string' ? JSON.parse(raw.avatars) : raw.avatars || [],
     identifiers,
     connectorSources,
     memoryCount: raw.memoryCount || 0,
@@ -72,11 +76,13 @@ export const useContactStore = create<ContactState>((set, get) => ({
   selectedId: null,
   searchQuery: '',
   loading: false,
+  entityFilter: 'person',
 
-  loadContacts: async () => {
+  loadContacts: async (entityType?: string) => {
     set({ loading: true });
+    const filter = entityType ?? get().entityFilter;
     try {
-      const result = await api.listContacts({ limit: 200, entityType: 'person' });
+      const result = await api.listContacts({ limit: 200, entityType: filter });
       const contacts = result.items.map(parseContact);
       set({ contacts, total: result.total, loading: false });
     } catch (err) {
@@ -95,6 +101,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
       console.error('Failed to search contacts:', err);
       set({ loading: false });
     }
+  },
+
+  setEntityFilter: (filter) => {
+    set({ entityFilter: filter, selectedId: null });
+    get().loadContacts(filter);
   },
 
   setSearchQuery: (query) => {
@@ -172,7 +183,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
             !(
               (s.contact1.id === contactId1 && s.contact2.id === contactId2) ||
               (s.contact1.id === contactId2 && s.contact2.id === contactId1)
-            )
+            ),
         ),
       }));
     } catch (err) {

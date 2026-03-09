@@ -45,6 +45,14 @@ export function ConnectorAccountRow({
             <p className="font-mono text-xs text-nb-muted">
               {account.lastSync ? `Synced ${formatRelative(account.lastSync)}` : 'Never synced'} •{' '}
               {account.memoriesIngested} memories
+              {(account.contactsCount > 0 || account.groupsCount > 0) && (
+                <>
+                  {' '}
+                  • {account.contactsCount > 0 && `${account.contactsCount} people`}
+                  {account.contactsCount > 0 && account.groupsCount > 0 && ', '}
+                  {account.groupsCount > 0 && `${account.groupsCount} groups`}
+                </>
+              )}
             </p>
           </div>
         </div>

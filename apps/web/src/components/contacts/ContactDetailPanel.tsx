@@ -16,6 +16,7 @@ interface ContactDetailPanelProps {
     avatars: Array<{ url: string; source: string }>;
     identifiers: Array<{ id: string; type: string; value: string; isPrimary: boolean }>;
     connectorSources: string[];
+    entityType?: string;
   };
   isSelf?: boolean;
   onClose: () => void;
@@ -23,7 +24,13 @@ interface ContactDetailPanelProps {
   onDelete: (id: string) => Promise<void>;
 }
 
-export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelete }: ContactDetailPanelProps) {
+export function ContactDetailPanel({
+  contact,
+  isSelf,
+  onClose,
+  onUpdate,
+  onDelete,
+}: ContactDetailPanelProps) {
   const [editName, setEditName] = useState(contact.displayName);
   const [memories, setMemories] = useState<any[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -33,7 +40,12 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
   const [mergeResults, setMergeResults] = useState<Array<{ id: string; displayName: string }>>([]);
   const mergeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { removeIdentifier, splitContact, mergeContacts, contacts: allContacts } = useContactStore();
+  const {
+    removeIdentifier,
+    splitContact,
+    mergeContacts,
+    contacts: allContacts,
+  } = useContactStore();
 
   useEffect(() => {
     setEditName(contact.displayName);
@@ -41,7 +53,10 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
     setSplitIds(new Set());
     setShowMergeSearch(false);
     setMergeSearch('');
-    api.getContactMemories(contact.id).then(setMemories).catch(() => setMemories([]));
+    api
+      .getContactMemories(contact.id)
+      .then(setMemories)
+      .catch(() => setMemories([]));
   }, [contact.id]);
 
   // Debounced search for merge target
@@ -82,10 +97,26 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
   };
 
   return (
-    <Card className="sticky top-6" style={isSelf ? { borderColor: SELF_COLOR, boxShadow: `0 0 12px ${SELF_COLOR}40` } : undefined}>
+    <Card
+      className="sticky top-6"
+      style={
+        isSelf ? { borderColor: SELF_COLOR, boxShadow: `0 0 12px ${SELF_COLOR}40` } : undefined
+      }
+    >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display text-lg font-bold uppercase" style={isSelf ? { color: SELF_COLOR } : undefined}>
-          {isSelf ? 'You' : 'Person Detail'}
+        <h3
+          className="font-display text-lg font-bold uppercase"
+          style={isSelf ? { color: SELF_COLOR } : undefined}
+        >
+          {isSelf
+            ? 'You'
+            : contact.entityType === 'group'
+              ? 'Group Detail'
+              : contact.entityType === 'device'
+                ? 'Device Detail'
+                : contact.entityType === 'organization'
+                  ? 'Organization Detail'
+                  : 'Person Detail'}
         </h3>
         <button
           onClick={onClose}
@@ -114,7 +145,9 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
 
         {/* Editable name */}
         <div>
-          <label className="font-display text-xs font-bold uppercase tracking-wider text-nb-muted">Display Name</label>
+          <label className="font-display text-xs font-bold uppercase tracking-wider text-nb-muted">
+            Display Name
+          </label>
           <input
             type="text"
             value={editName}
@@ -127,7 +160,9 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
 
         {/* Identifiers */}
         <div>
-          <h4 className="font-display text-xs font-bold uppercase mb-2 text-nb-text">Identifiers</h4>
+          <h4 className="font-display text-xs font-bold uppercase mb-2 text-nb-text">
+            Identifiers
+          </h4>
           <div className="flex flex-col gap-1.5">
             {contact.identifiers.map((ident) => (
               <div key={ident.id} className="flex items-center gap-2">
@@ -136,7 +171,11 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
                   checked={splitIds.has(ident.id)}
                   onChange={(e) => {
                     const next = new Set(splitIds);
-                      if (e.target.checked) { next.add(ident.id); } else { next.delete(ident.id); }
+                    if (e.target.checked) {
+                      next.add(ident.id);
+                    } else {
+                      next.delete(ident.id);
+                    }
                     setSplitIds(next);
                   }}
                   className="accent-nb-lime shrink-0"
@@ -144,7 +183,9 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
                 <Badge color={IDENTIFIER_COLORS[ident.type]} className="text-[10px] py-0 shrink-0">
                   {ident.type}
                 </Badge>
-                <span className="font-mono text-xs text-nb-text truncate flex-1">{ident.value}</span>
+                <span className="font-mono text-xs text-nb-text truncate flex-1">
+                  {ident.value}
+                </span>
                 <button
                   onClick={() => removeIdentifier(contact.id, ident.id)}
                   disabled={contact.identifiers.length <= 1}
@@ -171,10 +212,20 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
         {/* Merge another person into this one */}
         <div>
           <button
-            onClick={() => { setShowMergeSearch(!showMergeSearch); setMergeSearch(''); }}
+            onClick={() => {
+              setShowMergeSearch(!showMergeSearch);
+              setMergeSearch('');
+            }}
             className="w-full border-2 border-nb-border px-3 py-1.5 font-mono text-xs font-bold uppercase bg-nb-surface text-nb-text hover:bg-nb-lime hover:text-black cursor-pointer transition-colors flex items-center justify-center gap-2"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M7 1v12M1 7h12" />
             </svg>
             Merge another person into this one
@@ -197,12 +248,21 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
                       onClick={() => handleMergeInto(r.id)}
                       className="text-left px-2 py-1.5 border border-nb-border font-mono text-xs text-nb-text hover:bg-nb-red hover:text-white cursor-pointer transition-colors flex items-center gap-2"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
                         <path d="M9 3L3 6l6 3" />
                         <line x1="10" y1="6" x2="3" y2="6" />
                       </svg>
                       <span className="truncate">{r.displayName}</span>
-                      <span className="font-mono text-[9px] text-nb-muted ml-auto shrink-0">merge in</span>
+                      <span className="font-mono text-[9px] text-nb-muted ml-auto shrink-0">
+                        merge in
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -229,7 +289,9 @@ export function ContactDetailPanel({ contact, isSelf, onClose, onUpdate, onDelet
             {memories.map((m: any) => (
               <div key={m.id} className="border-2 border-nb-border p-2 bg-nb-surface-muted">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-mono text-[10px] text-nb-muted">{formatDate(m.eventTime || m.createdAt)}</span>
+                  <span className="font-mono text-[10px] text-nb-muted">
+                    {formatDate(m.eventTime || m.createdAt)}
+                  </span>
                   <Badge className="text-[10px] py-0">{m.connectorType}</Badge>
                 </div>
                 <p className="font-mono text-xs text-nb-text line-clamp-2">{m.text}</p>
