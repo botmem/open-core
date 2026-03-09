@@ -30,7 +30,9 @@ export function DashboardPage() {
   }, [activeMemoryBankId]);
 
   const totalMemories = memoryStats?.total ?? 0;
-  const activeConnectors = accounts.filter((a) => a.status === 'connected' || a.status === 'syncing').length;
+  const activeConnectors = accounts.filter(
+    (a) => a.status === 'connected' || a.status === 'syncing',
+  ).length;
   const failedSyncJobs = jobs.filter((j) => j.status === 'failed').length;
 
   // Pending = items still in BullMQ queues (waiting + active + delayed) across pipeline stages
@@ -102,11 +104,9 @@ export function DashboardPage() {
 
         {activeTab === 'logs' && (
           <div className="flex flex-col gap-6">
-            <JobTable
-              jobs={jobs}
-              onCancel={cancelJob}
-              onMove={reprioritize}
-            />
+            <div className="overflow-x-auto">
+              <JobTable jobs={jobs} onCancel={cancelJob} onMove={reprioritize} />
+            </div>
             <ConnectorLogFeed logs={logs} onClear={clearLogs} />
           </div>
         )}

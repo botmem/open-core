@@ -8,7 +8,7 @@ interface TabsProps {
 
 export function Tabs({ tabs, active, onChange }: TabsProps) {
   return (
-    <div className="flex border-3 border-nb-border bg-nb-surface">
+    <div className="flex overflow-x-auto border-3 border-nb-border bg-nb-surface">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -18,7 +18,7 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
             'border-r-3 border-nb-border last:border-r-0 transition-colors',
             active === tab.id
               ? 'bg-nb-text text-nb-bg'
-              : 'bg-nb-surface text-nb-text hover:bg-nb-surface-hover'
+              : 'bg-nb-surface text-nb-text hover:bg-nb-surface-hover',
           )}
         >
           {tab.label}

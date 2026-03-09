@@ -126,7 +126,7 @@ export function MemoryExplorerPage() {
             </div>
           )}
 
-          <div className="mt-4 flex gap-4 min-h-0 flex-1">
+          <div className="mt-4 flex flex-col md:flex-row gap-4 min-h-0 flex-1">
             <div ref={listRef} className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2">
               {!loading && query.trim() && (
                 <SearchResultsBanner
@@ -162,14 +162,51 @@ export function MemoryExplorerPage() {
               )}
             </div>
 
+            {/* Desktop detail panel */}
             {selectedMemory && (
-              <div className="w-96 shrink-0 overflow-y-auto">
+              <div className="hidden md:block md:w-96 md:shrink-0 overflow-y-auto">
                 <MemoryDetailPanel
                   memory={selectedMemory}
                   onClose={() => setSelectedMemory(null)}
                 />
               </div>
             )}
+
+            {/* Mobile full-screen detail overlay */}
+            <div
+              className={`fixed inset-0 z-50 bg-nb-bg overflow-y-auto md:hidden ${selectedMemory ? 'block' : 'hidden'}`}
+            >
+              <div className="p-4 border-b-4 border-nb-border flex items-center gap-3 bg-nb-surface">
+                <button
+                  onClick={() => setSelectedMemory(null)}
+                  className="border-2 border-nb-border w-9 h-9 flex items-center justify-center hover:bg-nb-lime hover:text-black transition-colors cursor-pointer text-nb-text"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M10 3L5 8l5 5" />
+                  </svg>
+                </button>
+                <span className="font-display text-sm font-bold uppercase tracking-wider text-nb-text">
+                  DETAIL
+                </span>
+              </div>
+              {selectedMemory && (
+                <div className="p-4">
+                  <MemoryDetailPanel
+                    memory={selectedMemory}
+                    onClose={() => setSelectedMemory(null)}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
