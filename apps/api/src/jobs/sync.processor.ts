@@ -2,6 +2,7 @@ import { Processor, WorkerHost, InjectQueue } from '@nestjs/bullmq';
 import { OnModuleInit, Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
 import { randomUUID } from 'crypto';
+import { eq } from 'drizzle-orm';
 import { ConnectorsService } from '../connectors/connectors.service';
 import { AccountsService } from '../accounts/accounts.service';
 import { AuthService } from '../auth/auth.service';
@@ -9,7 +10,7 @@ import { JobsService } from './jobs.service';
 import { LogsService } from '../logs/logs.service';
 import { EventsService } from '../events/events.service';
 import { DbService } from '../db/db.service';
-import { rawEvents } from '../db/schema';
+import { rawEvents, accounts } from '../db/schema';
 import { SettingsService } from '../settings/settings.service';
 import { ConfigService } from '../config/config.service';
 import { BaseConnector } from '@botmem/connector-sdk';
@@ -63,6 +64,16 @@ export class SyncProcessor extends WorkerHost implements OnModuleInit {
     const connector = this.connectors.get(connectorType);
     let account = await this.accountsService.getById(accountId);
 
+    // Bootstrap (unscoped): resolve ownerUserId for RLS-scoped rawEvents insert
+    let ownerUserId: string | undefined;
+    {
+      const [acct] = await this.dbService.db
+        .select({ userId: accounts.userId })
+        .from(accounts)
+        .where(eq(accounts.id, accountId));
+      ownerUserId = acct?.userId ?? undefined;
+    }
+
     await this.jobsService.updateJob(jobId, { status: 'running', startedAt: new Date() });
     await this.accountsService.update(accountId, { status: 'syncing' });
     this.events.emitToChannel(`job:${jobId}`, 'job:progress', { jobId, progress: 0 });
@@ -83,33 +94,39 @@ export class SyncProcessor extends WorkerHost implements OnModuleInit {
     connector.on('data', (event: ConnectorDataEvent) => {
       this.events.emitToChannel(`job:${jobId}`, 'connector:data', event);
 
-      // Persist raw event and enqueue embedding — track the promise
+      // Persist raw event and enqueue embedding — track the promise.
+      // rawEvents is RLS-protected (via account_id → accounts.user_id) so the insert
+      // must run inside withUserId() scope. ownerUserId is resolved above via unscoped bootstrap.
       const rawEventId = randomUUID();
       const now = new Date();
-      const writePromise = this.dbService.db
-        .insert(rawEvents)
-        .values({
-          id: rawEventId,
-          accountId,
-          connectorType,
-          sourceId: event.sourceId,
-          sourceType: event.sourceType,
-          payload: JSON.stringify(event),
-          timestamp: new Date(event.timestamp),
-          jobId,
-          createdAt: now,
-        })
-        .then(() =>
-          this.cleanQueue.add(
-            'clean',
-            { rawEventId },
-            { attempts: 3, backoff: { type: 'exponential', delay: 1000 } },
-          ),
-        )
-        .then(() => {})
-        .catch((err) =>
-          logger.error(`Failed to persist/enqueue event ${event.sourceId}: ${err.message}`),
+      const insertRawEvent = async () => {
+        const insertFn = (db: typeof this.dbService.db) =>
+          db.insert(rawEvents).values({
+            id: rawEventId,
+            accountId,
+            connectorType,
+            sourceId: event.sourceId,
+            sourceType: event.sourceType,
+            payload: JSON.stringify(event),
+            timestamp: new Date(event.timestamp),
+            jobId,
+            createdAt: now,
+          });
+        if (ownerUserId) {
+          await this.dbService.withUserId(ownerUserId, insertFn);
+        } else {
+          // No ownerUserId — unscoped fallback (orphaned account, should rarely happen)
+          await insertFn(this.dbService.db);
+        }
+        await this.cleanQueue.add(
+          'clean',
+          { rawEventId },
+          { attempts: 3, backoff: { type: 'exponential', delay: 1000 } },
         );
+      };
+      const writePromise = insertRawEvent().catch((err) =>
+        logger.error(`Failed to persist/enqueue event ${event.sourceId}: ${err.message}`),
+      );
       pendingWrites.push(writePromise);
     });
 
@@ -228,14 +245,20 @@ export class SyncProcessor extends WorkerHost implements OnModuleInit {
         connector_type: connectorType,
         error_type: err.name,
       });
-      await this.jobsService.updateJob(jobId, {
-        status: 'failed',
-        error: err.message,
-        completedAt: new Date(),
-      });
-      await this.accountsService.update(accountId, { status: 'error', lastError: err.message });
-      this.events.emitToChannel(`job:${jobId}`, 'job:complete', { jobId, status: 'failed' });
-      this.events.emitToChannel('dashboard', 'dashboard:jobs', { trigger: 'sync_failed', jobId });
+
+      const maxAttempts = job.opts.attempts ?? 1;
+      const isLastAttempt = job.attemptsMade >= maxAttempts - 1;
+
+      if (isLastAttempt) {
+        await this.jobsService.updateJob(jobId, {
+          status: 'failed',
+          error: err.message,
+          completedAt: new Date(),
+        });
+        await this.accountsService.update(accountId, { status: 'error', lastError: err.message });
+        this.events.emitToChannel(`job:${jobId}`, 'job:complete', { jobId, status: 'failed' });
+        this.events.emitToChannel('dashboard', 'dashboard:jobs', { trigger: 'sync_failed', jobId });
+      }
       throw err;
     } finally {
       // Wait for all pending DB writes to complete before removing listeners
