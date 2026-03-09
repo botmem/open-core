@@ -88,6 +88,13 @@ export class IMessageConnector extends BaseConnector {
       }
     }
 
+    // Group chat entity
+    const isGroup = metadata.isGroup as boolean | undefined;
+    const chatName = metadata.chatName as string | undefined;
+    if (isGroup && chatName) {
+      entities.push({ type: 'group', id: `name:${chatName}`, role: 'group' });
+    }
+
     return { text: cleanedText, entities };
   }
 

@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '@botmem/shared';
-import { signInWithPopup, signOut as firebaseSignOut, getIdToken } from 'firebase/auth';
+import {
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  getIdToken,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from 'firebase/auth';
 import { firebaseAuth, googleProvider, githubProvider } from '../lib/firebase';
 
 interface AuthState {
@@ -81,22 +87,55 @@ export const useAuthStore = create<AuthState>()(
       signup: async (email: string, password: string, name: string) => {
         set({ error: null, isLoading: true });
         try {
-          const data = await authFetch<{
-            accessToken: string;
-            user: User;
-            recoveryKey?: string;
-          }>('/register', {
-            method: 'POST',
-            body: JSON.stringify({ email, password, name }),
-          });
-          set({
-            user: data.user,
-            accessToken: data.accessToken,
-            isLoading: false,
-            recoveryKey: data.recoveryKey ?? null,
-          });
+          if (isFirebaseMode) {
+            // Create user in Firebase, send verification email, then sync with backend
+            const cred = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+            await sendEmailVerification(cred.user);
+            const idToken = await getIdToken(cred.user);
+
+            // Sync with backend (creates local user + recovery key)
+            const res = await fetch('/api/firebase-auth/sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idToken, name }),
+            });
+            if (!res.ok) {
+              const body = await res.json().catch(() => ({ message: 'Signup sync failed' }));
+              throw new Error(body.message || 'Backend sync failed');
+            }
+            const data = await res.json();
+            set({
+              user: data.user,
+              accessToken: idToken,
+              isLoading: false,
+              recoveryKey: data.recoveryKey ?? null,
+            });
+          } else {
+            // Local mode — direct API registration
+            const data = await authFetch<{
+              accessToken: string;
+              user: User;
+              recoveryKey?: string;
+            }>('/register', {
+              method: 'POST',
+              body: JSON.stringify({ email, password, name }),
+            });
+            set({
+              user: data.user,
+              accessToken: data.accessToken,
+              isLoading: false,
+              recoveryKey: data.recoveryKey ?? null,
+            });
+          }
         } catch (err: any) {
-          set({ error: err.message, isLoading: false });
+          // Map Firebase error codes to friendly messages
+          const msg =
+            err?.code === 'auth/email-already-in-use'
+              ? 'This email is already registered'
+              : err?.code === 'auth/weak-password'
+                ? 'Password must be at least 6 characters'
+                : err.message;
+          set({ error: msg, isLoading: false });
           throw err;
         }
       },

@@ -10,15 +10,20 @@ import {
 } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { DbService } from '../db/db.service';
-import { memories } from '../db/schema';
-import { sql } from 'drizzle-orm';
+import { memories, memoryContacts, contacts } from '../db/schema';
+import { sql, eq, inArray } from 'drizzle-orm';
 import { CurrentUser } from '../user-auth/decorators/current-user.decorator';
 import { RequiresJwt } from '../user-auth/decorators/requires-jwt.decorator';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import type { ConnectorAccount } from '@botmem/shared';
 
-function toApiAccount(row: any, memoryCount?: number): ConnectorAccount {
+function toApiAccount(
+  row: any,
+  memoryCount?: number,
+  contactsCount?: number,
+  groupsCount?: number,
+): ConnectorAccount {
   return {
     id: row.id,
     type: row.connectorType,
@@ -27,6 +32,8 @@ function toApiAccount(row: any, memoryCount?: number): ConnectorAccount {
     schedule: row.schedule,
     lastSync: row.lastSyncAt,
     memoriesIngested: memoryCount ?? row.itemsSynced,
+    contactsCount: contactsCount ?? 0,
+    groupsCount: groupsCount ?? 0,
     lastError: row.lastError || null,
   };
 }
@@ -42,12 +49,48 @@ export class AccountsController {
   async list(@CurrentUser() user: { id: string }) {
     const rows = await this.accountsService.getAll(user.id);
     // Count actual memories per account from DB
-    const counts = await this.dbService.db
+    const memoryCounts = await this.dbService.db
       .select({ accountId: memories.accountId, count: sql<number>`count(*)::int` })
       .from(memories)
       .groupBy(memories.accountId);
-    const countMap = new Map(counts.map((c) => [c.accountId, c.count]));
-    return { accounts: rows.map((r) => toApiAccount(r, countMap.get(r.id) ?? 0)) };
+    const memoryCountMap = new Map(memoryCounts.map((c) => [c.accountId, c.count]));
+
+    // Count contacts and groups per account via memoryContacts → memories
+    const accountIds = rows.map((r) => r.id);
+    const contactCountRows = accountIds.length
+      ? await this.dbService.db
+          .select({
+            accountId: memories.accountId,
+            entityType: contacts.entityType,
+            count: sql<number>`count(distinct ${contacts.id})::int`,
+          })
+          .from(memoryContacts)
+          .innerJoin(memories, eq(memoryContacts.memoryId, memories.id))
+          .innerJoin(contacts, eq(memoryContacts.contactId, contacts.id))
+          .where(inArray(memories.accountId, accountIds))
+          .groupBy(memories.accountId, contacts.entityType)
+      : [];
+
+    const contactsMap = new Map<string, number>();
+    const groupsMap = new Map<string, number>();
+    for (const row of contactCountRows) {
+      if (row.entityType === 'group') {
+        groupsMap.set(row.accountId, (groupsMap.get(row.accountId) || 0) + row.count);
+      } else {
+        contactsMap.set(row.accountId, (contactsMap.get(row.accountId) || 0) + row.count);
+      }
+    }
+
+    return {
+      accounts: rows.map((r) =>
+        toApiAccount(
+          r,
+          memoryCountMap.get(r.id) ?? 0,
+          contactsMap.get(r.id) ?? 0,
+          groupsMap.get(r.id) ?? 0,
+        ),
+      ),
+    };
   }
 
   @Get(':id')

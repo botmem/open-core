@@ -16,8 +16,10 @@ export function ContactsPage() {
     selectedId,
     searchQuery,
     loading,
+    entityFilter,
     loadContacts,
     setSearchQuery,
+    setEntityFilter,
     loadSuggestions,
     selectContact,
     updateContact,
@@ -76,21 +78,43 @@ export function ContactsPage() {
 
   return (
     <PageContainer>
-      <h1 className="font-display text-3xl font-bold uppercase tracking-wider text-nb-text mb-6">
-        PEOPLE
+      <h1 className="font-display text-3xl font-bold uppercase tracking-wider text-nb-text mb-4">
+        CONTACTS
       </h1>
+
+      {/* Entity type tabs */}
+      <div className="flex gap-0 mb-4 border-3 border-nb-border w-fit">
+        {(
+          [
+            ['person', 'PEOPLE'],
+            ['group', 'GROUPS'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            onClick={() => setEntityFilter(value)}
+            className={`font-mono text-xs font-bold uppercase px-4 py-2 cursor-pointer transition-colors ${
+              entityFilter === value
+                ? 'bg-nb-lime text-black'
+                : 'bg-nb-surface text-nb-muted hover:text-nb-text'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {/* Search */}
       <label htmlFor="contacts-search" className="sr-only">
-        Search people
+        Search {entityFilter === 'group' ? 'groups' : 'people'}
       </label>
       <input
         id="contacts-search"
         type="text"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search people..."
-        aria-label="Search people"
+        placeholder={`Search ${entityFilter === 'group' ? 'groups' : 'people'}...`}
+        aria-label={`Search ${entityFilter === 'group' ? 'groups' : 'people'}`}
         className="w-full border-3 border-nb-border bg-nb-surface font-mono text-sm text-nb-text px-4 py-3 mb-4 shadow-nb placeholder:text-nb-muted"
       />
 
@@ -106,7 +130,7 @@ export function ContactsPage() {
       )}
 
       <p className="font-mono text-xs text-nb-muted uppercase mb-3">
-        {loading ? 'LOADING...' : `${total} people`}
+        {loading ? 'LOADING...' : `${total} ${entityFilter === 'group' ? 'groups' : 'people'}`}
       </p>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -134,7 +158,11 @@ export function ContactsPage() {
             </div>
           )}
           {contacts.length === 0 && !loading && (
-            <EmptyState icon="◎" title="No People Found" subtitle="Try adjusting your search" />
+            <EmptyState
+              icon="◎"
+              title={entityFilter === 'group' ? 'No Groups Found' : 'No People Found'}
+              subtitle="Try adjusting your search"
+            />
           )}
         </div>
 
