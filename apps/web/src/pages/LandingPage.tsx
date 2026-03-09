@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
-const GITHUB_URL = 'https://github.com/amroessam/botmem';
+const GITHUB_URL = 'https://github.com/botmem/open-core';
 
 function SkipToContent() {
   return (
@@ -30,13 +30,22 @@ function Navbar() {
           BOTMEM
         </Link>
         <div className="hidden sm:flex items-center gap-6 font-display text-sm tracking-wide">
-          <a href="#features" className="text-nb-muted hover:text-nb-text transition-colors duration-200 cursor-pointer">
+          <a
+            href="#features"
+            className="text-nb-muted hover:text-nb-text transition-colors duration-200 cursor-pointer"
+          >
             FEATURES
           </a>
-          <a href="#how-it-works" className="text-nb-muted hover:text-nb-text transition-colors duration-200 cursor-pointer">
+          <a
+            href="#how-it-works"
+            className="text-nb-muted hover:text-nb-text transition-colors duration-200 cursor-pointer"
+          >
             HOW IT WORKS
           </a>
-          <a href="#open-source" className="text-nb-muted hover:text-nb-text transition-colors duration-200 cursor-pointer">
+          <a
+            href="#open-source"
+            className="text-nb-muted hover:text-nb-text transition-colors duration-200 cursor-pointer"
+          >
             OPEN SOURCE
           </a>
         </div>
@@ -65,8 +74,8 @@ function Hero() {
             <span className="text-nb-lime">SEARCHABLE.</span>
           </h1>
           <p className="mt-6 font-mono text-lg text-nb-muted leading-relaxed max-w-lg">
-            Local-first personal memory from your email, messages, photos, and locations.
-            All on your hardware.
+            Local-first personal memory from your email, messages, photos, and locations. All on
+            your hardware.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
@@ -107,7 +116,9 @@ function TerminalBlock() {
       <div className="p-4 sm:p-5 space-y-3 text-[13px] leading-relaxed">
         <div>
           <span className="text-nb-lime">$</span>{' '}
-          <span className="text-nb-text">botmem search &quot;dinner with sarah last month&quot;</span>
+          <span className="text-nb-text">
+            botmem search &quot;dinner with sarah last month&quot;
+          </span>
         </div>
         <div className="text-nb-muted">Searching 12,847 memories...</div>
         <div className="border-t border-nb-border/30 pt-3 space-y-3">
@@ -138,7 +149,17 @@ function TerminalBlock() {
   );
 }
 
-function ResultLine({ score, source, text, time }: { score: string; source: string; text: string; time: string }) {
+function ResultLine({
+  score,
+  source,
+  text,
+  time,
+}: {
+  score: string;
+  source: string;
+  text: string;
+  time: string;
+}) {
   const sourceColor: Record<string, string> = {
     gmail: 'text-nb-blue',
     whatsapp: 'text-nb-green',
@@ -163,24 +184,34 @@ function ProblemSection() {
     { name: 'WHATSAPP', desc: 'Separate search, separate context' },
   ];
   return (
-    <section className="px-4 sm:px-6 py-20 border-t-4 border-nb-border" aria-labelledby="problem-heading">
+    <section
+      className="px-4 sm:px-6 py-20 border-t-4 border-nb-border"
+      aria-labelledby="problem-heading"
+    >
       <div className="max-w-6xl mx-auto">
-        <h2 id="problem-heading" className="font-display text-3xl sm:text-4xl font-bold uppercase text-center">
+        <h2
+          id="problem-heading"
+          className="font-display text-3xl sm:text-4xl font-bold uppercase text-center"
+        >
           YOUR DATA IS <span className="text-nb-pink">SCATTERED</span>
         </h2>
         <div className="mt-12 grid sm:grid-cols-3 gap-6">
           {problems.map((p) => (
-            <div
-              key={p.name}
-              className="bg-nb-surface border-3 border-nb-border p-6 shadow-nb-sm"
-            >
+            <div key={p.name} className="bg-nb-surface border-3 border-nb-border p-6 shadow-nb-sm">
               <h3 className="font-display text-lg font-bold text-nb-muted">{p.name}</h3>
               <p className="font-mono text-sm text-nb-muted mt-2">{p.desc}</p>
             </div>
           ))}
         </div>
         <div className="flex justify-center my-8">
-          <svg width="24" height="48" viewBox="0 0 24 48" fill="none" aria-hidden="true" className="text-nb-lime">
+          <svg
+            width="24"
+            height="48"
+            viewBox="0 0 24 48"
+            fill="none"
+            aria-hidden="true"
+            className="text-nb-lime"
+          >
             <path d="M12 0v40m0 0l-8-8m8 8l8-8" stroke="currentColor" strokeWidth="3" />
           </svg>
         </div>
@@ -230,17 +261,21 @@ const FEATURES = [
 
 function FeaturesSection() {
   return (
-    <section id="features" className="px-4 sm:px-6 py-20 border-t-4 border-nb-border" aria-labelledby="features-heading">
+    <section
+      id="features"
+      className="px-4 sm:px-6 py-20 border-t-4 border-nb-border"
+      aria-labelledby="features-heading"
+    >
       <div className="max-w-6xl mx-auto">
-        <h2 id="features-heading" className="font-display text-3xl sm:text-4xl font-bold uppercase text-center">
+        <h2
+          id="features-heading"
+          className="font-display text-3xl sm:text-4xl font-bold uppercase text-center"
+        >
           FEATURES
         </h2>
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="bg-nb-surface border-3 border-nb-border p-6 shadow-nb"
-            >
+            <div key={f.title} className="bg-nb-surface border-3 border-nb-border p-6 shadow-nb">
               <div className="font-display text-2xl text-nb-lime mb-3" aria-hidden="true">
                 {f.icon}
               </div>
@@ -261,9 +296,16 @@ function HowItWorks() {
     { cmd: 'botmem search "dinner"', result: 'Ranked results in 48ms' },
   ];
   return (
-    <section id="how-it-works" className="px-4 sm:px-6 py-20 border-t-4 border-nb-border" aria-labelledby="how-heading">
+    <section
+      id="how-it-works"
+      className="px-4 sm:px-6 py-20 border-t-4 border-nb-border"
+      aria-labelledby="how-heading"
+    >
       <div className="max-w-6xl mx-auto">
-        <h2 id="how-heading" className="font-display text-3xl sm:text-4xl font-bold uppercase text-center">
+        <h2
+          id="how-heading"
+          className="font-display text-3xl sm:text-4xl font-bold uppercase text-center"
+        >
           HOW IT WORKS
         </h2>
         <div className="mt-12 bg-nb-surface border-3 border-nb-border shadow-nb-lg font-mono text-sm overflow-hidden max-w-2xl mx-auto">
@@ -299,7 +341,11 @@ function TechStrip() {
         {techs.map((t, i) => (
           <span key={t}>
             {t}
-            {i < techs.length - 1 && <span className="ml-6 text-nb-border/40" aria-hidden="true">·</span>}
+            {i < techs.length - 1 && (
+              <span className="ml-6 text-nb-border/40" aria-hidden="true">
+                ·
+              </span>
+            )}
           </span>
         ))}
       </div>

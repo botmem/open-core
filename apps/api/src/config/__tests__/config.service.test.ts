@@ -34,17 +34,6 @@ describe('ConfigService', () => {
     expect(config.redisUrl).toBe('redis://custom:6380');
   });
 
-  it('returns default db path', () => {
-    const config = new ConfigService();
-    expect(config.dbPath).toBe('./data/botmem.db');
-  });
-
-  it('returns custom db path from env', () => {
-    process.env.DB_PATH = '/tmp/test.db';
-    const config = new ConfigService();
-    expect(config.dbPath).toBe('/tmp/test.db');
-  });
-
   it('returns default plugins dir', () => {
     const config = new ConfigService();
     expect(config.pluginsDir).toBe('./plugins');
