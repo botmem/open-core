@@ -1,4 +1,4 @@
-CREATE TABLE "accounts" (
+CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text,
 	"connector_type" text NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE "accounts" (
 	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "api_keys" (
+CREATE TABLE IF NOT EXISTS "api_keys" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"name" text NOT NULL,
@@ -26,13 +26,13 @@ CREATE TABLE "api_keys" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "connector_credentials" (
+CREATE TABLE IF NOT EXISTS "connector_credentials" (
 	"connector_type" text PRIMARY KEY NOT NULL,
 	"credentials" text NOT NULL,
 	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "contact_identifiers" (
+CREATE TABLE IF NOT EXISTS "contact_identifiers" (
 	"id" text PRIMARY KEY NOT NULL,
 	"contact_id" text NOT NULL,
 	"identifier_type" text NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE "contact_identifiers" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "contacts" (
+CREATE TABLE IF NOT EXISTS "contacts" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text,
 	"display_name" text NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE "contacts" (
 	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "jobs" (
+CREATE TABLE IF NOT EXISTS "jobs" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
 	"connector_type" text NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE "jobs" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "memories" (
+CREATE TABLE IF NOT EXISTS "memories" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text,
 	"memory_bank_id" text,
@@ -92,7 +92,7 @@ CREATE TABLE "memories" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "memory_banks" (
+CREATE TABLE IF NOT EXISTS "memory_banks" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"name" text NOT NULL,
@@ -101,14 +101,14 @@ CREATE TABLE "memory_banks" (
 	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "memory_contacts" (
+CREATE TABLE IF NOT EXISTS "memory_contacts" (
 	"id" text PRIMARY KEY NOT NULL,
 	"memory_id" text NOT NULL,
 	"contact_id" text NOT NULL,
 	"role" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "memory_links" (
+CREATE TABLE IF NOT EXISTS "memory_links" (
 	"id" text PRIMARY KEY NOT NULL,
 	"src_memory_id" text NOT NULL,
 	"dst_memory_id" text NOT NULL,
@@ -117,14 +117,14 @@ CREATE TABLE "memory_links" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "merge_dismissals" (
+CREATE TABLE IF NOT EXISTS "merge_dismissals" (
 	"id" text PRIMARY KEY NOT NULL,
 	"contact_id_1" text NOT NULL,
 	"contact_id_2" text NOT NULL,
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "password_resets" (
+CREATE TABLE IF NOT EXISTS "password_resets" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"token_hash" text NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE "password_resets" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "raw_events" (
+CREATE TABLE IF NOT EXISTS "raw_events" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
 	"connector_type" text NOT NULL,
@@ -146,7 +146,7 @@ CREATE TABLE "raw_events" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "refresh_tokens" (
+CREATE TABLE IF NOT EXISTS "refresh_tokens" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"token_hash" text NOT NULL,
@@ -156,12 +156,12 @@ CREATE TABLE "refresh_tokens" (
 	"created_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "settings" (
+CREATE TABLE IF NOT EXISTS "settings" (
 	"key" text PRIMARY KEY NOT NULL,
 	"value" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
 	"id" text PRIMARY KEY NOT NULL,
 	"email" text NOT NULL,
 	"password_hash" text NOT NULL,
@@ -174,41 +174,93 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "contact_identifiers" ADD CONSTRAINT "contact_identifiers_contact_id_contacts_id_fk" FOREIGN KEY ("contact_id") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "jobs" ADD CONSTRAINT "jobs_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "memories" ADD CONSTRAINT "memories_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "memory_contacts" ADD CONSTRAINT "memory_contacts_memory_id_memories_id_fk" FOREIGN KEY ("memory_id") REFERENCES "public"."memories"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "memory_contacts" ADD CONSTRAINT "memory_contacts_contact_id_contacts_id_fk" FOREIGN KEY ("contact_id") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "memory_links" ADD CONSTRAINT "memory_links_src_memory_id_memories_id_fk" FOREIGN KEY ("src_memory_id") REFERENCES "public"."memories"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "memory_links" ADD CONSTRAINT "memory_links_dst_memory_id_memories_id_fk" FOREIGN KEY ("dst_memory_id") REFERENCES "public"."memories"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "merge_dismissals" ADD CONSTRAINT "merge_dismissals_contact_id_1_contacts_id_fk" FOREIGN KEY ("contact_id_1") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "merge_dismissals" ADD CONSTRAINT "merge_dismissals_contact_id_2_contacts_id_fk" FOREIGN KEY ("contact_id_2") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "password_resets" ADD CONSTRAINT "password_resets_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "raw_events" ADD CONSTRAINT "raw_events_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "refresh_tokens" ADD CONSTRAINT "refresh_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_accounts_user_id" ON "accounts" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_api_keys_user_id" ON "api_keys" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_api_keys_hash" ON "api_keys" USING btree ("key_hash");--> statement-breakpoint
-CREATE INDEX "idx_contact_identifiers_contact_id" ON "contact_identifiers" USING btree ("contact_id");--> statement-breakpoint
-CREATE INDEX "idx_contact_identifiers_value" ON "contact_identifiers" USING btree ("identifier_type","identifier_value");--> statement-breakpoint
-CREATE INDEX "idx_contacts_display_name" ON "contacts" USING btree ("display_name");--> statement-breakpoint
-CREATE INDEX "idx_contacts_user_id" ON "contacts" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_memories_embedding_status" ON "memories" USING btree ("embedding_status");--> statement-breakpoint
-CREATE INDEX "idx_memories_event_time" ON "memories" USING btree ("event_time");--> statement-breakpoint
-CREATE INDEX "idx_memories_connector_type" ON "memories" USING btree ("connector_type");--> statement-breakpoint
-CREATE INDEX "idx_memories_memory_bank_id" ON "memories" USING btree ("memory_bank_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_memories_source_dedup" ON "memories" USING btree ("source_id","connector_type");--> statement-breakpoint
-CREATE INDEX "idx_memory_banks_user_id" ON "memory_banks" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_memory_contacts_contact_id" ON "memory_contacts" USING btree ("contact_id");--> statement-breakpoint
-CREATE INDEX "idx_memory_contacts_memory_id" ON "memory_contacts" USING btree ("memory_id");--> statement-breakpoint
-CREATE INDEX "idx_merge_dismissals_pair" ON "merge_dismissals" USING btree ("contact_id_1","contact_id_2");--> statement-breakpoint
-CREATE INDEX "idx_raw_events_source_id" ON "raw_events" USING btree ("source_id");--> statement-breakpoint
-CREATE INDEX "idx_raw_events_job_id" ON "raw_events" USING btree ("job_id");--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "contact_identifiers" ADD CONSTRAINT "contact_identifiers_contact_id_contacts_id_fk" FOREIGN KEY ("contact_id") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "jobs" ADD CONSTRAINT "jobs_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "memories" ADD CONSTRAINT "memories_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "memory_contacts" ADD CONSTRAINT "memory_contacts_memory_id_memories_id_fk" FOREIGN KEY ("memory_id") REFERENCES "public"."memories"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "memory_contacts" ADD CONSTRAINT "memory_contacts_contact_id_contacts_id_fk" FOREIGN KEY ("contact_id") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "memory_links" ADD CONSTRAINT "memory_links_src_memory_id_memories_id_fk" FOREIGN KEY ("src_memory_id") REFERENCES "public"."memories"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "memory_links" ADD CONSTRAINT "memory_links_dst_memory_id_memories_id_fk" FOREIGN KEY ("dst_memory_id") REFERENCES "public"."memories"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "merge_dismissals" ADD CONSTRAINT "merge_dismissals_contact_id_1_contacts_id_fk" FOREIGN KEY ("contact_id_1") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "merge_dismissals" ADD CONSTRAINT "merge_dismissals_contact_id_2_contacts_id_fk" FOREIGN KEY ("contact_id_2") REFERENCES "public"."contacts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "password_resets" ADD CONSTRAINT "password_resets_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "raw_events" ADD CONSTRAINT "raw_events_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "refresh_tokens" ADD CONSTRAINT "refresh_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN null;
+END $$
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_accounts_user_id" ON "accounts" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_api_keys_user_id" ON "api_keys" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_api_keys_hash" ON "api_keys" USING btree ("key_hash");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_contact_identifiers_contact_id" ON "contact_identifiers" USING btree ("contact_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_contact_identifiers_value" ON "contact_identifiers" USING btree ("identifier_type","identifier_value");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_contacts_display_name" ON "contacts" USING btree ("display_name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_contacts_user_id" ON "contacts" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_memories_embedding_status" ON "memories" USING btree ("embedding_status");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_memories_event_time" ON "memories" USING btree ("event_time");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_memories_connector_type" ON "memories" USING btree ("connector_type");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_memories_memory_bank_id" ON "memories" USING btree ("memory_bank_id");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_memories_source_dedup" ON "memories" USING btree ("source_id","connector_type");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_memory_banks_user_id" ON "memory_banks" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_memory_contacts_contact_id" ON "memory_contacts" USING btree ("contact_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_memory_contacts_memory_id" ON "memory_contacts" USING btree ("memory_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_merge_dismissals_pair" ON "merge_dismissals" USING btree ("contact_id_1","contact_id_2");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_raw_events_source_id" ON "raw_events" USING btree ("source_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_raw_events_job_id" ON "raw_events" USING btree ("job_id");--> statement-breakpoint
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 --> statement-breakpoint
-CREATE INDEX "idx_memories_fts" ON "memories" USING gin (to_tsvector('english', "text"));
+CREATE INDEX IF NOT EXISTS "idx_memories_fts" ON "memories" USING gin (to_tsvector('english', "text"));
 --> statement-breakpoint
-CREATE INDEX "idx_memories_trgm" ON "memories" USING gin ("text" gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS "idx_memories_trgm" ON "memories" USING gin ("text" gin_trgm_ops);
 --> statement-breakpoint
-CREATE UNIQUE INDEX "idx_memory_banks_user_default" ON "memory_banks" USING btree ("user_id") WHERE "is_default" = true;
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_memory_banks_user_default" ON "memory_banks" USING btree ("user_id") WHERE "is_default" = true;
