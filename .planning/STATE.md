@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Data Quality & Pipeline Integrity
-status: completed
-stopped_at: Completed 28-01-PLAN.md
-last_updated: '2026-03-09T21:01:37.000Z'
-last_activity: 2026-03-09 -- Phase 28 Plan 01 complete (end-to-end data quality verification)
+milestone: v2.0
+milestone_name: Security, Auth & Encryption
+status: in-progress
+stopped_at: Completed 22-01-PLAN.md
+last_updated: '2026-03-09T01:24:29.000Z'
+last_activity: 2026-03-09 -- Phase 22 Plan 01 complete (PostgreSQL database layer migration)
 progress:
   total_phases: 28
   completed_phases: 21
-  total_plans: 38
-  completed_plans: 38
+  total_plans: 39
+  completed_plans: 39
 ---
 
 # Project State
@@ -20,22 +20,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v2.1 Data Quality & Pipeline Integrity -- Phase 28 Plan 01 complete (verification)
+**Current focus:** v2.0 Security, Auth & Encryption -- Phase 22 PostgreSQL migration in progress
 
 ## Current Position
 
-Phase: 28 (Verification)
-Plan: 01 of 01 (complete)
-Status: Phase 28 complete (all plans done)
-Last activity: 2026-03-09 -- Phase 28 Plan 01 complete (end-to-end data quality verification)
+Phase: 22 (PostgreSQL Dual-Driver)
+Plan: 01 of 02 (complete)
+Status: Phase 22 in progress
+Last activity: 2026-03-09 -- Phase 22 Plan 01 complete (PostgreSQL database layer migration)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: 5min
-- Total execution time: 96min
+- Total execution time: 99min
 
 | Phase | Plan | Duration | Tasks | Files |
 | ----- | ---- | -------- | ----- | ----- |
@@ -58,6 +58,7 @@ Last activity: 2026-03-09 -- Phase 28 Plan 01 complete (end-to-end data quality 
 | 33    | 01   | 22min    | 2     | 5     |
 | 27    | 01   | 6min     | 2     | 7     |
 | 28    | 01   | 18min    | 2     | 1     |
+| 22    | 01   | 3min     | 3     | 6     |
 
 ## Accumulated Context
 
@@ -171,6 +172,15 @@ Recent decisions affecting current work:
 - [28-01]: VER-02 photo search 0 results is a hybrid search design limitation, not data quality issue
 - [28-01]: Non-canonical entity types (time, amount, metric) are pre-existing, normalizer works for new data
 
+### Decisions (Phase 22)
+
+- [22-01]: Encrypted columns stay TEXT (ciphertext is opaque strings, not structured data for jsonb)
+- [22-01]: JSONB only for structured data: factuality, weights, avatars, contacts metadata
+- [22-01]: Pool max=20, idle timeout 30s, connect timeout 5s
+- [22-01]: GIN indexes with pg_trgm replace SQLite FTS5 virtual tables
+- [22-01]: All SQLite migration functions removed -- fresh Postgres DB, no legacy data migration
+- [22-01]: DATABASE_URL required at startup with fail-fast OnModuleInit pattern
+
 ### Pending Todos
 
 None yet.
@@ -186,6 +196,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T21:01:37Z
-Stopped at: Completed 28-01-PLAN.md
-Resume: Phase 28 complete. v2.1 Data Quality milestone verified. Next phase TBD.
+Last session: 2026-03-09T01:24:29Z
+Stopped at: Completed 22-01-PLAN.md
+Resume: Phase 22 Plan 01 complete. Plan 02 (service layer adaptations) next.

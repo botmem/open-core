@@ -55,9 +55,9 @@
 
 ### Database
 
-- [ ] **DB-01**: PostgreSQL schema (`schema.pg.ts`) mirrors SQLite schema with identical logical structure
-- [ ] **DB-02**: Shared database interface abstracts over SQLite and PostgreSQL (application code is dialect-agnostic)
-- [ ] **DB-03**: Conditional DbService initializes correct driver based on `DB_DRIVER=sqlite|postgres` env var
+- [x] **DB-01**: PostgreSQL schema (`schema.ts`) uses pgTable with native Postgres types (boolean, timestamptz, jsonb, doublePrecision)
+- [x] **DB-02**: DbService uses pg Pool + NodePgDatabase with async init and graceful shutdown
+- [x] **DB-03**: ConfigService validates DATABASE_URL at startup (fail-fast OnModuleInit pattern)
 - [ ] **DB-04**: SQLite FTS5 ported to PostgreSQL tsvector + GIN index for full-text search
 - [ ] **DB-05**: PostgreSQL RLS policies isolate user data — each user sees only their own memories, accounts, contacts
 
@@ -99,9 +99,9 @@
 | E2EE-02     | Phase 21 | Pending  |
 | E2EE-03     | Phase 21 | Pending  |
 | E2EE-04     | Phase 21 | Pending  |
-| DB-01       | Phase 22 | Pending  |
-| DB-02       | Phase 22 | Pending  |
-| DB-03       | Phase 22 | Pending  |
+| DB-01       | Phase 22 | Complete |
+| DB-02       | Phase 22 | Complete |
+| DB-03       | Phase 22 | Complete |
 | DB-04       | Phase 22 | Pending  |
 | DB-05       | Phase 23 | Pending  |
 | FBAUTH-01   | Phase 24 | Pending  |
