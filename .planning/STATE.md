@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Security, Auth & Encryption
-status: completed
-stopped_at: Completed quick-8 UI/UX fixes from visual E2E review
-last_updated: '2026-03-09T17:35:00.000Z'
-last_activity: 2026-03-09 — Archived milestones v1.0 through v3.0.1
+milestone: v4.0
+milestone_name: Fix Search Once and For All
+status: defining_requirements
+stopped_at: null
+last_updated: '2026-03-09T18:00:00.000Z'
+last_activity: 2026-03-09 — Milestone v4.0 started
 progress:
-  total_phases: 32
-  completed_phases: 27
-  total_plans: 51
-  completed_plans: 51
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -20,23 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v4.0 E2E Testing & Test Infrastructure — Phase 35 (Fixture Capture) is first, but blocked until v2.0 phases 23, 24 complete
+**Current focus:** v4.0 Fix Search Once and For All — defining requirements
 
 ## Current Position
 
-Phase: Not started (roadmap defined, execution blocked)
+Phase: Not started (defining requirements)
 Plan: —
-Status: Execution blocked on v2.0 phases 23 (RLS) and 24 (Firebase). Roadmap and success criteria are fully defined. Phase 21 (E2EE) is complete.
-Last activity: 2026-03-09 — Roadmap v4.0 finalized (phases 35-39)
-
-```
-v4.0 Progress: [..........] 0/5 phases complete
-Phase 35: Fixture Capture          [ ] Not started
-Phase 36: Pipeline Integration     [ ] Not started
-Phase 37: API HTTP Integration     [ ] Not started
-Phase 38: Connector Parsing        [ ] Not started
-Phase 39: CI Gates & Coverage      [ ] Not started
-```
+Status: Defining requirements
+Last activity: 2026-03-09 — Milestone v4.0 started
 
 ## Performance Metrics
 

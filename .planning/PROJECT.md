@@ -89,11 +89,21 @@ Every piece of personal communication and digital interaction is searchable, con
 - Key escrow / password recovery — zero-knowledge E2EE by design
 - Write-capable API keys — read-only sufficient for agent/CLI use
 
-## Current Milestone: v4.0 E2E Testing & Test Infrastructure
+## Current Milestone: v4.0 Fix Search Once and For All
 
-**Goal:** Establish comprehensive integration and API-level testing for Botmem using snapshot-based fixture testing to handle Ollama non-determinism — so the pipeline is verifiable in CI without GPU access.
+**Goal:** Validate the entire pipeline end-to-end — sync real data from every connector, verify raw event → embed → enrich → Qdrant works correctly, and prove search returns meaningful results with concrete search-then-verify testing.
 
-**Note:** Execution depends on v2.0 Phase 18 (API Keys) completion. Planning artifacts defined; implementation pending.
+**Target features:**
+
+- Sync real data from all 6 connector types (Gmail, Slack, WhatsApp, iMessage, Photos-Immich, Locations)
+- Verify pipeline produces correct memories with entities, contacts, factuality labels per connector
+- Validate relationship graph (memory links, contact associations, entity extraction)
+- Define search assumptions per connector type and validate by actually searching
+- Fix any pipeline/search issues discovered during validation
+
+## Deferred: v5.0 E2E Testing & Test Infrastructure
+
+**Goal:** Fixture-based integration and API-level testing (moved from v4.0).
 
 ## Paused: v2.0 Security, Auth & Encryption (Phase 18 remaining)
 
