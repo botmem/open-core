@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Logo } from './components/ui/Logo';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
@@ -33,7 +34,8 @@ function PostHogIdentifier() {
   const accessToken = useAuthStore((s) => s.accessToken);
   useEffect(() => {
     if (!accessToken) return;
-    api.getMe()
+    api
+      .getMe()
       .then((data) => {
         const userId = data.identity?.email || data.identity?.contactId || 'botmem-user';
         identifyUser(userId, {
@@ -62,8 +64,8 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-nb-bg">
       <div className="text-center">
-        <div className="font-display text-4xl font-bold text-white mb-4">BOTMEM</div>
-        <div className="font-mono text-sm text-nb-text">Loading...</div>
+        <Logo variant="full" height={40} className="mx-auto mb-4" />
+        <div className="font-mono text-sm text-nb-muted">Loading...</div>
       </div>
     </div>
   );

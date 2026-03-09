@@ -179,4 +179,14 @@ export class ConfigService implements OnModuleInit {
   get firebaseServiceAccount(): string {
     return process.env.FIREBASE_SERVICE_ACCOUNT || '';
   }
+
+  // --- Gmail OAuth (server-side creds for Firebase mode) ---
+
+  get gmailClientId(): string {
+    return process.env.GMAIL_CLIENT_ID || '';
+  }
+
+  get gmailClientSecret(): string {
+    return process.env.GMAIL_CLIENT_SECRET || '';
+  }
 }

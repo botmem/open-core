@@ -379,12 +379,22 @@ export class MemoryController {
 
   @RequiresJwt()
   @Get(':id/thumbnail')
-  async getThumbnail(@Param('id') id: string, @Res() res: Response) {
-    const memory = await this.memoryService.getById(id);
+  async getThumbnail(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+    @Res() res: Response,
+  ) {
+    const memory = await this.memoryService.getById(id, user.id);
     if (!memory) return res.status(HttpStatus.NOT_FOUND).json({ error: 'not found' });
 
-    const metadata =
-      typeof memory.metadata === 'string' ? JSON.parse(memory.metadata) : memory.metadata || {};
+    let metadata: any = {};
+    try {
+      metadata =
+        typeof memory.metadata === 'string' ? JSON.parse(memory.metadata) : memory.metadata || {};
+    } catch {
+      // metadata may be encrypted ciphertext when user key is not loaded
+      return res.status(HttpStatus.SERVICE_UNAVAILABLE).json({ error: 'encrypted' });
+    }
     const fileUrl: string | undefined = metadata.fileUrl;
     if (!fileUrl) return res.status(HttpStatus.NOT_FOUND).json({ error: 'no file' });
 
@@ -433,8 +443,8 @@ export class MemoryController {
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string) {
-    return this.memoryService.getById(id);
+  async getById(@Param('id') id: string, @CurrentUser() user: { id: string }) {
+    return this.memoryService.getById(id, user.id);
   }
 
   @Post('search')
