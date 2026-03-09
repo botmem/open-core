@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: completed
-stopped_at: Completed 23-01-PLAN.md
-last_updated: '2026-03-09T09:06:14.850Z'
+stopped_at: Completed 23-02-PLAN.md
+last_updated: '2026-03-09T09:10:18.961Z'
 last_activity: 2026-03-09 — Roadmap v4.0 finalized (phases 35-39)
 progress:
   total_phases: 32
   completed_phases: 25
   total_plans: 49
-  completed_plans: 47
+  completed_plans: 48
 ---
 
 # Project State
@@ -77,6 +77,7 @@ Phase 39: CI Gates & Coverage      [ ] Not started
 | Phase 21 P01 | 4min | 2 tasks  | 11 files |
 | Phase 21 P02 | 6min | 2 tasks  | 7 files  |
 | Phase 23 P01 | 2min | 1 tasks  | 1 files  |
+| Phase 23 P02 | 2min | 2 tasks  | 5 files  |
 
 ## Accumulated Context
 
@@ -119,6 +120,9 @@ Recent decisions affecting current work:
 - [Phase 23]: FORCE ROW LEVEL SECURITY added to every RLS table so table owner role also obeys policies in production
 - [Phase 23]: users, settings, connector_credentials excluded from RLS — users needed for auth lookups, others are global not per-user
 - [Phase 23]: createRlsPolicies() idempotent: DROP POLICY IF EXISTS before every CREATE POLICY, runs on every onModuleInit()
+- [Phase 23]: RlsInterceptor uses AsyncLocalStorage for non-blocking request-scoped userId propagation — interceptor holds no DB connection
+- [Phase 23]: withUserId uses SET LOCAL so session variable is transaction-scoped — pool connections are safe from cross-request bleed
+- [Phase 23]: RlsContext injected as @Optional() in DbService to prevent circular dependency with DbModule Global providers
 
 ### Decisions (Phase 16)
 
@@ -250,6 +254,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T09:06:14.848Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-03-09T09:10:18.958Z
+Stopped at: Completed 23-02-PLAN.md
 Resume file: None
