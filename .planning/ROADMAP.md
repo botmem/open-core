@@ -335,9 +335,11 @@ Plans:
 2. Reading encrypted fields through the API returns decrypted values transparently (encryption is at the DB layer)
 3. Migration script encrypts all existing plaintext credentials without downtime
 4. Missing APP_SECRET causes startup error with clear message
-   **Plans**: TBD
+   **Plans**: 1 plan
 
-Plans: Not yet planned
+Plans:
+
+- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
 
 ### Phase 21: End-to-End Encryption (Prod-Core)
 
@@ -350,9 +352,11 @@ Plans: Not yet planned
 2. Memory `text`, `entities`, `claims`, and `metadata` fields are encrypted client-side before POST -- server stores ciphertext
 3. Embedding vectors remain plaintext in Qdrant -- semantic search returns results, but text fields are encrypted until decrypted client-side
 4. Password change triggers batched re-encryption of all user memories with progress tracking (resumable on failure)
-   **Plans**: TBD
+   **Plans**: 1 plan
 
-Plans: Not yet planned
+Plans:
+
+- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
 
 ### Phase 22: PostgreSQL Dual-Driver -- COMPLETE
 
@@ -383,9 +387,11 @@ Plans:
 2. Each API request sets `SET LOCAL app.current_user_id = '<user_id>'` before executing queries
 3. Attempting to read/write another user's data via direct SQL returns no results (no error, just empty)
 4. Drizzle ORM queries work correctly with RLS enabled -- no bypasses from connection pooling or missing session vars
-   **Plans**: TBD
+   **Plans**: 1 plan
 
-Plans: Not yet planned
+Plans:
+
+- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
 
 ### Phase 24: Firebase Auth (Prod-Core)
 
@@ -398,9 +404,11 @@ Plans: Not yet planned
 2. React UI shows Firebase login/register with email+password, Google, and GitHub options
 3. `AUTH_PROVIDER=local` (default) uses JWT email+password auth; `AUTH_PROVIDER=firebase` uses Firebase -- switching requires only env var change
 4. Firebase-authenticated users get local user records created on first login (sync from Firebase UID)
-   **Plans**: TBD
+   **Plans**: 1 plan
 
-Plans: Not yet planned
+Plans:
+
+- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
 
 <details>
 <summary>Old v2.0 Phases (11-15) -- partially complete, restructured</summary>
