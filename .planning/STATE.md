@@ -5,7 +5,7 @@ milestone_name: Security, Auth & Encryption
 status: in_progress
 stopped_at: Phase 10 UAT complete, PostgreSQL migration fixed
 last_updated: '2026-03-09T07:45:00.000Z'
-last_activity: 2026-03-09 -- Quick task 4: Fixed contact merge suggestions and device identifier filtering
+last_activity: 2026-03-09 -- Quick task 5: Moved connector logs from PostgreSQL to NDJSON file on disk
 progress:
   total_phases: 27
   completed_phases: 23
@@ -203,6 +203,7 @@ None.
 | #   | Description                                                                                               | Date       | Commit  | Directory                                                                                         |
 | --- | --------------------------------------------------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------------------------------- |
 | 4   | Fix contact merge suggestions for duplicate identities and filter device identifiers from people contacts | 2026-03-09 | 6b76742 | [4-fix-contact-merge-suggestions-for-duplic](./quick/4-fix-contact-merge-suggestions-for-duplic/) |
+| 5   | Move connector/sync logs from PostgreSQL to NDJSON file on disk                                           | 2026-03-09 | d0615bd | [5-logs-are-being-stored-to-the-db-which-is](./quick/5-logs-are-being-stored-to-the-db-which-is/) |
 
 ## Session Continuity
 
