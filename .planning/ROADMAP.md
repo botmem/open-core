@@ -336,11 +336,12 @@ Plans:
 2. Reading encrypted fields through the API returns decrypted values transparently (encryption is at the DB layer)
 3. Migration script encrypts all existing plaintext credentials without downtime
 4. Missing APP_SECRET causes startup error with clear message
-   **Plans**: 1 plan
+   **Plans**: 2 plans
 
 Plans:
 
-- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
+- [x] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
+- [x] 20-02-PLAN.md -- Frontend credential management UI (ENC-01, ENC-02)
 
 ### Phase 21: End-to-End Encryption (Prod-Core)
 
@@ -389,11 +390,12 @@ Plans:
 2. Each API request sets `SET LOCAL app.current_user_id = '<user_id>'` before executing queries
 3. Attempting to read/write another user's data via direct SQL returns no results (no error, just empty)
 4. Drizzle ORM queries work correctly with RLS enabled -- no bypasses from connection pooling or missing session vars
-   **Plans**: 1 plan
+   **Plans**: 2 plans
 
 Plans:
 
-- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
+- [ ] 23-01-PLAN.md -- RLS DDL: enable RLS + create policies on all user-owned tables (DB-05)
+- [ ] 23-02-PLAN.md -- Session variable injection: RlsInterceptor + AsyncLocalStorage + DbService.withUserId() (DB-05)
 
 ### Phase 24: Firebase Auth (Prod-Core)
 
@@ -406,11 +408,12 @@ Plans:
 2. React UI shows Firebase login/register with email+password, Google, and GitHub options
 3. `AUTH_PROVIDER=local` (default) uses JWT email+password auth; `AUTH_PROVIDER=firebase` uses Firebase -- switching requires only env var change
 4. Firebase-authenticated users get local user records created on first login (sync from Firebase UID)
-   **Plans**: 1 plan
+   **Plans**: 2 plans
 
 Plans:
 
-- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
+- [ ] 23-01-PLAN.md -- RLS DDL: enable RLS + create policies on all user-owned tables (DB-05)
+- [ ] 23-02-PLAN.md -- Session variable injection: RlsInterceptor + AsyncLocalStorage + DbService.withUserId() (DB-05)
 
 <details>
 <summary>Old v2.0 Phases (11-15) -- partially complete, restructured</summary>
