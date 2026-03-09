@@ -26,21 +26,23 @@ export function ConnectorAccountRow({ account, onRemove, onSyncNow }: ConnectorA
 
   return (
     <div className="border-3 border-nb-border bg-nb-surface">
-      <div className="flex items-center justify-between p-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 gap-2">
         <div className="flex items-center gap-3">
           <div
-            className="w-3 h-3 border-2 border-nb-border"
+            className="w-3 h-3 border-2 border-nb-border shrink-0"
             style={{ backgroundColor: CONNECTOR_COLORS[account.type] }}
           />
-          <div>
-            <p className="font-mono text-sm font-bold text-nb-text">{account.identifier}</p>
+          <div className="min-w-0">
+            <p className="font-mono text-sm font-bold text-nb-text truncate">
+              {account.identifier}
+            </p>
             <p className="font-mono text-xs text-nb-muted">
               {account.lastSync ? `Synced ${formatRelative(account.lastSync)}` : 'Never synced'} •{' '}
               {account.memoriesIngested} memories
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge color={statusColors[account.status]}>{account.status}</Badge>
           <Badge>{account.schedule}</Badge>
           {showBankSelector && (
