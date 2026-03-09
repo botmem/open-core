@@ -8,8 +8,9 @@
 - v1.3 Test Coverage - Phase 7 (shipped 2026-03-08)
 - v1.4 Search Intelligence - Phases 8-10 (shipped 2026-03-08)
 - v2.0 Security, Auth & Encryption - Phases 16-24 (in progress)
-- v2.1 Data Quality & Pipeline Integrity - Phases 25-28 (queued)
-- v3.0 Monorepo & Developer Experience - Phases 29-33 (active)
+- v2.1 Data Quality & Pipeline Integrity - Phases 25-28 (shipped 2026-03-09)
+- v3.0 Monorepo & Developer Experience - Phases 29-33 (shipped 2026-03-09)
+- v3.0.1 NestJS Best Practices - Phase 34 (shipped 2026-03-09)
 - v3.1 Production Deployment & CI/CD - (planned, deferred)
 
 ## Phases
@@ -198,7 +199,7 @@ Phase 10: Source Citations (deferred)
 
 - [x] **Phase 16: User Authentication** - Register, login, JWT access+refresh tokens, password reset, session persistence (AUTH-01 through AUTH-05) (completed 2026-03-08)
 - [x] **Phase 17: API Security** - Global auth guard, CORS lockdown, @Public() decorator for health/version/auth endpoints (SEC-01, SEC-02) (completed 2026-03-08)
-- [ ] **Phase 18: API Keys** - Named read-only API keys, cryptographic generation, bank scoping, Bearer header auth (KEY-01 through KEY-05)
+- [x] **Phase 18: API Keys** - Named read-only API keys, cryptographic generation, bank scoping, Bearer header auth (KEY-01 through KEY-05) (completed 2026-03-08)
 - [ ] **Phase 19: Memory Banks** - Create/list/rename/delete banks, sync-time selection, search scoping, default bank + data migration (BANK-01 through BANK-04)
 - [ ] **Phase 20: Encryption at Rest** - AES-256-GCM for authContext + connectorCredentials, APP_SECRET key, migration script (ENC-01, ENC-02)
 - [ ] **Phase 21: End-to-End Encryption** - Argon2id key derivation, client-side memory encryption, vectors plaintext, password change re-encryption (E2EE-01 through E2EE-04)
@@ -206,7 +207,7 @@ Phase 10: Source Citations (deferred)
 - [ ] **Phase 23: Row Level Security** - Postgres RLS policies for user data isolation (DB-05)
 - [ ] **Phase 24: Firebase Auth (Prod-Core)** - Firebase guard, React Firebase UI, AUTH_PROVIDER switch, social login (FBAUTH-01 through FBAUTH-04)
 
-## v2.1 Data Quality & Pipeline Integrity (Phases 25-28)
+## v2.1 Data Quality & Pipeline Integrity (Phases 25-28) - SHIPPED 2026-03-09
 
 **Milestone Goal:** Fix source type misclassification, tame entity extraction chaos, unify entity format, deduplicate entities, and backfill existing data -- so search, filtering, and the memory graph actually work correctly.
 
@@ -301,8 +302,8 @@ Plans:
 
 Plans:
 
-- [ ] 18-01-PLAN.md -- Backend: schema, service, controller, dual auth guard, @RequiresJwt enforcement
-- [ ] 18-02-PLAN.md -- Frontend: Settings page tabs, API Keys management UI
+- [x] 18-01-PLAN.md -- Backend: schema, service, controller, dual auth guard, @RequiresJwt enforcement
+- [x] 18-02-PLAN.md -- Frontend: Settings page tabs, API Keys management UI
 
 ### Phase 19: Memory Banks
 
@@ -315,11 +316,13 @@ Plans:
 2. Connector sync accepts `bankId` parameter -- all ingested memories go into the specified bank
 3. Search results are scoped to the user's accessible banks (own banks for JWT auth, scoped banks for API key auth)
 4. On first login, a "Default" bank is created and all existing memories are migrated into it
-   **Plans**: 1 plan
+   **Plans**: 3 plans
 
 Plans:
 
-- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
+- [ ] 19-01-PLAN.md -- Backend: sync pipeline memoryBankId threading + API key bank scoping (BANK-02, BANK-03)
+- [ ] 19-02-PLAN.md -- Data migration script + frontend isDefault boolean fix (BANK-01, BANK-04)
+- [ ] 19-03-PLAN.md -- Frontend: sync bank selector + API key bank multi-select (BANK-02, BANK-03)
 
 ### Phase 20: Encryption at Rest
 
@@ -332,11 +335,9 @@ Plans:
 2. Reading encrypted fields through the API returns decrypted values transparently (encryption is at the DB layer)
 3. Migration script encrypts all existing plaintext credentials without downtime
 4. Missing APP_SECRET causes startup error with clear message
-   **Plans**: 1 plan
+   **Plans**: TBD
 
-Plans:
-
-- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
+Plans: Not yet planned
 
 ### Phase 21: End-to-End Encryption (Prod-Core)
 
@@ -349,11 +350,9 @@ Plans:
 2. Memory `text`, `entities`, `claims`, and `metadata` fields are encrypted client-side before POST -- server stores ciphertext
 3. Embedding vectors remain plaintext in Qdrant -- semantic search returns results, but text fields are encrypted until decrypted client-side
 4. Password change triggers batched re-encryption of all user memories with progress tracking (resumable on failure)
-   **Plans**: 1 plan
+   **Plans**: TBD
 
-Plans:
-
-- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
+Plans: Not yet planned
 
 ### Phase 22: PostgreSQL Dual-Driver -- COMPLETE
 
@@ -384,11 +383,9 @@ Plans:
 2. Each API request sets `SET LOCAL app.current_user_id = '<user_id>'` before executing queries
 3. Attempting to read/write another user's data via direct SQL returns no results (no error, just empty)
 4. Drizzle ORM queries work correctly with RLS enabled -- no bypasses from connection pooling or missing session vars
-   **Plans**: 1 plan
+   **Plans**: TBD
 
-Plans:
-
-- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
+Plans: Not yet planned
 
 ### Phase 24: Firebase Auth (Prod-Core)
 
@@ -401,11 +398,9 @@ Plans:
 2. React UI shows Firebase login/register with email+password, Google, and GitHub options
 3. `AUTH_PROVIDER=local` (default) uses JWT email+password auth; `AUTH_PROVIDER=firebase` uses Firebase -- switching requires only env var change
 4. Firebase-authenticated users get local user records created on first login (sync from Firebase UID)
-   **Plans**: 1 plan
+   **Plans**: TBD
 
-Plans:
-
-- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
+Plans: Not yet planned
 
 <details>
 <summary>Old v2.0 Phases (11-15) -- partially complete, restructured</summary>
@@ -609,33 +604,33 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 11. Repo & Infrastructure        | v2.0      | 3/3            | Complete    | 2026-03-08 |
 | 16. User Authentication          | v2.0      | 3/3            | Complete    | 2026-03-08 |
 | 17. API Security                 | v2.0      | 1/1            | Complete    | 2026-03-08 |
-| 18. API Keys                     | v2.0      | 0/2            | Not started | -          |
-| 19. Memory Banks                 | v2.0      | 0/?            | Not started | -          |
+| 18. API Keys                     | v2.0      | 2/2            | Complete    | 2026-03-08 |
+| 19. Memory Banks                 | v2.0      | 0/3            | Not started | -          |
 | 20. Encryption at Rest           | v2.0      | 0/?            | Not started | -          |
 | 21. E2EE (Prod-Core)             | v2.0      | 0/?            | Not started | -          |
-| 22. PostgreSQL Dual-Driver       | v2.0      | Complete       | 2026-03-09  | -          |
+| 22. PostgreSQL Dual-Driver       | v2.0      | 2/2            | Complete    | 2026-03-09 |
 | 23. Row Level Security           | v2.0      | 0/?            | Not started | -          |
 | 24. Firebase Auth (Prod-Core)    | v2.0      | 0/?            | Not started | -          |
-| 25. Source Type Reclassification | v2.1      | Complete       | 2026-03-08  | 2026-03-08 |
-| 26. Entity Format & Quality      | v2.1      | Complete       | 2026-03-08  | 2026-03-08 |
-| 27. Data Backfill                | v2.1      | Complete       | 2026-03-08  | -          |
-| 28. Verification                 | v2.1      | 0/1            | Not started | -          |
-| 29. Foundation Config            | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
-| 30. Dev Workflow Fix             | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
-| 31. Docker & Infrastructure      | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
-| 32. Build Optimization           | v3.0      | Complete       | 2026-03-08  | 2026-03-08 |
-| 33. Production Docker            | v3.0      | Complete       | 2026-03-08  | 2026-03-09 |
-| 34. NestJS Best Practices        | 3/3       | Complete       | 2026-03-08  | -          |
+| 25. Source Type Reclassification | v2.1      | 2/2            | Complete    | 2026-03-08 |
+| 26. Entity Format & Quality      | v2.1      | 2/2            | Complete    | 2026-03-08 |
+| 27. Data Backfill                | v2.1      | 1/1            | Complete    | 2026-03-09 |
+| 28. Verification                 | v2.1      | 1/1            | Complete    | 2026-03-09 |
+| 29. Foundation Config            | v3.0      | 1/1            | Complete    | 2026-03-08 |
+| 30. Dev Workflow Fix             | v3.0      | 2/2            | Complete    | 2026-03-08 |
+| 31. Docker & Infrastructure      | v3.0      | 1/1            | Complete    | 2026-03-08 |
+| 32. Build Optimization           | v3.0      | 1/1            | Complete    | 2026-03-08 |
+| 33. Production Docker            | v3.0      | 1/1            | Complete    | 2026-03-09 |
+| 34. NestJS Best Practices        | v3.0.1    | 3/3            | Complete    | 2026-03-09 |
 
 ### Phase 34: NestJS Best Practices Maturation
 
 **Goal:** Add input validation, rate limiting, structured logging, and error handling best practices to all API endpoints
 **Requirements**: BP-01, BP-02, BP-03, BP-04, BP-05, BP-06
 **Depends on:** Phase 31
-**Plans:** 1/1 plans complete
+**Plans:** 3/3 plans complete
 
 Plans:
 
 - [x] 34-01-PLAN.md -- Input validation (class-validator DTOs) + rate limiting (@nestjs/throttler) (BP-01, BP-02)
-- [ ] 34-02-PLAN.md -- Structured logging (BP-03, BP-04)
-- [ ] 34-03-PLAN.md -- Error handling improvements (BP-05, BP-06)
+- [x] 34-02-PLAN.md -- Structured logging (BP-03, BP-04)
+- [x] 34-03-PLAN.md -- Error handling improvements (BP-05, BP-06)
