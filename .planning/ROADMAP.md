@@ -202,7 +202,7 @@ Phase 10: Source Citations (deferred)
 - [ ] **Phase 19: Memory Banks** - Create/list/rename/delete banks, sync-time selection, search scoping, default bank + data migration (BANK-01 through BANK-04)
 - [ ] **Phase 20: Encryption at Rest** - AES-256-GCM for authContext + connectorCredentials, APP_SECRET key, migration script (ENC-01, ENC-02)
 - [ ] **Phase 21: End-to-End Encryption** - Argon2id key derivation, client-side memory encryption, vectors plaintext, password change re-encryption (E2EE-01 through E2EE-04)
-- [ ] **Phase 22: PostgreSQL Dual-Driver** - Postgres schema, pg Pool, DATABASE_URL, Docker Compose postgres service (DB-01 through DB-04) -- Plan 01 complete
+- [x] **Phase 22: PostgreSQL Dual-Driver** - Postgres schema, pg Pool, DATABASE_URL, Docker Compose postgres service (DB-01 through DB-04) -- Complete
 - [ ] **Phase 23: Row Level Security** - Postgres RLS policies for user data isolation (DB-05)
 - [ ] **Phase 24: Firebase Auth (Prod-Core)** - Firebase guard, React Firebase UI, AUTH_PROVIDER switch, social login (FBAUTH-01 through FBAUTH-04)
 
@@ -355,22 +355,23 @@ Plans:
 
 - [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
 
-### Phase 22: PostgreSQL Dual-Driver
+### Phase 22: PostgreSQL Dual-Driver -- COMPLETE
 
-**Goal**: The application runs on either SQLite or PostgreSQL with zero code changes outside the database layer
+**Goal**: Migrate from SQLite to PostgreSQL with native types (JSONB, boolean, timestamp), tsvector search, and pg Pool
 **Depends on**: Phase 19 (banks table must exist in schema before creating Postgres version)
 **Requirements**: DB-01, DB-02, DB-03, DB-04
 **Success Criteria** (what must be TRUE):
 
-1. `schema.pg.ts` mirrors `schema.ts` with PostgreSQL-specific types (serial, text[], jsonb, timestamp)
-2. Shared DB interface abstracts all queries -- application code never uses SQLite-specific or Postgres-specific syntax
-3. `DB_DRIVER=postgres` + `DATABASE_URL` starts the API on PostgreSQL; `DB_DRIVER=sqlite` (default) uses SQLite as before
-4. FTS5 queries on SQLite and tsvector+GIN queries on PostgreSQL both return equivalent search results
-   **Plans**: 1 plan
+1. Schema uses pgTable with native PostgreSQL types (uuid, timestamp, boolean, jsonb)
+2. All services consume PostgreSQL-native types -- zero SQLite references in apps/api/src/
+3. DATABASE_URL required at startup, Docker Compose includes postgres:17-alpine
+4. FTS uses tsvector + pg_trgm with GIN indexes
+   **Plans**: 2 plans
 
 Plans:
 
-- [ ] 27-01-PLAN.md -- Backend backfill pipeline (schema, processor, endpoint) + frontend trigger button (BKF-01, BKF-02, BKF-03, BKF-04)
+- [x] 22-01-PLAN.md -- Database layer migration (schema, db.service, config, docker)
+- [x] 22-02-PLAN.md -- Service layer migration (JSONB, booleans, timestamps, tests, cleanup)
 
 ### Phase 23: Row Level Security
 

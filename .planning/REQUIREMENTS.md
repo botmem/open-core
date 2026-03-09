@@ -58,7 +58,7 @@
 - [x] **DB-01**: PostgreSQL schema (`schema.ts`) uses pgTable with native Postgres types (boolean, timestamptz, jsonb, doublePrecision)
 - [x] **DB-02**: DbService uses pg Pool + NodePgDatabase with async init and graceful shutdown
 - [x] **DB-03**: ConfigService validates DATABASE_URL at startup (fail-fast OnModuleInit pattern)
-- [ ] **DB-04**: SQLite FTS5 ported to PostgreSQL tsvector + GIN index for full-text search
+- [x] **DB-04**: SQLite FTS5 ported to PostgreSQL tsvector + GIN index for full-text search
 - [ ] **DB-05**: PostgreSQL RLS policies isolate user data — each user sees only their own memories, accounts, contacts
 
 ### v2.0 Out of Scope
@@ -102,7 +102,7 @@
 | DB-01       | Phase 22 | Complete |
 | DB-02       | Phase 22 | Complete |
 | DB-03       | Phase 22 | Complete |
-| DB-04       | Phase 22 | Pending  |
+| DB-04       | Phase 22 | Complete |
 | DB-05       | Phase 23 | Pending  |
 | FBAUTH-01   | Phase 24 | Pending  |
 | FBAUTH-02   | Phase 24 | Pending  |

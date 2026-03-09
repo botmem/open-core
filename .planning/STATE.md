@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: in-progress
-stopped_at: Completed 22-01-PLAN.md
-last_updated: '2026-03-09T01:24:29.000Z'
-last_activity: 2026-03-09 -- Phase 22 Plan 01 complete (PostgreSQL database layer migration)
+stopped_at: Completed 22-02-PLAN.md
+last_updated: '2026-03-09T01:44:15.000Z'
+last_activity: 2026-03-09 -- Phase 22 Plan 02 complete (service layer PostgreSQL migration)
 progress:
   total_phases: 28
   completed_phases: 21
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 ## Current Position
 
 Phase: 22 (PostgreSQL Dual-Driver)
-Plan: 01 of 02 (complete)
-Status: Phase 22 in progress
-Last activity: 2026-03-09 -- Phase 22 Plan 01 complete (PostgreSQL database layer migration)
+Plan: 02 of 02 (complete)
+Status: Phase 22 complete
+Last activity: 2026-03-09 -- Phase 22 Plan 02 complete (service layer PostgreSQL migration)
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Last activity: 2026-03-09 -- Phase 22 Plan 01 complete (PostgreSQL database laye
 | 27    | 01   | 6min     | 2     | 7     |
 | 28    | 01   | 18min    | 2     | 1     |
 | 22    | 01   | 3min     | 3     | 6     |
+| 22    | 02   | 16min    | 2     | 26    |
 
 ## Accumulated Context
 
@@ -179,6 +180,9 @@ Recent decisions affecting current work:
 - [22-01]: Pool max=20, idle timeout 30s, connect timeout 5s
 - [22-01]: GIN indexes with pg_trgm replace SQLite FTS5 virtual tables
 - [22-01]: All SQLite migration functions removed -- fresh Postgres DB, no legacy data migration
+- [22-02]: Mock-based test helper replaces in-memory SQLite -- integration tests deferred to TEST_DATABASE_URL
+- [22-02]: users.service accepts string|Date for expiresAt -- backward-compatible during migration
+- [22-02]: PostgreSQL unique constraint detected via error code 23505 (replaces SQLITE_CONSTRAINT_UNIQUE)
 - [22-01]: DATABASE_URL required at startup with fail-fast OnModuleInit pattern
 
 ### Pending Todos
@@ -196,6 +200,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T01:24:29Z
-Stopped at: Completed 22-01-PLAN.md
-Resume: Phase 22 Plan 01 complete. Plan 02 (service layer adaptations) next.
+Last session: 2026-03-09T01:44:15Z
+Stopped at: Completed 22-02-PLAN.md
+Resume: Phase 22 complete. All services, tests, and processors migrated to PostgreSQL.
