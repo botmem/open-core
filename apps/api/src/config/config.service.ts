@@ -49,11 +49,6 @@ export class ConfigService implements OnModuleInit {
     return process.env.DATABASE_URL!;
   }
 
-  /** @deprecated Use databaseUrl instead. Kept temporarily for migration scripts. */
-  get dbPath(): string {
-    return process.env.DB_PATH || './data/botmem.db';
-  }
-
   get pluginsDir(): string {
     return process.env.PLUGINS_DIR || './plugins';
   }
