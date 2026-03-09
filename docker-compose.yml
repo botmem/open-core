@@ -1,12 +1,29 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: botmem
+      POSTGRES_PASSWORD: botmem
+      POSTGRES_DB: botmem
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U botmem -d botmem']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
   redis:
     image: redis:7.4-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -14,12 +31,12 @@ services:
   qdrant:
     image: qdrant/qdrant:v1.17.0
     ports:
-      - "6333:6333"
-      - "6334:6334"
+      - '6333:6333'
+      - '6334:6334'
     volumes:
       - qdrant-data:/qdrant/storage
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/6333'"]
+      test: ['CMD-SHELL', "bash -c 'echo > /dev/tcp/localhost/6333'"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -30,17 +47,18 @@ services:
     profiles:
       - ollama
     ports:
-      - "11434:11434"
+      - '11434:11434'
     volumes:
       - ollama-data:/root/.ollama
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/11434'"]
+      test: ['CMD-SHELL', "bash -c 'echo > /dev/tcp/localhost/11434'"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 10s
 
 volumes:
+  postgres-data:
   redis-data:
   qdrant-data:
   ollama-data:
