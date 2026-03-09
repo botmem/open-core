@@ -80,7 +80,8 @@ interface MeData {
     identifier: string;
     status: string;
     lastSyncAt: string | null;
-    itemsSynced: number;
+    itemsSynced?: number;
+    memoriesCount?: number;
   }>;
   stats: {
     totalMemories: number;
@@ -370,7 +371,7 @@ export function MePage() {
                   <div className="text-right shrink-0">
                     <Badge color={isActive ? '#22C55E' : '#888888'}>{acct.status}</Badge>
                     <p className="font-mono text-[10px] text-nb-muted mt-1">
-                      {acct.itemsSynced.toLocaleString()} items
+                      {(acct.memoriesCount ?? acct.itemsSynced ?? 0).toLocaleString()} memories
                     </p>
                   </div>
                 </div>

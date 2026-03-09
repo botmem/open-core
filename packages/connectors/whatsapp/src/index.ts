@@ -1,5 +1,14 @@
 import { BaseConnector } from '@botmem/connector-sdk';
-import type { ConnectorManifest, AuthContext, AuthInitResult, SyncContext, SyncResult, ConnectorDataEvent, EmbedResult, PipelineContext } from '@botmem/connector-sdk';
+import type {
+  ConnectorManifest,
+  AuthContext,
+  AuthInitResult,
+  SyncContext,
+  SyncResult,
+  ConnectorDataEvent,
+  EmbedResult,
+  PipelineContext,
+} from '@botmem/connector-sdk';
 import type { makeWASocket } from '@whiskeysockets/baileys';
 import { startQrAuth } from './qr-auth.js';
 import { syncWhatsApp, setDecryptFailureCallback } from './sync.js';
@@ -26,7 +35,7 @@ export class WhatsAppConnector extends BaseConnector {
     },
     entities: ['person', 'message'],
     pipeline: { clean: true, embed: true, enrich: true },
-    trustScore: 0.80,
+    trustScore: 0.8,
   };
 
   private sessionCounter = 0;
@@ -86,7 +95,9 @@ export class WhatsAppConnector extends BaseConnector {
       onConnected: (auth: AuthContext, sock) => {
         console.log(`[WhatsApp] onConnected sessionId=${sessionId} jid=${auth.raw?.jid}`);
         if (this.warm?.sessionId !== sessionId) {
-          console.warn(`[WhatsApp] onConnected: warm session mismatch (warm=${this.warm?.sessionId}, got=${sessionId}) — ignoring`);
+          console.warn(
+            `[WhatsApp] onConnected: warm session mismatch (warm=${this.warm?.sessionId}, got=${sessionId}) — ignoring`,
+          );
           return;
         }
         const { wsChannel: ch, sessionDir: sd } = this.warm;
@@ -102,7 +113,11 @@ export class WhatsAppConnector extends BaseConnector {
           if (this.authSockets.has(sd)) {
             console.warn(`[WhatsApp] Auth socket for ${sd} expired (never picked up by sync)`);
             this.authSockets.delete(sd);
-            try { sock.ws?.close(); } catch { /* ignore */ }
+            try {
+              sock.ws?.close();
+            } catch {
+              /* ignore */
+            }
           }
         }, 10 * 60_000);
 
@@ -191,7 +206,11 @@ export class WhatsAppConnector extends BaseConnector {
     const sock = this.authSockets.get(sessionDir);
     if (sock) {
       this.authSockets.delete(sessionDir);
-      try { sock.ws?.close(); } catch { /* ignore */ }
+      try {
+        sock.ws?.close();
+      } catch {
+        /* ignore */
+      }
     }
 
     // Delete session files from disk
@@ -218,12 +237,14 @@ export class WhatsAppConnector extends BaseConnector {
     const chatId = metadata.chatId as string | undefined;
     const chatName = metadata.chatName as string | undefined;
 
-    // Group entity
-    if (isGroup && chatId) {
-      const groupJid = chatId.replace(/@.*$/, '');
+    // Group entity — from message events (chatId) or contact events (groupJid in metadata)
+    const groupJidRaw = chatId || (metadata.groupJid as string | undefined);
+    if (isGroup && groupJidRaw) {
+      const groupJid = groupJidRaw.replace(/@.*$/, '');
       const groupParts = [`whatsapp_group_jid:${groupJid}`];
-      if (chatName) groupParts.push(`name:${chatName}`);
-      entities.push({ type: 'person', id: groupParts.join('|'), role: 'group' });
+      const groupDisplayName = chatName || (metadata.name as string | undefined);
+      if (groupDisplayName) groupParts.push(`name:${groupDisplayName}`);
+      entities.push({ type: 'group', id: groupParts.join('|'), role: 'group' });
     }
 
     // Sender — compound ID with all known identifiers
@@ -261,16 +282,23 @@ export class WhatsAppConnector extends BaseConnector {
     }
 
     // Shared contacts from vCards — compound ID per person
-    const sharedContacts = (metadata.sharedContacts as Array<{ name: string; phones: string[] }>) || [];
+    const sharedContacts =
+      (metadata.sharedContacts as Array<{ name: string; phones: string[] }>) || [];
     for (const sc of sharedContacts) {
       const scParts: string[] = [];
       if (sc.name) scParts.push(`name:${sc.name}`);
       for (const p of sc.phones) scParts.push(`phone:${p.replace(/^\+/, '')}`);
-      if (scParts.length) entities.push({ type: 'person', id: scParts.join('|'), role: 'mentioned' });
+      if (scParts.length)
+        entities.push({ type: 'person', id: scParts.join('|'), role: 'mentioned' });
     }
 
     // Remaining participants
-    const handledPhones = new Set([phone, selfPhone, ...mentions.map(m => m.phone), ...sharedContacts.flatMap(sc => sc.phones.map(p => p.replace(/^\+/, '')))]);
+    const handledPhones = new Set([
+      phone,
+      selfPhone,
+      ...mentions.map((m) => m.phone),
+      ...sharedContacts.flatMap((sc) => sc.phones.map((p) => p.replace(/^\+/, ''))),
+    ]);
     for (const p of participants) {
       if (!p || p.includes('-')) continue;
       if (handledPhones.has(p)) continue;

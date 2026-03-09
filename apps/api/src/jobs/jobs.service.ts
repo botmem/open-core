@@ -174,17 +174,22 @@ export class JobsService {
     const running = await this.dbService.db.select().from(jobs).where(eq(jobs.status, 'running'));
     let marked = 0;
     for (const job of running) {
-      const bullJob = await this.syncQueue.getJob(job.id);
-
-      if (bullJob) {
-        const isActive = await bullJob.isActive();
-        const isCompleted = await bullJob.isCompleted();
-        if (isActive || isCompleted) continue;
-      }
-
       const startedAt = job.startedAt ? new Date(job.startedAt).getTime() : 0;
-      const staleThreshold = 5 * 60 * 1000;
-      if (Date.now() - startedAt < staleThreshold) continue;
+      const age = Date.now() - startedAt;
+
+      // Hard cap: any job running for 30+ minutes is stale regardless of BullMQ state
+      const hardCapMs = 30 * 60 * 1000;
+      if (age < 5 * 60 * 1000) continue; // Too young to judge
+
+      if (age < hardCapMs) {
+        // Under hard cap — only mark stale if BullMQ job is no longer active
+        const bullJob = await this.syncQueue.getJob(job.id);
+        if (bullJob) {
+          const isActive = await bullJob.isActive();
+          const isCompleted = await bullJob.isCompleted();
+          if (isActive || isCompleted) continue;
+        }
+      }
 
       await this.dbService.db
         .update(jobs)

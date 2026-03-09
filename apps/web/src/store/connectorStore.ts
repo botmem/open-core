@@ -62,6 +62,8 @@ export const useConnectorStore = create<ConnectorState>((set, _get) => ({
             schedule: 'hourly' as const,
             lastSync: null,
             memoriesIngested: 0,
+            contactsCount: 0,
+            groupsCount: 0,
             lastError: null,
           },
         ],

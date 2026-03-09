@@ -315,12 +315,18 @@ export class ContactsService {
 
     // Auto-merge: if any non-name identifier on this contact also belongs to
     // another contact, absorb that contact automatically.
+    // Capped at 5 merges per resolve to prevent infinite loops from circular references.
     try {
       const allIdentsForContact = await this.dbService.withCurrentUser((db) =>
         db.select().from(contactIdentifiers).where(eq(contactIdentifiers.contactId, contactId)),
       );
 
+      let mergeCount = 0;
+      const MAX_MERGES_PER_RESOLVE = 5;
+      const mergedIds = new Set<string>();
+
       for (const ident of allIdentsForContact) {
+        if (mergeCount >= MAX_MERGES_PER_RESOLVE) break;
         if (ident.identifierType === 'name') continue;
         const dupes = await this.dbService.withCurrentUser((db) =>
           db
@@ -332,8 +338,18 @@ export class ContactsService {
         );
 
         for (const dupe of dupes) {
+          if (mergeCount >= MAX_MERGES_PER_RESOLVE) break;
+          if (mergedIds.has(dupe.contactId)) continue;
+          mergedIds.add(dupe.contactId);
           await this.mergeContacts(contactId, dupe.contactId);
+          mergeCount++;
         }
+      }
+
+      if (mergeCount >= MAX_MERGES_PER_RESOLVE) {
+        this.logger.warn(
+          `[resolveContact] hit merge cap (${MAX_MERGES_PER_RESOLVE}) for contact ${contactId} — skipping remaining`,
+        );
       }
     } catch (err) {
       // Auto-merge is best-effort — don't fail the resolve
