@@ -300,12 +300,12 @@ Validate the entire pipeline end-to-end — sync real data from every connector,
 
 ### Pipeline Processing
 
-- [ ] **PIPE-01**: Embed processor creates Memory with correct source_type per connector (email/message/photo/location/file)
-- [ ] **PIPE-02**: Embed processor generates valid 768d embedding for every memory
-- [ ] **PIPE-03**: Embed processor resolves participants to deduplicated Contact records
-- [ ] **PIPE-04**: Enrich processor extracts entities using canonical 10-type taxonomy
-- [ ] **PIPE-05**: Enrich processor classifies factuality (FACT/UNVERIFIED/FICTION) with confidence
-- [ ] **PIPE-06**: Enrich processor upserts vector to Qdrant with correct payload (memory_id, source_type, connector_type, event_time)
+- [x] **PIPE-01**: Embed processor creates Memory with correct source_type per connector (email/message/photo/location/file)
+- [x] **PIPE-02**: Embed processor generates valid 768d embedding for every memory
+- [x] **PIPE-03**: Embed processor resolves participants to deduplicated Contact records
+- [x] **PIPE-04**: Enrich processor extracts entities using canonical 10-type taxonomy
+- [x] **PIPE-05**: Enrich processor classifies factuality (FACT/UNVERIFIED/FICTION) with confidence
+- [x] **PIPE-06**: Enrich processor upserts vector to Qdrant with correct payload (memory_id, source_type, connector_type, event_time)
 - [ ] **PIPE-07**: File attachments extracted as standalone memories with source_type `file` (own node on graph)
 - [ ] **PIPE-08**: Photo-type files processed through vision model for caption extraction, stored as source_type `photo`
 - [ ] **PIPE-09**: Non-photo files stored with metadata (filename, type, size) and linked to parent memory
@@ -338,34 +338,34 @@ Validate the entire pipeline end-to-end — sync real data from every connector,
 
 ### v4.0 Traceability
 
-| Requirement | Phase    | Status  |
-| ----------- | -------- | ------- |
-| SYNC-01     | Phase 35 | Pending |
-| SYNC-02     | Phase 35 | Pending |
-| SYNC-03     | Phase 35 | Pending |
-| SYNC-04     | Phase 35 | Pending |
-| SYNC-05     | Phase 35 | Pending |
-| SYNC-06     | Phase 35 | Pending |
-| PIPE-01     | Phase 35 | Pending |
-| PIPE-02     | Phase 35 | Pending |
-| PIPE-03     | Phase 35 | Pending |
-| PIPE-04     | Phase 35 | Pending |
-| PIPE-05     | Phase 35 | Pending |
-| PIPE-06     | Phase 35 | Pending |
-| PIPE-07     | Phase 36 | Pending |
-| PIPE-08     | Phase 36 | Pending |
-| PIPE-09     | Phase 36 | Pending |
-| REL-01      | Phase 37 | Pending |
-| REL-02      | Phase 37 | Pending |
-| REL-03      | Phase 37 | Pending |
-| REL-04      | Phase 36 | Pending |
-| SRCH-01     | Phase 38 | Pending |
-| SRCH-02     | Phase 38 | Pending |
-| SRCH-03     | Phase 38 | Pending |
-| SRCH-04     | Phase 38 | Pending |
-| SRCH-05     | Phase 38 | Pending |
-| SRCH-06     | Phase 38 | Pending |
-| SRCH-07     | Phase 38 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| SYNC-01     | Phase 35 | Pending  |
+| SYNC-02     | Phase 35 | Pending  |
+| SYNC-03     | Phase 35 | Pending  |
+| SYNC-04     | Phase 35 | Pending  |
+| SYNC-05     | Phase 35 | Pending  |
+| SYNC-06     | Phase 35 | Pending  |
+| PIPE-01     | Phase 35 | Complete |
+| PIPE-02     | Phase 35 | Complete |
+| PIPE-03     | Phase 35 | Complete |
+| PIPE-04     | Phase 35 | Complete |
+| PIPE-05     | Phase 35 | Complete |
+| PIPE-06     | Phase 35 | Complete |
+| PIPE-07     | Phase 36 | Pending  |
+| PIPE-08     | Phase 36 | Pending  |
+| PIPE-09     | Phase 36 | Pending  |
+| REL-01      | Phase 37 | Pending  |
+| REL-02      | Phase 37 | Pending  |
+| REL-03      | Phase 37 | Pending  |
+| REL-04      | Phase 36 | Pending  |
+| SRCH-01     | Phase 38 | Pending  |
+| SRCH-02     | Phase 38 | Pending  |
+| SRCH-03     | Phase 38 | Pending  |
+| SRCH-04     | Phase 38 | Pending  |
+| SRCH-05     | Phase 38 | Pending  |
+| SRCH-06     | Phase 38 | Pending  |
+| SRCH-07     | Phase 38 | Pending  |
 
 **v4.0 Coverage:**
 
