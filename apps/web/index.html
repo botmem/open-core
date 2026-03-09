@@ -10,10 +10,31 @@
     <meta property="og:description" content="Self-hosted personal memory. Search your entire digital life locally." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://botmem.app/" />
+    <meta property="og:image" content="https://botmem.app/brand/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Botmem — Your Life, Searchable" />
     <meta name="twitter:description" content="Self-hosted personal memory. Search your entire digital life locally." />
-    <meta name="theme-color" content="#0D0D0D" />
+    <meta name="twitter:image" content="https://botmem.app/brand/og-image.png" />
+    <meta name="theme-color" content="#0D0D0D" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F5F5F0" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/logo-mark-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/brand/logo-mark-16.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/brand/logo-mark-192.png" />
+    <!-- Anti-flash: read stored/system theme and apply before React renders -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('botmem-theme');
+          var pref = raw ? (JSON.parse(raw).state || {}).theme : null;
+          var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var resolved = pref === 'light' ? 'light' : pref === 'dark' ? 'dark' : dark ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', resolved);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />

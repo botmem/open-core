@@ -103,6 +103,15 @@ export class UserAuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('reauth')
+  @HttpCode(200)
+  async reauth(@CurrentUser() user: { id: string }, @Body() dto: { password: string }) {
+    await this.authService.reauth(user.id, dto.password);
+    return { ok: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('change-password')
   @HttpCode(200)
   async changePassword(@CurrentUser() user: { id: string }, @Body() dto: ChangePasswordDto) {

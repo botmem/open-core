@@ -7,6 +7,7 @@ import { EventsService } from '../events/events.service';
 import { DbService } from '../db/db.service';
 import { CryptoService } from '../crypto/crypto.service';
 import { AnalyticsService } from '../analytics/analytics.service';
+import { ConfigService } from '../config/config.service';
 import { connectorCredentials } from '../db/schema';
 
 @Injectable()
@@ -26,6 +27,7 @@ export class AuthService {
     private dbService: DbService,
     private crypto: CryptoService,
     private analytics: AnalyticsService,
+    private config: ConfigService,
   ) {}
 
   async getSavedCredentials(connectorType: string): Promise<Record<string, unknown> | null> {
@@ -139,7 +141,17 @@ export class AuthService {
     const { returnTo, ...connectorConfig } = config;
 
     const saved = await this.getSavedCredentials(connectorType);
-    const mergedConfig = { ...saved, ...connectorConfig };
+    let mergedConfig = { ...saved, ...connectorConfig };
+
+    // In Firebase mode, inject server-side OAuth creds for Google connectors
+    if (this.config.authProvider === 'firebase' && connectorType === 'gmail') {
+      if (this.config.gmailClientId)
+        mergedConfig = {
+          clientId: this.config.gmailClientId,
+          clientSecret: this.config.gmailClientSecret,
+          ...mergedConfig,
+        };
+    }
 
     let result;
     try {

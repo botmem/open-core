@@ -5,6 +5,9 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { api, createWsConnection, subscribeToChannel } from '../../lib/api';
 import { useConnectorStore } from '../../store/connectorStore';
+import { isFirebaseMode } from '../../store/authStore';
+
+const FIREBASE_HIDDEN_FIELDS = new Set(['clientId', 'clientSecret']);
 
 interface ConnectorSetupModalProps {
   open: boolean;
@@ -299,9 +302,9 @@ function FormView({
   };
 
   const activeMethod = state.authMethods.find((m) => m.id === state.selectedMethod);
-  const visibleFields = activeMethod
-    ? state.fields.filter((f) => activeMethod.fields.includes(f.name))
-    : state.fields;
+  const visibleFields = (
+    activeMethod ? state.fields.filter((f) => activeMethod.fields.includes(f.name)) : state.fields
+  ).filter((f) => !(isFirebaseMode && FIREBASE_HIDDEN_FIELDS.has(f.name)));
 
   return (
     <Modal open onClose={onClose} title={`Connect ${connectorType.toUpperCase()}`}>
