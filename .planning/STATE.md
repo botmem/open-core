@@ -20,11 +20,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Every piece of personal communication is searchable, connected, and queryable -- with factuality labeling so the user knows what's verified vs. hearsay.
-**Current focus:** v2.0 Security, Auth & Encryption -- Phase 22 (PostgreSQL Dual-Driver) next
+**Current focus:** v2.0 Security, Auth & Encryption -- Phase 20 (Encryption at Rest) next
 
 ## Current Position
 
-Phase: 22 (PostgreSQL Dual-Driver) - Next up
+Phase: 20 (Encryption at Rest) - Next up
 Status: v2.1, v3.0, v3.0.1 milestones shipped. v2.0 partially complete (16, 17, 18, 19, 22 done; 20-21, 23-24 remaining).
 Last activity: 2026-03-09 - Phase 19 (Memory Banks) complete: 3/3 plans, bank-scoped sync pipeline, data migration, frontend bank selectors
 
@@ -219,5 +219,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Phase 19 complete, ready to plan Phase 22
+Stopped at: Phase 19 complete, ready to plan Phase 20
 Resume file: None
