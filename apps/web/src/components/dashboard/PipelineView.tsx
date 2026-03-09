@@ -28,7 +28,7 @@ export function PipelineView({ queueStats }: PipelineViewProps) {
         PIPELINE
       </div>
 
-      <div className="p-4 flex items-center gap-0">
+      <div className="p-2 md:p-4 flex items-center gap-0 overflow-x-auto">
         {PIPELINE_STAGES.map((stage, i) => {
           const stats = queueStats[stage];
           const meta = STAGE_META[stage];
@@ -38,10 +38,10 @@ export function PipelineView({ queueStats }: PipelineViewProps) {
           const hasFailed = stats.failed > 0;
 
           return (
-            <div key={stage} className="flex items-center flex-1 min-w-0">
+            <div key={stage} className="flex items-center flex-1 min-w-[80px]">
               <div className="flex-1 min-w-0 overflow-hidden">
                 <div
-                  className="border-2 p-3 relative transition-colors"
+                  className="border-2 p-1.5 md:p-3 relative transition-colors"
                   style={{
                     borderColor: isActive ? meta.color : hasFailed ? '#EF4444' : '#3a3a3a',
                     backgroundColor: isActive ? meta.color + '10' : 'transparent',
@@ -59,7 +59,7 @@ export function PipelineView({ queueStats }: PipelineViewProps) {
                       {meta.icon}
                     </span>
                     <span
-                      className="font-display text-xs font-bold uppercase tracking-wider"
+                      className="font-display text-[10px] md:text-xs font-bold uppercase tracking-wider"
                       style={{ color: isActive ? meta.color : '#888' }}
                     >
                       {meta.label}
@@ -82,7 +82,10 @@ export function PipelineView({ queueStats }: PipelineViewProps) {
                           >
                             {value.toLocaleString()}
                           </span>
-                          <span className="font-mono text-[10px]" style={{ color: value > 0 ? '#9CA3AF' : '#444' }}>
+                          <span
+                            className="font-mono text-[10px]"
+                            style={{ color: value > 0 ? '#9CA3AF' : '#444' }}
+                          >
                             {row.label}
                           </span>
                         </div>

@@ -650,8 +650,8 @@ export class MemoryService {
     // User isolation
     const userAccountIds = await this.getUserAccountIds(params.userId);
 
-    // Show memories as soon as embedding is done
-    const conditions: any[] = [eq(memories.embeddingStatus, 'done')];
+    // Show all memories regardless of embedding status
+    const conditions: any[] = [];
     if (userAccountIds !== null) {
       if (userAccountIds.length === 0) return { items: [], total: 0 };
       conditions.push(inArray(memories.accountId, userAccountIds));
@@ -668,7 +668,7 @@ export class MemoryService {
       conditions.push(inArray(memories.memoryBankId, params.memoryBankIds));
     }
 
-    const where = and(...conditions)!;
+    const where = conditions.length > 0 ? and(...conditions)! : undefined;
 
     const totalRows = await db
       .select({ count: sql<number>`COUNT(*)` })
