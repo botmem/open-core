@@ -12,6 +12,7 @@
 - v3.0 Monorepo & Developer Experience - Phases 29-33 (shipped 2026-03-09)
 - v3.0.1 NestJS Best Practices - Phase 34 (shipped 2026-03-09)
 - v3.1 Production Deployment & CI/CD - (planned, deferred)
+- v4.0 E2E Testing & Test Infrastructure - Phases 35-39 (planned — execution requires v2.0 phases 21, 23, 24 to complete first)
 
 ## Phases
 
@@ -202,7 +203,7 @@ Phase 10: Source Citations (deferred)
 - [x] **Phase 18: API Keys** - Named read-only API keys, cryptographic generation, bank scoping, Bearer header auth (KEY-01 through KEY-05) (completed 2026-03-08)
 - [x] **Phase 19: Memory Banks** - Create/list/rename/delete banks, sync-time selection, search scoping, default bank + data migration (BANK-01 through BANK-04) (completed 2026-03-09)
 - [x] **Phase 20: Encryption at Rest** - AES-256-GCM for authContext + connectorCredentials, APP_SECRET key, migration script (ENC-01, ENC-02) (completed 2026-03-09)
-- [ ] **Phase 21: End-to-End Encryption** - Argon2id key derivation, client-side memory encryption, vectors plaintext, password change re-encryption (E2EE-01 through E2EE-04)
+- [x] **Phase 21: End-to-End Encryption** - Argon2id key derivation, client-side memory encryption, vectors plaintext, password change re-encryption (E2EE-01 through E2EE-04) (completed 2026-03-09)
 - [x] **Phase 22: PostgreSQL Dual-Driver** - Postgres schema, pg Pool, DATABASE_URL, Docker Compose postgres service (DB-01 through DB-04) -- Complete
 - [ ] **Phase 23: Row Level Security** - Postgres RLS policies for user data isolation (DB-05)
 - [ ] **Phase 24: Firebase Auth (Prod-Core)** - Firebase guard, React Firebase UI, AUTH_PROVIDER switch, social login (FBAUTH-01 through FBAUTH-04)
@@ -424,7 +425,7 @@ Phases 12-15 (DB, Inference, Docker, CI/CD) are restructured:
 
 ### Phase 11: Repository & Infrastructure Foundation (COMPLETE)
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 - [x] 11-01: Clean inline secrets and sanitize git history (REPO-04)
 - [x] 11-02: Create GitHub org, open-core and prod-core repos (REPO-01, REPO-02, REPO-03)
@@ -595,7 +596,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 9 -> 10 -> 11 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 9 -> 10 -> 11 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33 -> 34 -> [v2.0 phases 21, 23, 24 complete] -> 35 -> 36 -> 37 -> 38 -> 39
 
 | Phase                            | Milestone | Plans Complete | Status      | Completed  |
 | -------------------------------- | --------- | -------------- | ----------- | ---------- |
@@ -616,7 +617,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 18. API Keys                     | v2.0      | 2/2            | Complete    | 2026-03-08 |
 | 19. Memory Banks                 | 3/3       | Complete       | 2026-03-09  | -          |
 | 20. Encryption at Rest           | 1/1       | Complete       | 2026-03-09  | -          |
-| 21. E2EE (Prod-Core)             | 1/2       | In Progress    |             | -          |
+| 21. E2EE (Prod-Core)             | 2/2       | Complete       | 2026-03-09  | -          |
 | 22. PostgreSQL Dual-Driver       | v2.0      | 2/2            | Complete    | 2026-03-09 |
 | 23. Row Level Security           | v2.0      | 0/?            | Not started | -          |
 | 24. Firebase Auth (Prod-Core)    | v2.0      | 0/?            | Not started | -          |
@@ -630,6 +631,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 32. Build Optimization           | v3.0      | 1/1            | Complete    | 2026-03-08 |
 | 33. Production Docker            | v3.0      | 1/1            | Complete    | 2026-03-09 |
 | 34. NestJS Best Practices        | v3.0.1    | 3/3            | Complete    | 2026-03-09 |
+| 35. Fixture Capture              | v4.0      | 0/?            | Not started | -          |
+| 36. Pipeline Integration Tests   | v4.0      | 0/?            | Not started | -          |
+| 37. API HTTP Integration Tests   | v4.0      | 0/?            | Not started | -          |
+| 38. Connector Parsing Tests      | v4.0      | 0/?            | Not started | -          |
+| 39. CI Gates & Coverage          | v4.0      | 0/?            | Not started | -          |
 
 ### Phase 34: NestJS Best Practices Maturation
 
@@ -643,3 +649,96 @@ Plans:
 - [x] 34-01-PLAN.md -- Input validation (class-validator DTOs) + rate limiting (@nestjs/throttler) (BP-01, BP-02)
 - [x] 34-02-PLAN.md -- Structured logging (BP-03, BP-04)
 - [x] 34-03-PLAN.md -- Error handling improvements (BP-05, BP-06)
+
+## v4.0 E2E Testing & Test Infrastructure (Phases 35-39)
+
+**Milestone Goal:** Establish comprehensive integration and API-level testing for Botmem using snapshot-based fixture testing to handle Ollama non-determinism -- so the pipeline is verifiable in CI without GPU access.
+
+**Execution dependency:** Phases 35-39 require v2.0 phases 21 (E2EE), 23 (RLS), and 24 (Firebase) to complete first -- test infrastructure must be built against the final auth/DB architecture.
+
+**Phase Ordering Rationale:**
+
+- Fixture capture first (Phase 35) because all subsequent test phases depend on recorded LLM responses and connector payloads -- tests cannot run without fixtures
+- Pipeline integration tests (Phase 36) before API tests (Phase 37) because processors underpin the API layer -- a broken processor means broken endpoints
+- Connector parsing tests (Phase 38) are independent data-transform tests that do not depend on the live pipeline but do benefit from the fixture infrastructure in Phase 35
+- CI gates (Phase 39) last because they gate on all prior test suites passing -- the workflow cannot be locked until there are passing tests to enforce
+
+**Summary:**
+
+- [ ] **Phase 35: Fixture Capture Infrastructure** - `pnpm fixtures:generate`, JSON LLM I/O recordings, connector payload fixtures, fixture loader utility (FIXTURE-01 through FIXTURE-05)
+- [ ] **Phase 36: Pipeline Integration Tests** - EmbedProcessor, EnrichProcessor, SyncProcessor, backfill tests with real Postgres + fixture LLM (PIPE-01 through PIPE-05)
+- [ ] **Phase 37: API HTTP Integration Tests** - All REST endpoints via Supertest: auth, search, accounts, banks, API keys, contacts, health, auth enforcement (API-01 through API-08)
+- [ ] **Phase 38: Connector Parsing Tests** - Gmail, Slack, iMessage, Immich, Locations parsing with recorded fixture responses (CONN-01 through CONN-05)
+- [ ] **Phase 39: CI Gates & Coverage** - GitHub Actions test workflow, fixture cache, coverage report artifacts, deploy gate, 80% threshold enforcement (CI-01 through CI-05)
+
+## Phase Details (v4.0)
+
+### Phase 35: Fixture Capture Infrastructure
+
+**Goal**: Developer can generate and refresh a complete set of recorded LLM responses and connector payloads that allow all tests to run offline against deterministic inputs
+**Depends on**: Phase 34 (codebase fully stable), v2.0 phases 21, 23, 24 (final auth/DB architecture in place)
+**Requirements**: FIXTURE-01, FIXTURE-02, FIXTURE-03, FIXTURE-04, FIXTURE-05
+**Success Criteria** (what must be TRUE):
+
+1. Developer can run `pnpm fixtures:generate` against live Ollama and see JSON fixture files created in `__fixtures__/ollama/embed/`, `__fixtures__/ollama/enrich/`, and `__fixtures__/ollama/vl/` -- one file per LLM call type
+2. Developer can run `pnpm fixtures:refresh` after changing an Ollama model or prompt and see fixture files updated to reflect the new responses -- stale fixtures do not silently persist
+3. Test files can call `loadFixture('ollama/embed', 'nomic-sample')` (or equivalent) and receive the fixture data without any boilerplate file-reading code -- the loader handles path resolution and parsing
+4. `__fixtures__/connectors/` contains one sample raw payload per connector type (gmail, slack, imessage, immich, locations) that matches the shape emitted by each connector's sync method
+5. Running `pnpm test` with no live Ollama available completes successfully using fixture data -- zero network calls to Ollama during test execution
+   **Plans**: TBD
+
+### Phase 36: Pipeline Integration Tests
+
+**Goal**: Developer can run the full embed/enrich/sync pipeline against a real isolated Postgres database using fixture LLM responses and verify the entire data flow without live Ollama
+**Depends on**: Phase 35 (fixture infrastructure must exist), Phase 22 (Postgres driver)
+**Requirements**: PIPE-01, PIPE-02, PIPE-03, PIPE-04, PIPE-05
+**Success Criteria** (what must be TRUE):
+
+1. Running `pnpm test` on the API package executes `embed.processor.integration.test.ts` and passes -- the test creates a Memory row in a real Postgres schema and asserts correct `text`, `source_type`, `connector_type`, and contact associations
+2. Running the enrich integration test passes -- the test verifies entities, claims, and factuality label are stored in Postgres, and that E2EE-encrypted fields contain ciphertext (not plaintext) when encryption is enabled
+3. Running the sync integration test passes -- the test verifies that rawEvents rows are created in Postgres and embed jobs are enqueued in BullMQ for each fixture payload emitted by the mock connector
+4. Running tests twice in sequence produces identical results -- the `test-db` helper creates a fresh isolated Postgres schema before each suite and drops it after, with zero cross-suite state leakage
+5. Running the backfill integration test passes -- already-enriched memories are skipped on the second pass, and the final entity output matches the fixture-derived expected values
+   **Plans**: TBD
+
+### Phase 37: API HTTP Integration Tests
+
+**Goal**: Developer can run a complete HTTP test suite covering all REST endpoints and verify correct status codes, response shapes, and authorization enforcement
+**Depends on**: Phase 36 (pipeline integration layer verified), Phase 35 (fixture embeddings for search tests)
+**Requirements**: API-01, API-02, API-03, API-04, API-05, API-06, API-07, API-08
+**Success Criteria** (what must be TRUE):
+
+1. Running the auth integration test suite passes all steps: register returns 201 with JWT, login returns 200 with JWT + refresh cookie, refresh rotates token, logout clears cookie, forgot-password returns 200, reset-password with valid token returns 200
+2. Running `POST /api/memory/search` in the test suite with a fixture embedding returns a 200 response with results array where each item has `id`, `text`, `score`, `source_type`, and `entities` fields
+3. Sending an unauthenticated request to any protected endpoint (e.g., `GET /api/memory/search`) returns 401; sending an API key bearer token to a write endpoint (e.g., `POST /api/accounts`) returns 403
+4. All CRUD paths for memory banks, API keys, and connector accounts return correct status codes and response shapes -- create returns 201, list returns 200 with array, delete returns 204
+5. `GET /api/health` returns 200 with a JSON body showing connectivity status for Postgres, Redis, and Qdrant
+   **Plans**: TBD
+
+### Phase 38: Connector Parsing Tests
+
+**Goal**: Developer can verify that each connector correctly transforms its raw API responses into normalized Memory records -- catching regressions in parsing logic without running live connector syncs
+**Depends on**: Phase 35 (connector fixture payloads must exist)
+**Requirements**: CONN-01, CONN-02, CONN-03, CONN-04, CONN-05
+**Success Criteria** (what must be TRUE):
+
+1. Running the Gmail parsing test passes -- given the fixture MIME email payload, the produced Memory has correct sender as a contact with role `sender`, all recipient addresses as contacts with role `recipient`, the email subject as text prefix, and body text normalized to plain text
+2. Running the Slack parsing test passes -- given the fixture Slack Events API payload, the produced Memory has correct `connector_type: 'slack'`, sender contact, channel reference in metadata, and any reactions captured
+3. Running the iMessage parsing test passes -- given fixture SQLite row data, the produced Memory has correct timestamp, sender/recipient contacts, and text; the test does not require a real iMessage DB file
+4. Running the Immich parsing test passes -- the produced Memory has `source_type: 'photo'` (not `'file'`), correct `connector_type: 'photos-immich'`, and photo metadata (date taken, camera model if present) in the metadata field
+5. Running the Locations parsing test passes -- the produced Memory has `source_type: 'location'`, correct lat/lng in metadata, and the OwnTracks timestamp converted to ISO 8601
+   **Plans**: TBD
+
+### Phase 39: CI Gates & Coverage
+
+**Goal**: Every pull request must pass all tests before merge is allowed, fixture generation is cached to avoid redundant Ollama calls, and coverage stays above 80% for the API package
+**Depends on**: Phase 38 (all test suites must be complete and passing before CI can enforce them)
+**Requirements**: CI-01, CI-02, CI-03, CI-04, CI-05
+**Success Criteria** (what must be TRUE):
+
+1. Opening a pull request on GitHub triggers the test workflow -- the PR status check shows a passing or failing state based on `pnpm test` results, and the PR cannot be merged until tests pass
+2. A second run of the test workflow on the same commit uses the cached `__fixtures__/` directory -- the "Generate fixtures" step is skipped and the workflow completes faster than the first run
+3. After a test run, a coverage report comment appears on the PR showing overall API coverage percentage and a link to the full lcov report artifact
+4. Pushing a commit that breaks a test causes the Docker image build workflow to be skipped -- no new Docker image is published until tests pass
+5. Adding code to the API package that causes overall coverage to drop below 80% causes the test workflow to fail with a clear message -- the vitest config `coverage.thresholds` enforcement is visible in the CI output
+   **Plans**: TBD

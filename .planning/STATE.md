@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: E2E Testing & Test Infrastructure
-status: planned
-stopped_at: Milestone initialized — requirements and roadmap defined
-last_updated: '2026-03-09T00:00:00.000Z'
-last_activity: '2026-03-09 - Milestone v4.0 started: requirements and roadmap defined (phases 35-39)'
+milestone: v2.0
+milestone_name: Security, Auth & Encryption
+status: Defining requirements. Execution blocked on v2.0 phases 21 (E2EE), 23 (RLS), 24 (Firebase)
+stopped_at: Completed 21-02-PLAN.md
+last_updated: '2026-03-09T08:39:05.806Z'
+last_activity: 2026-03-09 — Milestone v4.0 started
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 32
+  completed_phases: 25
+  total_plans: 46
+  completed_plans: 46
 ---
 
 # Project State
@@ -66,6 +66,7 @@ Last activity: 2026-03-09 — Milestone v4.0 started
 | Phase 19 P03 | 2min | 3 tasks  | 7 files  |
 | Phase 20 P01 | 2min | 2 tasks  | 3 files  |
 | Phase 21 P01 | 4min | 2 tasks  | 11 files |
+| Phase 21 P02 | 6min | 2 tasks  | 7 files  |
 
 ## Accumulated Context
 
@@ -97,6 +98,9 @@ Recent decisions affecting current work:
 - [Phase 21]: Argon2id with timeCost=3, memoryCost=19456 for per-user key derivation (OWASP params)
 - [Phase 21]: Legacy users get encryptionSalt generated on first login for backward compatibility
 - [Phase 21]: keyVersion=0 on memories means APP_SECRET encrypted, >=1 means per-user key
+- [Phase 21]: decryptMemoryAuto routes decryption based on memory.keyVersion (0=APP_SECRET, >=1=user key)
+- [Phase 21]: EncryptionKeyMissingError triggers BullMQ exponential backoff retry (30s base, 48 attempts ~24h)
+- [Phase 21]: ReencryptProcessor updates keyVersion even on per-row errors to prevent infinite loops
 
 ### Decisions (Phase 16)
 
@@ -227,6 +231,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T08:30:37.168Z
-Stopped at: Completed 21-01-PLAN.md
+Last session: 2026-03-09T08:39:05.803Z
+Stopped at: Completed 21-02-PLAN.md
 Resume file: None
