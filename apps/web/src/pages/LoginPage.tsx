@@ -7,11 +7,11 @@ export function LoginPage() {
   if (user) return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 flex items-center justify-center p-8 bg-nb-surface">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      <div className="flex-1 flex items-center justify-center p-6 md:p-8 bg-nb-surface">
         <LoginForm />
       </div>
-      <div className="flex-1 bg-nb-bg text-white flex items-center justify-center p-8 border-l-4 border-nb-border">
+      <div className="hidden md:flex flex-1 bg-nb-bg text-white items-center justify-center p-8 border-l-4 border-nb-border">
         <div>
           <h1 className="font-display text-7xl font-bold leading-tight">
             WELCOME
