@@ -204,9 +204,10 @@ None.
 | --- | --------------------------------------------------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------------------------------- |
 | 4   | Fix contact merge suggestions for duplicate identities and filter device identifiers from people contacts | 2026-03-09 | 6b76742 | [4-fix-contact-merge-suggestions-for-duplic](./quick/4-fix-contact-merge-suggestions-for-duplic/) |
 | 5   | Move connector/sync logs from PostgreSQL to NDJSON file on disk                                           | 2026-03-09 | d0615bd | [5-logs-are-being-stored-to-the-db-which-is](./quick/5-logs-are-being-stored-to-the-db-which-is/) |
+| 6   | Create GitHub CI/CD pipeline with GitHub Actions + Watchtower auto-deploy                                 | 2026-03-09 | 6540f0c | [6-create-a-github-cicd-pipeline-and-on-pro](./quick/6-create-a-github-cicd-pipeline-and-on-pro/) |
 
 ## Session Continuity
 
-Last session: 2026-03-09T01:44:15Z
-Stopped at: Completed 22-02-PLAN.md
-Resume: Phase 22 complete. All services, tests, and processors migrated to PostgreSQL.
+Last session: 2026-03-09T04:32:23Z
+Stopped at: Quick task 6 — awaiting checkpoint: user must add GHCR_TOKEN to VPS, push to trigger first build, start Watchtower
+Resume: After user completes checkpoint steps, push to main and verify Watchtower auto-deploys.
