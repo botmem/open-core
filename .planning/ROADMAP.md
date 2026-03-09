@@ -343,20 +343,21 @@ Plans:
 
 ### Phase 21: End-to-End Encryption (Prod-Core)
 
-**Goal**: Memory text and metadata are encrypted client-side before reaching the server, ensuring zero-knowledge storage while preserving vector search
+**Goal**: Memory text and metadata are encrypted with per-user keys derived from passwords via Argon2id, ensuring database theft cannot expose memory content while preserving vector search
 **Depends on**: Phase 20 (encryption patterns established), Phase 19 (banks exist for scoping)
 **Requirements**: E2EE-01, E2EE-02, E2EE-03, E2EE-04
 **Success Criteria** (what must be TRUE):
 
-1. Client derives AES-256-GCM key from password using Argon2id (in-browser via WebCrypto/WASM)
-2. Memory `text`, `entities`, `claims`, and `metadata` fields are encrypted client-side before POST -- server stores ciphertext
-3. Embedding vectors remain plaintext in Qdrant -- semantic search returns results, but text fields are encrypted until decrypted client-side
-4. Password change triggers batched re-encryption of all user memories with progress tracking (resumable on failure)
-   **Plans**: 1 plan
+1. Server derives AES-256-GCM key from user password using Argon2id on login, caches in server memory only
+2. Memory `text`, `entities`, `claims`, and `metadata` fields are encrypted with per-user key after enrichment -- server stores ciphertext
+3. Embedding vectors remain plaintext in Qdrant -- semantic search returns results, text fields decrypted server-side on read
+4. Password change triggers batched re-encryption of all user memories with key version tracking (resumable on failure)
+   **Plans**: 2 plans
 
 Plans:
 
-- [ ] 20-01-PLAN.md -- Encryption migration script + APP_SECRET startup validation (ENC-01, ENC-02)
+- [ ] 21-01-PLAN.md -- Per-user key derivation foundation: Argon2id, UserKeyService, CryptoService extension, schema changes (E2EE-01)
+- [ ] 21-02-PLAN.md -- Pipeline encryption swap + re-encryption processor (E2EE-02, E2EE-03, E2EE-04)
 
 ### Phase 22: PostgreSQL Dual-Driver -- COMPLETE
 
@@ -615,7 +616,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 18. API Keys                     | v2.0      | 2/2            | Complete    | 2026-03-08 |
 | 19. Memory Banks                 | 3/3       | Complete       | 2026-03-09  | -          |
 | 20. Encryption at Rest           | 1/1       | Complete       | 2026-03-09  | -          |
-| 21. E2EE (Prod-Core)             | v2.0      | 0/?            | Not started | -          |
+| 21. E2EE (Prod-Core)             | v2.0      | 0/2            | Planned     | -          |
 | 22. PostgreSQL Dual-Driver       | v2.0      | 2/2            | Complete    | 2026-03-09 |
 | 23. Row Level Security           | v2.0      | 0/?            | Not started | -          |
 | 24. Firebase Auth (Prod-Core)    | v2.0      | 0/?            | Not started | -          |
