@@ -428,7 +428,7 @@ Phases 12-15 (DB, Inference, Docker, CI/CD) are restructured:
 
 ### Phase 11: Repository & Infrastructure Foundation (COMPLETE)
 
-**Plans:** 3/3 plans complete
+**Plans:** 1/2 plans executed
 
 - [x] 11-01: Clean inline secrets and sanitize git history (REPO-04)
 - [x] 11-02: Create GitHub org, open-core and prod-core repos (REPO-01, REPO-02, REPO-03)
@@ -623,7 +623,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 8.1 -> 
 | 21. E2EE (Prod-Core)             | 2/2       | Complete       | 2026-03-09  | -          |
 | 22. PostgreSQL Dual-Driver       | v2.0      | 2/2            | Complete    | 2026-03-09 |
 | 23. Row Level Security           | 3/3       | Complete       | 2026-03-09  | -          |
-| 24. Firebase Auth (Prod-Core)    | v2.0      | 0/?            | Not started | -          |
+| 24. Firebase Auth (Prod-Core)    | 1/2       | In Progress    |             | -          |
 | 25. Source Type Reclassification | v2.1      | 2/2            | Complete    | 2026-03-08 |
 | 26. Entity Format & Quality      | v2.1      | 2/2            | Complete    | 2026-03-08 |
 | 27. Data Backfill                | v2.1      | 1/1            | Complete    | 2026-03-09 |

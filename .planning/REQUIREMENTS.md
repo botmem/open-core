@@ -16,9 +16,9 @@
 
 ### Firebase Auth (Prod-Core)
 
-- [ ] **FBAUTH-01**: NestJS guard verifies Firebase ID tokens via `firebase-admin` SDK
+- [x] **FBAUTH-01**: NestJS guard verifies Firebase ID tokens via `firebase-admin` SDK
 - [ ] **FBAUTH-02**: React login/register UI with Firebase client SDK (email+password, Google, GitHub)
-- [ ] **FBAUTH-03**: `AUTH_PROVIDER=local|firebase` env var selects auth provider at startup
+- [x] **FBAUTH-03**: `AUTH_PROVIDER=local|firebase` env var selects auth provider at startup
 - [ ] **FBAUTH-04**: Firebase social login (Google, GitHub) available in prod-core only
 
 ### API Security
@@ -104,9 +104,9 @@
 | DB-03       | Phase 22 | Complete |
 | DB-04       | Phase 22 | Complete |
 | DB-05       | Phase 23 | Complete |
-| FBAUTH-01   | Phase 24 | Pending  |
+| FBAUTH-01   | Phase 24 | Complete |
 | FBAUTH-02   | Phase 24 | Pending  |
-| FBAUTH-03   | Phase 24 | Pending  |
+| FBAUTH-03   | Phase 24 | Complete |
 | FBAUTH-04   | Phase 24 | Pending  |
 
 **v2.0 Coverage:**

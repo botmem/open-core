@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: completed
-stopped_at: Completed 23-03-PLAN.md
-last_updated: '2026-03-09T09:38:21.144Z'
+stopped_at: Completed 24-01-PLAN.md
+last_updated: '2026-03-09T11:44:37.312Z'
 last_activity: 2026-03-09 — Roadmap v4.0 finalized (phases 35-39)
 progress:
   total_phases: 32
   completed_phases: 26
-  total_plans: 49
-  completed_plans: 49
+  total_plans: 51
+  completed_plans: 50
 ---
 
 # Project State
@@ -46,39 +46,41 @@ Phase 39: CI Gates & Coverage      [ ] Not started
 - Average duration: 5min
 - Total execution time: ~230min
 
-| Phase        | Plan | Duration | Tasks    | Files |
-| ------------ | ---- | -------- | -------- | ----- |
-| 16           | 01   | 6min     | 2        | 16    |
-| 16           | 02   | 4min     | 2        | 7     |
-| 16           | 03   | 5min     | 3        | 15    |
-| 17           | 01   | 5min     | 2        | 13    |
-| 25           | 01   | 3min     | 2        | 4     |
-| 25           | 02   | 1min     | 1        | 1     |
-| 29           | 01   | 4min     | 2        | 18    |
-| 26           | 01   | 3min     | 2        | 3     |
-| 26           | 02   | 2min     | 2        | 2     |
-| 30           | 02   | 2min     | 1        | 3     |
-| 30           | 01   | 5min     | 2        | 27    |
-| 31           | 01   | 2min     | 2        | 2     |
-| 34           | 01   | 6min     | 2        | 29    |
-| 32           | 01   | 3min     | 2        | 14    |
-| 34           | 02   | 10min    | 2        | 16    |
-| 34           | 03   | 7min     | 2        | 12    |
-| 33           | 01   | 22min    | 2        | 5     |
-| 27           | 01   | 6min     | 2        | 7     |
-| 28           | 01   | 18min    | 2        | 1     |
-| 22           | 01   | 3min     | 3        | 6     |
-| 22           | 02   | 16min    | 2        | 26    |
-| 10           | UAT  | 15min    | 2        | 3     |
-| Phase 19 P02 | 2min | 2 tasks  | 5 files  |
-| Phase 19 P01 | 6min | 2 tasks  | 9 files  |
-| Phase 19 P03 | 2min | 3 tasks  | 7 files  |
-| Phase 20 P01 | 2min | 2 tasks  | 3 files  |
-| Phase 21 P01 | 4min | 2 tasks  | 11 files |
-| Phase 21 P02 | 6min | 2 tasks  | 7 files  |
-| Phase 23 P01 | 2min | 1 tasks  | 1 files  |
-| Phase 23 P02 | 2min | 2 tasks  | 5 files  |
-| Phase 23 P03 | 2min | 2 tasks  | 2 files  |
+| Phase                      | Plan | Duration | Tasks    | Files |
+| -------------------------- | ---- | -------- | -------- | ----- |
+| 16                         | 01   | 6min     | 2        | 16    |
+| 16                         | 02   | 4min     | 2        | 7     |
+| 16                         | 03   | 5min     | 3        | 15    |
+| 17                         | 01   | 5min     | 2        | 13    |
+| 25                         | 01   | 3min     | 2        | 4     |
+| 25                         | 02   | 1min     | 1        | 1     |
+| 29                         | 01   | 4min     | 2        | 18    |
+| 26                         | 01   | 3min     | 2        | 3     |
+| 26                         | 02   | 2min     | 2        | 2     |
+| 30                         | 02   | 2min     | 1        | 3     |
+| 30                         | 01   | 5min     | 2        | 27    |
+| 31                         | 01   | 2min     | 2        | 2     |
+| 34                         | 01   | 6min     | 2        | 29    |
+| 32                         | 01   | 3min     | 2        | 14    |
+| 34                         | 02   | 10min    | 2        | 16    |
+| 34                         | 03   | 7min     | 2        | 12    |
+| 33                         | 01   | 22min    | 2        | 5     |
+| 27                         | 01   | 6min     | 2        | 7     |
+| 28                         | 01   | 18min    | 2        | 1     |
+| 22                         | 01   | 3min     | 3        | 6     |
+| 22                         | 02   | 16min    | 2        | 26    |
+| 10                         | UAT  | 15min    | 2        | 3     |
+| Phase 19 P02               | 2min | 2 tasks  | 5 files  |
+| Phase 19 P01               | 6min | 2 tasks  | 9 files  |
+| Phase 19 P03               | 2min | 3 tasks  | 7 files  |
+| Phase 20 P01               | 2min | 2 tasks  | 3 files  |
+| Phase 21 P01               | 4min | 2 tasks  | 11 files |
+| Phase 21 P02               | 6min | 2 tasks  | 7 files  |
+| Phase 23 P01               | 2min | 1 tasks  | 1 files  |
+| Phase 23 P02               | 2min | 2 tasks  | 5 files  |
+| Phase 23 P03               | 2min | 2 tasks  | 2 files  |
+| Phase 24 P01               | 4min | 2 tasks  | 11 files |
+| Phase 24-firebase-auth P01 | 4min | 2 tasks  | 11 files |
 
 ## Accumulated Context
 
@@ -126,6 +128,9 @@ Recent decisions affecting current work:
 - [Phase 23]: RlsContext injected as @Optional() in DbService to prevent circular dependency with DbModule Global providers
 - [Phase 23]: [Phase 23-03]: timeline/getRelated/searchEntities/getEntityGraph in memory.service.ts were using unscoped db — migrated to withCurrentUser()
 - [Phase 23]: [Phase 23-03]: sync.processor.ts rawEvents INSERT wrapped in withUserId(ownerUserId) using bootstrap pattern (unscoped userId lookup then scoped data write)
+- [Phase 24-firebase-auth]: AuthProviderGuard delegation pattern — single APP_GUARD reads AUTH_PROVIDER at request time and delegates to JwtAuthGuard (local) or FirebaseAuthGuard (firebase)
+- [Phase 24-firebase-auth]: Sentinel passwordHash ('firebase:<uid>') for Firebase users — never compared via bcrypt, prevents password login
+- [Phase 24-firebase-auth]: firebaseUid nullable unique column on users table — allows linking Firebase accounts to existing local accounts by email on first Firebase login
 
 ### Decisions (Phase 16)
 
@@ -257,6 +262,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T09:34:34.972Z
-Stopped at: Completed 23-03-PLAN.md
+Last session: 2026-03-09T11:44:37.310Z
+Stopped at: Completed 24-01-PLAN.md
 Resume file: None
