@@ -53,6 +53,7 @@ interface MemoryState {
   recordRecall: (id: string) => void;
   connectWs: () => void;
   mergeGraphDelta: (delta: any) => void;
+  reset: () => void;
 }
 
 function apiMemoryToShared(raw: any): Memory {
@@ -362,4 +363,26 @@ export const useMemoryStore = create<MemoryState>((set, get) => ({
       .then((stats) => set({ memoryStats: stats }))
       .catch(() => {});
   },
+
+  reset: () => {
+    memoryWsConnected = false;
+    set({
+      memories: [],
+      query: '',
+      filters: { source: null, minImportance: 0 },
+      graphData: { nodes: [], links: [] },
+      loading: false,
+      searchFallback: false,
+      resolvedEntities: null,
+      parsed: null,
+      memoryStats: null,
+    });
+  },
 }));
+
+// Reset memory store when user logs out (avoids circular import with authStore)
+useAuthStore.subscribe((state, prev) => {
+  if (prev.user && !state.user) {
+    useMemoryStore.getState().reset();
+  }
+});

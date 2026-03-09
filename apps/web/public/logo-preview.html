@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botmem Logo Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; border-radius: 0 !important; }
+    body {
+      background: #0D0D0D;
+      font-family: 'Space Mono', 'IBM Plex Mono', monospace;
+      color: #F0F0F0;
+      padding: 48px;
+    }
+    h2 {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888888;
+      margin-bottom: 24px;
+      border-left: 3px solid #C4F53A;
+      padding-left: 12px;
+    }
+    .section { margin-bottom: 56px; }
+    .card {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 48px;
+      border: 2px solid #252540;
+      margin-bottom: 16px;
+    }
+    .card.dark  { background: #0D0D0D; }
+    .card.navy  { background: #1A1A2E; }
+    .card.light { background: #F0F0F0; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; }
+    .label {
+      font-size: 10px;
+      color: #555577;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .sizes img { display: block; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <div class="section">
+    <h2>Horizontal Logo — Dark Background</h2>
+    <div class="row">
+      <div>
+        <div class="label">On #0D0D0D</div>
+        <div class="card dark">
+          <img src="logo.svg" height="52" alt="Botmem logo">
+        </div>
+      </div>
+      <div>
+        <div class="label">On #1A1A2E (surface)</div>
+        <div class="card navy">
+          <img src="logo.svg" height="52" alt="Botmem logo">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Horizontal Logo — Light Background</h2>
+    <div class="row">
+      <div>
+        <div class="label">On #F0F0F0</div>
+        <div class="card light">
+          <img src="logo-light.svg" height="52" alt="Botmem logo (light)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Icon Mark — Sizes</h2>
+    <div class="row">
+      <div>
+        <div class="label">96px</div>
+        <div class="card dark">
+          <img src="logo-mark.svg" width="96" height="96" alt="Botmem mark">
+        </div>
+      </div>
+      <div>
+        <div class="label">64px</div>
+        <div class="card dark">
+          <img src="logo-mark.svg" width="64" height="64" alt="Botmem mark">
+        </div>
+      </div>
+      <div>
+        <div class="label">48px</div>
+        <div class="card dark">
+          <img src="logo-mark.svg" width="48" height="48" alt="Botmem mark">
+        </div>
+      </div>
+      <div>
+        <div class="label">32px (favicon)</div>
+        <div class="card dark">
+          <img src="logo-mark.svg" width="32" height="32" alt="Botmem mark">
+        </div>
+      </div>
+      <div>
+        <div class="label">16px (min)</div>
+        <div class="card dark">
+          <img src="logo-mark.svg" width="16" height="16" alt="Botmem mark">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Full Logo — Sizes</h2>
+    <div class="row sizes">
+      <div>
+        <div class="label">1× (210×52)</div>
+        <div class="card dark">
+          <img src="logo.svg" height="52" alt="Botmem">
+        </div>
+        <div class="label" style="margin-top: 16px">0.75× (157×39)</div>
+        <div class="card dark">
+          <img src="logo.svg" height="39" alt="Botmem">
+        </div>
+        <div class="label" style="margin-top: 16px">0.5× (105×26)</div>
+        <div class="card dark">
+          <img src="logo.svg" height="26" alt="Botmem">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Design Tokens Used</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, 200px); gap: 12px;">
+      <div style="border: 2px solid #252540; padding: 12px;">
+        <div style="width: 24px; height: 24px; background: #C4F53A; border: 1px solid #555577; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; color: #888888;">nb-lime</div>
+        <div style="font-size: 12px;">#C4F53A</div>
+        <div style="font-size: 10px; color: #555577; margin-top: 4px;">Active cells, MEM wordmark</div>
+      </div>
+      <div style="border: 2px solid #252540; padding: 12px;">
+        <div style="width: 24px; height: 24px; background: #F0F0F0; border: 1px solid #555577; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; color: #888888;">nb-text</div>
+        <div style="font-size: 12px;">#F0F0F0</div>
+        <div style="font-size: 10px; color: #555577; margin-top: 4px;">Frame border</div>
+      </div>
+      <div style="border: 2px solid #252540; padding: 12px;">
+        <div style="width: 24px; height: 24px; background: #888888; border: 1px solid #555577; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; color: #888888;">nb-muted</div>
+        <div style="font-size: 12px;">#888888</div>
+        <div style="font-size: 10px; color: #555577; margin-top: 4px;">BOT wordmark</div>
+      </div>
+      <div style="border: 2px solid #252540; padding: 12px;">
+        <div style="width: 24px; height: 24px; background: #252540; border: 1px solid #555577; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; color: #888888;">nb-surface-muted</div>
+        <div style="font-size: 12px;">#252540</div>
+        <div style="font-size: 10px; color: #555577; margin-top: 4px;">Inactive cells</div>
+      </div>
+      <div style="border: 2px solid #252540; padding: 12px;">
+        <div style="width: 24px; height: 24px; background: #0D0D0D; border: 1px solid #555577; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; color: #888888;">nb-bg</div>
+        <div style="font-size: 12px;">#0D0D0D</div>
+        <div style="font-size: 10px; color: #555577; margin-top: 4px;">Icon background</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
