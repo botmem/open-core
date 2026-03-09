@@ -412,8 +412,8 @@ Plans:
 
 Plans:
 
-- [ ] 23-01-PLAN.md -- RLS DDL: enable RLS + create policies on all user-owned tables (DB-05)
-- [ ] 23-02-PLAN.md -- Session variable injection: RlsInterceptor + AsyncLocalStorage + DbService.withUserId() (DB-05)
+- [ ] 24-01-PLAN.md -- Firebase Admin SDK integration + NestJS guard for AUTH_PROVIDER=firebase (FBAUTH-01, FBAUTH-02)
+- [ ] 24-02-PLAN.md -- React Firebase login UI + first-login user sync (FBAUTH-03, FBAUTH-04)
 
 <details>
 <summary>Old v2.0 Phases (11-15) -- partially complete, restructured</summary>
