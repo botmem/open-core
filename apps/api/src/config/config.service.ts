@@ -75,7 +75,7 @@ export class ConfigService implements OnModuleInit {
   }
 
   get ollamaVlModel(): string {
-    return process.env.OLLAMA_VL_MODEL || 'gemma3:4b';
+    return process.env.OLLAMA_VL_MODEL || 'qwen3-vl:4b';
   }
 
   get ollamaRerankerModel(): string {

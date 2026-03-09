@@ -34,7 +34,7 @@ packages/
 - **Backend**: NestJS 11, Drizzle ORM + PostgreSQL
 - **Queue**: BullMQ on Redis
 - **Vector DB**: Qdrant (cosine similarity, auto-created collection)
-- **AI**: Ollama (remote) — `mxbai-embed-large` for embeddings, `qwen3:8b` for text enrichment, `gemma3:4b` for vision
+- **AI**: Ollama (remote) — `mxbai-embed-large` for embeddings, `qwen3:8b` for text enrichment, `qwen3-vl:4b` for vision
 - **Frontend**: React 19, Vite 6, Zustand 5, Tailwind 4, react-force-graph-2d
 - **Tooling**: pnpm 9.15 workspaces, Turbo 2.4, Vitest 3
 
@@ -51,7 +51,7 @@ packages/
 | `OLLAMA_PASSWORD`    | _(empty)_                                          | Basic auth password (optional)                     |
 | `OLLAMA_EMBED_MODEL` | `mxbai-embed-large`                                | Embedding model (1024d)                            |
 | `OLLAMA_TEXT_MODEL`  | `qwen3:8b`                                         | Text enrichment model (uses /no_think)             |
-| `OLLAMA_VL_MODEL`    | `gemma3:4b`                                        | Vision-language model (photo enrichment)           |
+| `OLLAMA_VL_MODEL`    | `qwen3-vl:4b`                                      | Vision-language model (photo enrichment)           |
 | `FRONTEND_URL`       | `http://localhost:12412`                           | CORS / OAuth redirect origin                       |
 | `APP_SECRET`         | `dev-app-secret-change-in-production`              | AES-256-GCM key for encrypting credentials at rest |
 | `PLUGINS_DIR`        | `./plugins`                                        | External plugin directory                          |
