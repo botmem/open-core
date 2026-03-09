@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Delete, Param, Query, Body, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or } from 'drizzle-orm';
 import { JobsService } from './jobs.service';
 import { AccountsService } from '../accounts/accounts.service';
 import { MemoryBanksService } from '../memory-banks/memory-banks.service';
 import { DbService } from '../db/db.service';
-import { rawEvents, memories, memoryContacts, accounts } from '../db/schema';
+import { rawEvents, memories, memoryContacts, memoryLinks, accounts } from '../db/schema';
 import { RequiresJwt } from '../user-auth/decorators/requires-jwt.decorator';
 import { CurrentUser } from '../user-auth/decorators/current-user.decorator';
 import type { Job } from '@botmem/shared';
@@ -173,8 +173,12 @@ export class JobsController {
               )
               .limit(1);
             if (existing.length) {
-              await db.delete(memoryContacts).where(eq(memoryContacts.memoryId, existing[0].id));
-              await db.delete(memories).where(eq(memories.id, existing[0].id));
+              const memId = existing[0].id;
+              await db
+                .delete(memoryLinks)
+                .where(or(eq(memoryLinks.srcMemoryId, memId), eq(memoryLinks.dstMemoryId, memId)));
+              await db.delete(memoryContacts).where(eq(memoryContacts.memoryId, memId));
+              await db.delete(memories).where(eq(memories.id, memId));
             }
 
             await this.cleanQueue.add(

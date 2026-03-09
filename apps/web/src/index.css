@@ -27,6 +27,31 @@
   --shadow-nb-lg: 6px 6px 0 rgba(255, 255, 255, 0.12);
 }
 
+/* ─── Light mode token overrides ───────────────────────────────────────────
+   Neobrutalist light: warm off-white bg, pure-white surfaces, BLACK borders.
+   Accent colors (lime, teal, pink, etc.) are unchanged — same in both modes.
+   Shadows flip from white-glow to dark-offset for legibility on light bg.
+   ─────────────────────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --color-nb-bg: #F5F5F0;
+  --color-nb-surface: #FFFFFF;
+  --color-nb-surface-hover: #EFEFEA;
+  --color-nb-surface-muted: #E5E5E0;
+  --color-nb-border: #0D0D0D;
+  --color-nb-text: #0D0D0D;
+  --color-nb-muted: #555550;
+  --color-nb-black: #000000;
+
+  --shadow-nb-sm: 2px 2px 0 rgba(0, 0, 0, 0.15);
+  --shadow-nb: 4px 4px 0 rgba(0, 0, 0, 0.15);
+  --shadow-nb-lg: 6px 6px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Transition for smooth theme switch (skip layout properties to avoid jank) */
+*, *::before, *::after {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
 * {
   border-radius: 0 !important;
 }
