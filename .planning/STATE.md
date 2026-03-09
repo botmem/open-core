@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Security, Auth & Encryption
 status: completed
-stopped_at: Phase 21 context gathered
-last_updated: '2026-03-09T08:11:23.682Z'
+stopped_at: Completed 21-01-PLAN.md
+last_updated: '2026-03-09T08:30:37.170Z'
 last_activity: '2026-03-09 - Phase 19 (Memory Banks) complete: 3/3 plans, bank-scoped sync pipeline, data migration, frontend bank selectors'
 progress:
   total_phases: 27
   completed_phases: 24
-  total_plans: 44
-  completed_plans: 44
+  total_plans: 46
+  completed_plans: 45
 ---
 
 # Project State
@@ -36,34 +36,35 @@ Last activity: 2026-03-09 - Phase 19 (Memory Banks) complete: 3/3 plans, bank-sc
 - Average duration: 5min
 - Total execution time: 99min
 
-| Phase        | Plan | Duration | Tasks   | Files |
-| ------------ | ---- | -------- | ------- | ----- |
-| 16           | 01   | 6min     | 2       | 16    |
-| 16           | 02   | 4min     | 2       | 7     |
-| 16           | 03   | 5min     | 3       | 15    |
-| 17           | 01   | 5min     | 2       | 13    |
-| 25           | 01   | 3min     | 2       | 4     |
-| 25           | 02   | 1min     | 1       | 1     |
-| 29           | 01   | 4min     | 2       | 18    |
-| 26           | 01   | 3min     | 2       | 3     |
-| 26           | 02   | 2min     | 2       | 2     |
-| 30           | 02   | 2min     | 1       | 3     |
-| 30           | 01   | 5min     | 2       | 27    |
-| 31           | 01   | 2min     | 2       | 2     |
-| 34           | 01   | 6min     | 2       | 29    |
-| 32           | 01   | 3min     | 2       | 14    |
-| 34           | 02   | 10min    | 2       | 16    |
-| 34           | 03   | 7min     | 2       | 12    |
-| 33           | 01   | 22min    | 2       | 5     |
-| 27           | 01   | 6min     | 2       | 7     |
-| 28           | 01   | 18min    | 2       | 1     |
-| 22           | 01   | 3min     | 3       | 6     |
-| 22           | 02   | 16min    | 2       | 26    |
-| 10           | UAT  | 15min    | 2       | 3     |
-| Phase 19 P02 | 2min | 2 tasks  | 5 files |
-| Phase 19 P01 | 6min | 2 tasks  | 9 files |
-| Phase 19 P03 | 2min | 3 tasks  | 7 files |
-| Phase 20 P01 | 2min | 2 tasks  | 3 files |
+| Phase        | Plan | Duration | Tasks    | Files |
+| ------------ | ---- | -------- | -------- | ----- |
+| 16           | 01   | 6min     | 2        | 16    |
+| 16           | 02   | 4min     | 2        | 7     |
+| 16           | 03   | 5min     | 3        | 15    |
+| 17           | 01   | 5min     | 2        | 13    |
+| 25           | 01   | 3min     | 2        | 4     |
+| 25           | 02   | 1min     | 1        | 1     |
+| 29           | 01   | 4min     | 2        | 18    |
+| 26           | 01   | 3min     | 2        | 3     |
+| 26           | 02   | 2min     | 2        | 2     |
+| 30           | 02   | 2min     | 1        | 3     |
+| 30           | 01   | 5min     | 2        | 27    |
+| 31           | 01   | 2min     | 2        | 2     |
+| 34           | 01   | 6min     | 2        | 29    |
+| 32           | 01   | 3min     | 2        | 14    |
+| 34           | 02   | 10min    | 2        | 16    |
+| 34           | 03   | 7min     | 2        | 12    |
+| 33           | 01   | 22min    | 2        | 5     |
+| 27           | 01   | 6min     | 2        | 7     |
+| 28           | 01   | 18min    | 2        | 1     |
+| 22           | 01   | 3min     | 3        | 6     |
+| 22           | 02   | 16min    | 2        | 26    |
+| 10           | UAT  | 15min    | 2        | 3     |
+| Phase 19 P02 | 2min | 2 tasks  | 5 files  |
+| Phase 19 P01 | 6min | 2 tasks  | 9 files  |
+| Phase 19 P03 | 2min | 3 tasks  | 7 files  |
+| Phase 20 P01 | 2min | 2 tasks  | 3 files  |
+| Phase 21 P01 | 4min | 2 tasks  | 11 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - [Phase 20]: Standalone encrypt/isEncrypted in migration script (no NestJS DI dependency)
 - [Phase 20]: Per-row error handling: log and continue, never abort entire migration
 - [Phase 20]: Guard main() with process.argv check to allow test imports without side effects
+- [Phase 21]: Argon2id with timeCost=3, memoryCost=19456 for per-user key derivation (OWASP params)
+- [Phase 21]: Legacy users get encryptionSalt generated on first login for backward compatibility
+- [Phase 21]: keyVersion=0 on memories means APP_SECRET encrypted, >=1 means per-user key
 
 ### Decisions (Phase 16)
 
@@ -222,6 +226,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T08:11:23.680Z
-Stopped at: Phase 21 context gathered
-Resume file: .planning/phases/21-end-to-end-encryption-prod-core/21-CONTEXT.md
+Last session: 2026-03-09T08:30:37.168Z
+Stopped at: Completed 21-01-PLAN.md
+Resume file: None

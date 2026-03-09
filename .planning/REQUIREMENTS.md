@@ -48,7 +48,7 @@
 
 ### E2EE (Prod-Core)
 
-- [ ] **E2EE-01**: Encryption key derived from user password via Argon2id (client-side, in browser)
+- [x] **E2EE-01**: Encryption key derived from user password via Argon2id (client-side, in browser)
 - [ ] **E2EE-02**: Memory text + metadata encrypted client-side before storage (server never sees plaintext)
 - [ ] **E2EE-03**: Embedding vectors stay plaintext (semantic search continues to work)
 - [ ] **E2EE-04**: Password change re-derives key + re-encrypts all user memories (batched, resumable)
@@ -95,7 +95,7 @@
 | BANK-04     | Phase 19 | Complete |
 | ENC-01      | Phase 20 | Complete |
 | ENC-02      | Phase 20 | Complete |
-| E2EE-01     | Phase 21 | Pending  |
+| E2EE-01     | Phase 21 | Complete |
 | E2EE-02     | Phase 21 | Pending  |
 | E2EE-03     | Phase 21 | Pending  |
 | E2EE-04     | Phase 21 | Pending  |
