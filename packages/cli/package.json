@@ -1,6 +1,6 @@
 {
   "name": "@botmem/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI for Botmem — query and manage your personal memory system",
   "license": "MIT",
   "repository": {
@@ -9,7 +9,13 @@
     "directory": "packages/cli"
   },
   "homepage": "https://github.com/botmem/open-core/tree/main/packages/cli",
-  "keywords": ["botmem", "memory", "rag", "cli", "personal-knowledge"],
+  "keywords": [
+    "botmem",
+    "memory",
+    "rag",
+    "cli",
+    "personal-knowledge"
+  ],
   "bin": {
     "botmem": "dist/cli.js"
   },
