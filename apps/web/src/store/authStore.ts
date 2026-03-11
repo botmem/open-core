@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '@botmem/shared';
-import { firebaseAuth, googleProvider, githubProvider } from '../lib/firebase';
+import { firebaseAuth, googleProvider, githubProvider, ensureFirebase } from '../lib/firebase';
 import { trackEvent, resetUser, identifyUser } from '../lib/posthog';
 
 interface AuthState {
@@ -43,8 +43,9 @@ async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-/** Lazy-load firebase/auth functions only when needed */
+/** Lazy-load firebase/auth functions and ensure Firebase is initialized */
 async function getFirebaseAuthFns() {
+  await ensureFirebase();
   const {
     signInWithPopup,
     signOut,
@@ -206,6 +207,9 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         trackEvent('logout');
         // Sign out of Firebase if in firebase mode
+        if (isFirebaseMode) {
+          await ensureFirebase();
+        }
         if (isFirebaseMode && firebaseAuth?.currentUser) {
           const { signOut } = await getFirebaseAuthFns();
           await signOut(firebaseAuth).catch(() => {});
@@ -265,6 +269,9 @@ export const useAuthStore = create<AuthState>()(
       initialize: async () => {
         set({ isLoading: true });
         try {
+          if (isFirebaseMode) {
+            await ensureFirebase();
+          }
           if (isFirebaseMode && firebaseAuth) {
             const { getIdToken } = await getFirebaseAuthFns();
             // Wait for Firebase auth state to resolve
