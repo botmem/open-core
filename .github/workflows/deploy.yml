@@ -92,6 +92,26 @@ jobs:
     needs: build-and-push
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install docs dependencies
+        run: cd docs && pnpm install --frozen-lockfile
+
+      - name: Build docs
+        run: cd docs && pnpm build
+
       - name: Pull & restart api on VPS
         uses: appleboy/ssh-action@v1
         with:
@@ -110,6 +130,16 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_ACTOR: ${{ github.actor }}
 
+      - name: Deploy docs to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 65.20.85.57
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: docs/.vitepress/dist/*
+          target: /opt/botmem/docs-site
+          strip_components: 3
+
       - name: Validate deployment
         run: |
           for i in $(seq 1 12); do
@@ -122,6 +152,15 @@ jobs:
             sleep 5
           done
           echo "API health check failed after 60s" && exit 1
+
+      - name: Validate docs
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://docs.botmem.xyz/)
+          if [ "$STATUS" = "200" ]; then
+            echo "Docs site is live at https://docs.botmem.xyz/"
+          else
+            echo "Warning: docs.botmem.xyz returned HTTP $STATUS"
+          fi
 
   release:
     name: Tag & GitHub Release
