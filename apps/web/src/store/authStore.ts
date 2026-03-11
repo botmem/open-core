@@ -9,7 +9,7 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { firebaseAuth, googleProvider, githubProvider } from '../lib/firebase';
-import { trackEvent, resetUser } from '../lib/posthog';
+import { trackEvent, resetUser, identifyUser } from '../lib/posthog';
 
 interface AuthState {
   user: User | null;
@@ -73,6 +73,12 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify({ email, password }),
           });
           trackEvent('login', { method: 'email' });
+          if (data.user.email) {
+            identifyUser(data.user.id, {
+              email: data.user.email,
+              name: data.user.name ?? undefined,
+            });
+          }
           set({
             user: data.user,
             accessToken: data.accessToken,
@@ -111,6 +117,12 @@ export const useAuthStore = create<AuthState>()(
             }
             const data = await res.json();
             trackEvent('signup', { method: 'firebase_email' });
+            if (data.user?.email) {
+              identifyUser(data.user.id, {
+                email: data.user.email,
+                name: data.user.name ?? name,
+              });
+            }
             set({
               user: data.user,
               accessToken: idToken,
@@ -128,6 +140,12 @@ export const useAuthStore = create<AuthState>()(
               body: JSON.stringify({ email, password, name }),
             });
             trackEvent('signup', { method: 'email' });
+            if (data.user.email) {
+              identifyUser(data.user.id, {
+                email: data.user.email,
+                name: data.user.name ?? name,
+              });
+            }
             set({
               user: data.user,
               accessToken: data.accessToken,
@@ -206,6 +224,12 @@ export const useAuthStore = create<AuthState>()(
             });
             if (meRes.ok) {
               const user = await meRes.json();
+              if (user.email) {
+                identifyUser(user.id, {
+                  email: user.email,
+                  name: user.name ?? undefined,
+                });
+              }
               set({ user, accessToken: data.accessToken });
             } else {
               set({ accessToken: data.accessToken });
@@ -246,6 +270,12 @@ export const useAuthStore = create<AuthState>()(
                       ...freshUser,
                       onboarded: freshUser.onboarded || localUser?.onboarded || false,
                     };
+                    if (merged.email) {
+                      identifyUser(merged.id, {
+                        email: merged.email,
+                        name: merged.name ?? undefined,
+                      });
+                    }
                     set({ user: merged, accessToken: idToken });
                   } else {
                     set({ user: null, accessToken: null });
@@ -310,6 +340,12 @@ export const useAuthStore = create<AuthState>()(
           const data = await res.json();
 
           trackEvent('login', { method: `firebase_${provider}` });
+          if (data.user?.email) {
+            identifyUser(data.user.id, {
+              email: data.user.email,
+              name: data.user.name ?? undefined,
+            });
+          }
           // Store Firebase ID token as the accessToken — used for Bearer auth on all API calls
           set({
             user: data.user,
