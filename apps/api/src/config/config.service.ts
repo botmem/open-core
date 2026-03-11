@@ -125,7 +125,7 @@ export class ConfigService implements OnModuleInit {
   }
 
   get posthogApiKey(): string {
-    return process.env.POSTHOG_API_KEY || '';
+    return process.env.POSTHOG_API_KEY || process.env.VITE_POSTHOG_API_KEY || '';
   }
 
   get posthogHost(): string {
