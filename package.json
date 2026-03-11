@@ -19,11 +19,11 @@
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.3.2",
+    "lint-staged": "^16.3.3",
     "prettier": "^3.4.0",
-    "turbo": "^2.4.0",
+    "turbo": "^2.8.15",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.0.0",
+    "typescript-eslint": "^8.57.0",
     "vitest": "catalog:"
   },
   "lint-staged": {
