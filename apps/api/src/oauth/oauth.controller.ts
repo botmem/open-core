@@ -150,23 +150,21 @@ export class OAuthController {
     const bearerMatch = req.headers.authorization?.match(/^Bearer\s+(.+)$/i);
     if (bearerMatch) {
       const token = bearerMatch[1];
-      // Try native JWT first
+      // Try native JWT first, then Firebase ID token as fallback
       try {
         const payload = this.jwtService.verify(token, {
           secret: this.config.jwtAccessSecret,
         });
         user = await this.usersService.findById(payload.sub);
       } catch {
-        // If native JWT fails and Firebase is enabled, try Firebase ID token
-        if (this.config.authProvider === 'firebase') {
-          try {
-            const decoded = await this.firebaseAuthService.verifyIdToken(token);
-            const result = await this.firebaseAuthService.findOrCreateUser(decoded);
-            user = result.user;
-          } catch {
-            throw new UnauthorizedException('Invalid session token');
-          }
-        } else {
+        // Native JWT failed — always try Firebase as fallback since
+        // FirebaseAuthModule is always loaded and the frontend may send
+        // Firebase ID tokens regardless of AUTH_PROVIDER setting
+        try {
+          const decoded = await this.firebaseAuthService.verifyIdToken(token);
+          const result = await this.firebaseAuthService.findOrCreateUser(decoded);
+          user = result.user;
+        } catch {
           throw new UnauthorizedException('Invalid session token');
         }
       }

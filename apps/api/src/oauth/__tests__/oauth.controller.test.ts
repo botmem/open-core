@@ -6,7 +6,6 @@ import { FirebaseAuthService } from '../../user-auth/firebase-auth.service';
 import { UserKeyService } from '../../crypto/user-key.service';
 import { ConfigService } from '../../config/config.service';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException } from '@nestjs/common';
 import type { Request } from 'express';
 
 function makeReq(overrides: Partial<Request> = {}): Request {
@@ -110,7 +109,7 @@ describe('OAuthController.authorizeComplete', () => {
     expect(result.redirect_uri).toContain('code=auth-code-123');
   });
 
-  it('falls back to Firebase token when native JWT fails and authProvider=firebase', async () => {
+  it('falls back to Firebase token when native JWT fails (authProvider=firebase)', async () => {
     jwtService.verify.mockImplementation(() => {
       throw new Error('invalid');
     });
@@ -133,33 +132,27 @@ describe('OAuthController.authorizeComplete', () => {
     expect(result.redirect_uri).toContain('code=auth-code-123');
   });
 
-  it('throws when native JWT fails and authProvider=local (no Firebase fallback)', async () => {
+  it('falls back to Firebase token when native JWT fails (authProvider=local)', async () => {
+    // This is the key fix: Firebase fallback works regardless of AUTH_PROVIDER
+    // because the frontend may send Firebase ID tokens even when backend is configured as local
     jwtService.verify.mockImplementation(() => {
       throw new Error('invalid');
     });
 
-    const req = makeReq({ headers: { authorization: 'Bearer bad-token' } });
+    const req = makeReq({ headers: { authorization: 'Bearer firebase-id-token' } });
+    const result = await controller.authorizeComplete(req, baseBody);
 
-    await expect(controller.authorizeComplete(req, baseBody)).rejects.toThrow(
-      UnauthorizedException,
-    );
-    expect(firebaseAuthService.verifyIdToken).not.toHaveBeenCalled();
+    expect(jwtService.verify).toHaveBeenCalled();
+    expect(firebaseAuthService.verifyIdToken).toHaveBeenCalledWith('firebase-id-token');
+    expect(firebaseAuthService.findOrCreateUser).toHaveBeenCalled();
+    expect(result.redirect_uri).toContain('code=auth-code-123');
   });
 
-  it('throws when Firebase verification also fails', async () => {
+  it('throws when both native JWT and Firebase verification fail', async () => {
     jwtService.verify.mockImplementation(() => {
       throw new Error('invalid');
     });
     firebaseAuthService.verifyIdToken.mockRejectedValue(new Error('bad firebase token'));
-    config = { ...config, authProvider: 'firebase' as const };
-    controller = new OAuthController(
-      oauthService as unknown as OAuthService,
-      usersService as unknown as UsersService,
-      firebaseAuthService as unknown as FirebaseAuthService,
-      userKeyService as unknown as UserKeyService,
-      jwtService as unknown as JwtService,
-      config as ConfigService,
-    );
 
     const req = makeReq({ headers: { authorization: 'Bearer bad-token' } });
 
