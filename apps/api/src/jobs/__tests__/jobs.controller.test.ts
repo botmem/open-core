@@ -12,7 +12,6 @@ function createMocks() {
     getById: vi.fn(),
     triggerSync: vi.fn(),
     cancel: vi.fn(),
-    markStaleRunning: vi.fn().mockResolvedValue(undefined),
   } as unknown as JobsService;
 
   const accountsService = {

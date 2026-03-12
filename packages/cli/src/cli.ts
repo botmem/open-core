@@ -487,14 +487,18 @@ function startCallbackServer(): Promise<{
       resolve({
         port: addr.port,
         waitForCallback: () => callbackPromise,
-        close: () => server.close(),
+        close: () => {
+          clearTimeout(timeout);
+          server.close();
+          server.unref();
+        },
       });
     });
 
     server.on('error', reject);
 
     // Timeout after 5 minutes
-    setTimeout(
+    const timeout = setTimeout(
       () => {
         callbackResolve!({ error: 'timeout' });
         server.close();
