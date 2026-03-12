@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, lazy, Suspense } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
 import { Card } from '../components/ui/Card';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { Tabs } from '../components/ui/Tabs';
 import { ReauthModal } from '../components/ui/ReauthModal';
 import { ConnectorLogFeed } from '../components/dashboard/ConnectorLogFeed';
@@ -130,10 +131,10 @@ export function DashboardPage() {
     : 0;
 
   const stats = [
-    { label: 'TOTAL MEMORIES', value: totalMemories.toLocaleString(), color: '#C4F53A' },
-    { label: 'PENDING', value: pipelinePending.toLocaleString(), color: '#FF6B9D' },
-    { label: 'CONNECTORS', value: String(activeConnectors), color: '#4ECDC4' },
-    { label: 'FAILED JOBS', value: String(failedJobs), color: '#EF4444' },
+    { label: 'TOTAL MEMORIES', value: totalMemories, color: '#C4F53A' },
+    { label: 'PENDING', value: pipelinePending, color: '#FF6B9D' },
+    { label: 'CONNECTORS', value: activeConnectors, color: '#4ECDC4' },
+    { label: 'FAILED JOBS', value: failedJobs, color: '#EF4444' },
   ];
 
   return (
@@ -142,8 +143,8 @@ export function DashboardPage() {
       <Tabs tabs={dashTabs} active={activeTab} onChange={setActiveTab} />
 
       {hasDemoData && !demoBannerDismissed && (
-        <div className="mt-4 border-3 border-nb-border bg-yellow-950/20 px-4 py-3 flex items-center justify-between gap-4">
-          <p className="font-mono text-sm text-yellow-400">
+        <div className="mt-4 border-3 border-nb-border bg-amber-100 dark:bg-yellow-950/40 px-4 py-3 flex items-center justify-between gap-4">
+          <p className="font-mono text-sm text-amber-900 dark:text-yellow-200">
             You're viewing demo data. Delete it when you're ready to connect your real accounts.
           </p>
           <div className="flex items-center gap-2 shrink-0">
@@ -224,7 +225,10 @@ export function DashboardPage() {
                     {s.label}
                   </div>
                   <div className="px-4 py-4 flex items-center justify-between">
-                    <p className="font-display text-4xl font-bold text-nb-text">{s.value}</p>
+                    <AnimatedNumber
+                      value={s.value}
+                      className="font-display text-4xl font-bold text-nb-text"
+                    />
                     {s.label === 'FAILED JOBS' && failedJobs > 0 && (
                       <button
                         onClick={retryAllFailed}
