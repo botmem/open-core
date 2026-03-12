@@ -76,7 +76,7 @@ async function bootstrap() {
   app.enableShutdownHooks();
   app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('api', {
-    exclude: ['.well-known/(.*)', 'oauth/(.*)', 'mcp'],
+    exclude: ['.well-known/{*path}', 'oauth/{*path}', 'mcp'],
   });
 
   const config = app.get(ConfigService);
@@ -174,7 +174,7 @@ async function bootstrap() {
       );
       // SPA catch-all: non-API GET requests fall through to index.html
       const indexPath = join(webDistPath, 'index.html');
-      server.get('*', (req: Request, res: Response, next: NextFunction) => {
+      server.get('{*path}', (req: Request, res: Response, next: NextFunction) => {
         if (
           req.originalUrl.startsWith('/api') ||
           req.originalUrl.startsWith('/events') ||
