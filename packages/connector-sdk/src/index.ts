@@ -6,6 +6,7 @@ export {
   isNoise,
   isOtp,
   isAutomatedSender,
+  isNotificationSms,
   isMarketingEmail,
   detectNoiseReason,
 } from './noise-filter.js';
