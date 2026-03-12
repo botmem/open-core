@@ -6,6 +6,7 @@ import { JobsService } from './jobs.service';
 import { AccountsService } from '../accounts/accounts.service';
 import { MemoryBanksService } from '../memory-banks/memory-banks.service';
 import { DbService } from '../db/db.service';
+import { EventsService } from '../events/events.service';
 import { rawEvents, memories, memoryContacts, memoryLinks, accounts } from '../db/schema';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { generateTraceId, generateSpanId } from '../tracing/trace.context';
@@ -60,6 +61,7 @@ export class JobsController {
     private accountsService: AccountsService,
     private memoryBanksService: MemoryBanksService,
     private dbService: DbService,
+    private events: EventsService,
     @InjectQueue('sync') private syncQueue: Queue,
     @InjectQueue('clean') private cleanQueue: Queue,
     @InjectQueue('embed') private embedQueue: Queue,
@@ -69,8 +71,6 @@ export class JobsController {
 
   @Get()
   async list(@CurrentUser() user: { id: string }, @Query('accountId') accountId?: string) {
-    // Detect stale running jobs so the UI sees accurate statuses
-    await this.jobsService.markStaleRunning();
     // User isolation: only show jobs for user's accounts
     const userAccounts = await this.dbService.db
       .select({ id: accounts.id })
@@ -261,6 +261,10 @@ export class JobsController {
       await Promise.allSettled(failedSync.map((fjob) => fjob.remove()));
       failedSync = await this.syncQueue.getFailed(0, BATCH);
     }
+
+    // Notify frontend immediately so dashboard updates without waiting for poll
+    this.events.emitToChannel('dashboard', 'dashboard:jobs', { trigger: 'retry_failed', retried });
+    this.events.emitToChannel('dashboard', 'dashboard:queue-stats-changed', { ts: Date.now() });
 
     return { ok: true, retried };
   }
