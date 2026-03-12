@@ -351,7 +351,7 @@ export class ConfigService implements OnModuleInit {
       this.embedBackend === 'gemini' || this.embedBackend === 'openrouter' ? 64 : 8;
 
     if (this.aiBackend === 'openrouter') {
-      return { embed: embedConcurrency, enrich: 64, memory: 64, backfill: 16 };
+      return { embed: embedConcurrency, enrich: 1000, memory: 1000, backfill: 256 };
     }
     // Ollama: conservative — single GPU, one inference at a time is fastest
     return { embed: embedConcurrency, enrich: 8, memory: 16, backfill: 2 };

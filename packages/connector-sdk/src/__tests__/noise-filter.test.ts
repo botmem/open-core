@@ -3,6 +3,7 @@ import {
   isNoise,
   isOtp,
   isAutomatedSender,
+  isNotificationSms,
   isMarketingEmail,
   detectNoiseReason,
 } from '../noise-filter.js';
@@ -137,6 +138,76 @@ describe('isMarketingEmail', () => {
   });
 });
 
+describe('isNotificationSms', () => {
+  it('returns false for empty/falsy text', () => {
+    expect(isNotificationSms('')).toBe(false);
+    expect(isNotificationSms(undefined as unknown as string)).toBe(false);
+  });
+
+  it('catches standalone delivery/read receipts', () => {
+    expect(isNotificationSms('Delivered')).toBe(true);
+    expect(isNotificationSms('delivered.')).toBe(true);
+    expect(isNotificationSms('Read')).toBe(true);
+    expect(isNotificationSms('Sent')).toBe(true);
+    expect(isNotificationSms('Stopped')).toBe(true);
+    expect(isNotificationSms('Unsubscribed')).toBe(true);
+  });
+
+  it('catches 2FA/auth patterns without digit codes', () => {
+    expect(isNotificationSms('New sign-in attempt from Chrome on Mac')).toBe(true);
+    expect(isNotificationSms('Security alert: new device added')).toBe(true);
+    expect(isNotificationSms('Login attempt from new location')).toBe(true);
+    expect(isNotificationSms('Your password was changed')).toBe(true);
+    expect(isNotificationSms('Account verification required')).toBe(true);
+    expect(isNotificationSms('Two-factor authentication enabled')).toBe(true);
+    expect(isNotificationSms('2FA code sent to your email')).toBe(true);
+    expect(isNotificationSms('Login code: check your email')).toBe(true);
+    expect(isNotificationSms('Security code sent')).toBe(true);
+    expect(isNotificationSms('Sign in code for your account')).toBe(true);
+    expect(isNotificationSms('Password reset requested')).toBe(true);
+    expect(isNotificationSms('Account security notice')).toBe(true);
+  });
+
+  it('catches carrier/system SMS', () => {
+    expect(isNotificationSms("You've used 80% of your data")).toBe(true);
+    expect(isNotificationSms('You have used 90% of data')).toBe(true);
+    expect(isNotificationSms('Data usage warning: 95% used')).toBe(true);
+    expect(isNotificationSms('Your data limit has been reached')).toBe(true);
+    expect(isNotificationSms('5 minutes remaining on your plan')).toBe(true);
+    expect(isNotificationSms('Your plan renewal is due')).toBe(true);
+    expect(isNotificationSms('Pay your bill by March 15')).toBe(true);
+    expect(isNotificationSms('Autopay charged $50 to your card')).toBe(true);
+  });
+
+  it('catches app transactional notifications', () => {
+    expect(isNotificationSms('Your Uber ride is arriving in 2 min')).toBe(true);
+    expect(isNotificationSms('Your DoorDash order is on its way')).toBe(true);
+    expect(isNotificationSms('Your package has been delivered')).toBe(true);
+    expect(isNotificationSms('Your appointment is confirmed for 3pm')).toBe(true);
+    expect(isNotificationSms('Your reservation is confirmed')).toBe(true);
+    expect(isNotificationSms('Your booking has been cancelled')).toBe(true);
+    expect(isNotificationSms('Reply STOP to unsubscribe')).toBe(true);
+    expect(isNotificationSms('Text STOP to cancel')).toBe(true);
+    expect(isNotificationSms('Msg&data rates may apply')).toBe(true);
+    expect(isNotificationSms('Msg rates apply')).toBe(true);
+  });
+
+  it('returns false for real conversations', () => {
+    expect(isNotificationSms('Hey, how are you?')).toBe(false);
+    expect(isNotificationSms('Can we meet at 3pm?')).toBe(false);
+    expect(isNotificationSms('I read that book you recommended')).toBe(false);
+    expect(isNotificationSms('Just delivered the package to your door')).toBe(false);
+    expect(isNotificationSms('The security guard let me in')).toBe(false);
+    expect(isNotificationSms("I'll stop by later tonight")).toBe(false);
+    expect(isNotificationSms('Did you read my email?')).toBe(false);
+  });
+
+  it('returns false for long messages (>500 chars)', () => {
+    const longMsg = 'Your Uber ride is arriving. ' + 'x'.repeat(500);
+    expect(isNotificationSms(longMsg)).toBe(false);
+  });
+});
+
 describe('isNoise', () => {
   it('returns true for OTP messages', () => {
     expect(isNoise('Your code is 123456', {})).toBe(true);
@@ -144,6 +215,11 @@ describe('isNoise', () => {
 
   it('returns true for automated senders', () => {
     expect(isNoise('Hello', { from: 'noreply@example.com' })).toBe(true);
+  });
+
+  it('returns true for notification SMS', () => {
+    expect(isNoise('Your Uber ride is arriving', {})).toBe(true);
+    expect(isNoise('Security alert: new device', {})).toBe(true);
   });
 
   it('returns true for marketing emails', () => {
@@ -162,6 +238,10 @@ describe('detectNoiseReason', () => {
 
   it('returns automated_sender for automated senders', () => {
     expect(detectNoiseReason('Hello', { from: 'noreply@x.com' })).toBe('automated_sender');
+  });
+
+  it('returns notification_sms for SMS notifications', () => {
+    expect(detectNoiseReason('Your package has been delivered', {})).toBe('notification_sms');
   });
 
   it('returns marketing for marketing emails', () => {

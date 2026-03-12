@@ -189,12 +189,22 @@ export const useJobStore = create<JobState>((set, get) => ({
   retryAllFailed: async () => {
     set({ retrying: true });
     try {
+      // Optimistically clear failed counts so UI updates immediately
+      set((state) => ({
+        queueStats: state.queueStats
+          ? Object.fromEntries(
+              Object.entries(state.queueStats).map(([k, v]) => [k, { ...v, failed: 0 }]),
+            )
+          : null,
+        jobs: state.jobs.filter((j) => j.status !== 'failed'),
+      }));
       await api.retryFailedJobs();
-      await get().fetchJobs();
-      await get().fetchQueueStats();
     } catch {
       // ignore
     } finally {
+      // Always refresh real state from server
+      await get().fetchJobs();
+      await get().fetchQueueStats();
       set({ retrying: false });
     }
   },

@@ -1005,7 +1005,7 @@ export class MemoryService {
         .from(memories)
         .where(doneFilter),
     );
-    const total = totalRows[0]?.count || 0;
+    const total = Number(totalRows[0]?.count) || 0;
 
     const sourceRows = await this.dbService.withCurrentUser((db) =>
       db
@@ -1015,7 +1015,7 @@ export class MemoryService {
         .groupBy(memories.sourceType),
     );
     const bySource: Record<string, number> = {};
-    for (const r of sourceRows) bySource[r.key] = r.count;
+    for (const r of sourceRows) bySource[r.key] = Number(r.count) || 0;
 
     const connectorRows = await this.dbService.withCurrentUser((db) =>
       db
@@ -1025,7 +1025,7 @@ export class MemoryService {
         .groupBy(memories.connectorType),
     );
     const byConnector: Record<string, number> = {};
-    for (const r of connectorRows) byConnector[r.key] = r.count;
+    for (const r of connectorRows) byConnector[r.key] = Number(r.count) || 0;
 
     // Factuality is stored as JSON, extract label with json_extract
     const factRows = await this.dbService.withCurrentUser((db) =>
@@ -1040,7 +1040,7 @@ export class MemoryService {
     );
     const byFactuality: Record<string, number> = {};
     for (const r of factRows) {
-      if (r.label) byFactuality[r.label] = r.count;
+      if (r.label) byFactuality[r.label] = Number(r.count) || 0;
     }
 
     return { total, bySource, byConnector, byFactuality };
