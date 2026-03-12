@@ -214,9 +214,10 @@ OLLAMA_VL_MODEL=qwen3-vl:4b
 # OPENROUTER_API_KEY=sk-or-...
 # EMBED_DIMENSION=3072
 
-# Auth (defaults are fine for local dev)
+# Auth (defaults are fine for local dev — MUST change in production)
 # JWT_ACCESS_SECRET=change-me-in-production
 # JWT_REFRESH_SECRET=change-me-in-production
+# OAUTH_JWT_SECRET=change-me-in-production
 
 # Encryption
 # APP_SECRET=change-me-in-production

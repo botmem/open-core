@@ -2,7 +2,7 @@
   "name": "botmem",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter @botmem/api dev",
+    "dev": "turbo build --filter=@botmem/shared --filter=@botmem/connector-sdk && turbo dev --filter=@botmem/web --filter=@botmem/api",
     "dev:all": "turbo watch dev --concurrency 20",
     "build": "turbo build",
     "lint": "turbo lint",
