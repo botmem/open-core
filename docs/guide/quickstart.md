@@ -13,10 +13,14 @@ Get Botmem running locally in under five minutes.
 git clone https://github.com/botmem/botmem.git
 cd botmem
 cp .env.example .env    # Edit as needed (see step 3 below)
-docker compose up -d
+docker compose up -d    # First run builds the image locally (~3-5 min)
 ```
 
-This starts everything: Botmem, PostgreSQL, Redis, and Qdrant. The API and web UI are at `http://localhost:12412`.
+This builds and starts everything: Botmem, PostgreSQL, Redis, and Qdrant. The API and web UI are at `http://localhost:12412`.
+
+::: tip Ollama connectivity
+If Ollama runs on your host machine (not in Docker), the default `OLLAMA_BASE_URL` uses `host.docker.internal` which works on macOS and Windows. On Linux, add `--add-host=host.docker.internal:host-gateway` to the botmem service or set `OLLAMA_BASE_URL` to your machine's LAN IP.
+:::
 
 Skip to [Step 3: Configure AI Backend](#_3-configure-ai-backend).
 
@@ -58,7 +62,7 @@ The defaults work out of the box for local development. See [Configuration](/gui
 pnpm dev
 ```
 
-This builds all workspace packages automatically, then starts:
+This automatically builds shared packages first (`@botmem/shared`, `@botmem/connector-sdk`, etc.), then starts:
 
 - **API** on `http://localhost:12412`
 - **Web UI** on `http://localhost:12412`
@@ -169,6 +173,32 @@ curl -X POST http://localhost:12412/api/memories/search \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"query": "coffee meeting last week", "limit": 5}'
 ```
+
+## Troubleshooting
+
+### "Email already registered" error
+
+If you've run Botmem before, the PostgreSQL volume still has your old data. Either use a different email or reset the database:
+
+```bash
+docker compose down -v   # Removes all volumes (PostgreSQL, Redis, Qdrant data)
+docker compose up -d     # Fresh start
+```
+
+### API curl examples with special characters
+
+When testing via `curl`, make sure to properly quote JSON values. Special characters like `!` in passwords can cause JSON parse errors if not properly escaped in your shell:
+
+```bash
+# Use single quotes around the -d argument to avoid shell interpretation
+curl -X POST http://localhost:12412/api/user-auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"you@example.com","password":"MyPassword123"}'
+```
+
+### APP_SECRET warning in dev mode
+
+You'll see `APP_SECRET is using default value` in the API logs during local development. This is expected — the defaults are fine for dev. In production (`NODE_ENV=production`), the server will refuse to start with default secrets.
 
 ## What Next?
 

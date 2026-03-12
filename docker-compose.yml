@@ -5,12 +5,15 @@ services:
       - '12412:12412'
     env_file:
       - .env
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     environment:
       DATABASE_URL: postgresql://botmem:botmem@postgres:5432/botmem
       REDIS_URL: redis://redis:6379
       QDRANT_URL: http://qdrant:6333
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
-      NODE_ENV: production
+      # Use host.docker.internal if Ollama runs on the host machine (not in Docker).
+      # Use http://ollama:11434 if using the bundled Ollama container (--profile ollama).
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     depends_on:
       postgres:
         condition: service_healthy
