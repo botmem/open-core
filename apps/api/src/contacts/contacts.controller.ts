@@ -189,10 +189,18 @@ export class ContactsController {
         if (!upstream.ok) continue;
 
         const contentType = upstream.headers.get('content-type') || 'image/jpeg';
+        const buffer = Buffer.from(await upstream.arrayBuffer());
+
+        // Cache as data URI in DB so subsequent requests serve from DB
+        const dataUri = `data:${contentType};base64,${buffer.toString('base64')}`;
+        const idx = allAvatars.indexOf(avatar);
+        if (idx !== -1) {
+          allAvatars[idx] = { url: dataUri, source: avatar.source };
+          this.contactsService.updateContact(id, { avatars: allAvatars }).catch(() => {}); // fire-and-forget
+        }
+
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=86400');
-
-        const buffer = Buffer.from(await upstream.arrayBuffer());
         return res.send(buffer);
       } catch {
         continue;
