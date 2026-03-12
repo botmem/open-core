@@ -630,9 +630,8 @@ const HOW_IT_WORKS_TABS = [
 function JsonLine({ text }: { text: string }) {
   // Simple JSON syntax highlighting: keys in blue, strings in lime, numbers in orange, braces/brackets muted
   const parts: Array<{ text: string; cls: string }> = [];
-  // eslint-disable-next-line no-useless-escape
   const re =
-    /("[\w$.]+")\s*:|("(?:[^"\\]|\\.)*")|(\b\d+(?:\.\d+)?\b)|([\[\]{}:,])|(\.\.\.)|([\s\S]+?)/g;
+    /("[\w$.]+")\s*:|("(?:[^"\\]|\\.)*")|(\b\d+(?:\.\d+)?\b)|([[\]{}:,])|(\.\.\.)|([\s\S]+?)/g;
   let m;
   while ((m = re.exec(text)) !== null) {
     if (m[1]) {
