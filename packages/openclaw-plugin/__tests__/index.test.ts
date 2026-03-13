@@ -1,39 +1,57 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { activate } from '../src/index';
-import { PluginApi, AgentToolDef } from '../src/types';
+import botmemPlugin from '../src/index';
+import { OpenClawPluginApi, OpenClawToolDef } from '../src/types';
 
 vi.mock('@toon-format/toon', () => ({
   encode: (data: unknown) => `TOON:${JSON.stringify(data)}`,
 }));
 
-describe('activate', () => {
-  let tools: AgentToolDef[];
-  let events: Array<{ event: string; opts?: unknown }>;
+describe('botmemPlugin', () => {
+  let tools: Array<{ def: OpenClawToolDef; opts: unknown }>;
+  let events: Array<{ event: string }>;
+  let services: Array<{ id: string }>;
 
-  function createMockApi(rawConfig: Record<string, unknown> = {}): PluginApi {
+  function createMockApi(config: Record<string, unknown> = {}): OpenClawPluginApi {
     tools = [];
     events = [];
+    services = [];
     return {
-      getConfig: () => rawConfig,
-      registerAgentTool: (tool) => tools.push(tool),
-      on: (event, _handler, opts) => {
-        events.push({ event, opts });
+      pluginConfig: {
+        apiUrl: 'http://localhost:12412',
+        apiKey: 'test-key',
+        defaultLimit: 10,
+        autoContext: true,
+        ...config,
       },
+      runtime: {},
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+      resolvePath: (p: string) => p,
+      registerTool: (def: unknown, opts: unknown) =>
+        tools.push({ def: def as OpenClawToolDef, opts }),
+      registerCli: vi.fn(),
+      registerService: (svc: { id: string; start: () => void; stop: () => void }) =>
+        services.push(svc),
+      on: (event: string) => events.push({ event }),
     };
   }
 
   beforeEach(() => {
     tools = [];
     events = [];
+    services = [];
+  });
+
+  it('has correct plugin metadata', () => {
+    expect(botmemPlugin.id).toBe('botmem');
+    expect(botmemPlugin.name).toBe('Botmem Memory');
   });
 
   it('registers all 7 tools', () => {
-    const api = createMockApi({ apiKey: 'test-key' });
-    activate(api);
+    const api = createMockApi();
+    botmemPlugin.register(api);
 
     expect(tools).toHaveLength(7);
-    const names = tools.map((t) => t.name);
+    const names = tools.map((t) => (t.opts as { name: string }).name);
     expect(names).toContain('memory_search');
     expect(names).toContain('memory_ask');
     expect(names).toContain('memory_remember');
@@ -43,52 +61,31 @@ describe('activate', () => {
     expect(names).toContain('people_search');
   });
 
-  it('registers the prompt hook', () => {
-    const api = createMockApi({ apiKey: 'test-key' });
-    activate(api);
+  it('registers the before_agent_start hook', () => {
+    const api = createMockApi();
+    botmemPlugin.register(api);
 
     expect(events).toHaveLength(1);
-    expect(events[0].event).toBe('before_prompt_build');
+    expect(events[0].event).toBe('before_agent_start');
   });
 
-  it('uses default config values when not provided', () => {
-    const api = createMockApi({});
-    activate(api);
+  it('registers a service', () => {
+    const api = createMockApi();
+    botmemPlugin.register(api);
 
-    // Should not throw, defaults applied
-    expect(tools).toHaveLength(7);
+    expect(services).toHaveLength(1);
+    expect(services[0].id).toBe('botmem');
   });
 
-  it('parses config with custom values', () => {
-    const api = createMockApi({
-      apiUrl: 'http://custom:9999',
-      apiKey: 'my-key',
-      defaultLimit: 25,
-      memoryBankId: 'bank-1',
-      autoContext: false,
-    });
-    activate(api);
-
-    // Plugin should still register all tools with custom config
-    expect(tools).toHaveLength(7);
+  it('configSchema.parse validates apiKey is required', () => {
+    expect(() => botmemPlugin.configSchema.parse({})).toThrow('apiKey is required');
+    expect(() => botmemPlugin.configSchema.parse({ apiKey: '' })).toThrow('apiKey is required');
   });
 
-  it('coerces apiUrl and apiKey to strings', () => {
-    const api = createMockApi({
-      apiUrl: 12345,
-      apiKey: undefined,
-    });
-    // Should not throw - String(12345) = "12345", String(undefined) = "undefined" but that's fine
-    activate(api);
-    expect(tools).toHaveLength(7);
-  });
-
-  it('defaults defaultLimit to 10 when not provided', () => {
-    // We can verify this indirectly by checking timeline tool uses defaultLimit=10
-    const api = createMockApi({ apiKey: 'key' });
-    activate(api);
-
-    const timelineTool = tools.find((t) => t.name === 'memory_timeline');
-    expect(timelineTool).toBeDefined();
+  it('configSchema.parse returns defaults', () => {
+    const config = botmemPlugin.configSchema.parse({ apiKey: 'test' });
+    expect(config.apiUrl).toBe('http://localhost:12412');
+    expect(config.defaultLimit).toBe(10);
+    expect(config.autoContext).toBe(true);
   });
 });
