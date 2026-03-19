@@ -12,6 +12,7 @@ import { IncomingMessage } from 'http';
 import { eq } from 'drizzle-orm';
 import { EventsService } from './events.service';
 import { ConfigService } from '../config/config.service';
+import { FirebaseAuthService } from '../user-auth/firebase-auth.service';
 import { DbService } from '../db/db.service';
 import * as schema from '../db/schema';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -34,6 +35,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     private jwtService: JwtService,
     private config: ConfigService,
     private dbService: DbService,
+    private firebaseAuthService: FirebaseAuthService,
   ) {}
 
   afterInit() {
@@ -77,7 +79,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   @SubscribeMessage('auth')
-  handleAuth(client: WebSocket, data: { token: string }) {
+  async handleAuth(client: WebSocket, data: { token: string }) {
     const state = this.clients.get(client);
     if (!state) return;
 
@@ -88,10 +90,17 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
 
     try {
-      const payload = this.jwtService.verify(data.token, {
-        secret: this.config.jwtAccessSecret,
-      });
-      state.userId = payload.sub;
+      if (this.config.authProvider === 'firebase') {
+        const decoded = await this.firebaseAuthService.verifyIdToken(data.token);
+        const result = await this.firebaseAuthService.findOrCreateUser(decoded);
+        if (!result.user) throw new Error('User sync failed');
+        state.userId = result.user.id;
+      } else {
+        const payload = this.jwtService.verify(data.token, {
+          secret: this.config.jwtAccessSecret,
+        });
+        state.userId = payload.sub;
+      }
       client.send(JSON.stringify({ event: 'auth', data: { ok: true } }));
     } catch {
       client.send(JSON.stringify({ event: 'auth', data: { ok: false, reason: 'Invalid token' } }));

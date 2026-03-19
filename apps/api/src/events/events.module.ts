@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
+import { FirebaseAuthModule } from '../user-auth/firebase-auth.module';
 import { EventsGateway } from './events.gateway';
 import { EventsService } from './events.service';
 
@@ -9,6 +10,7 @@ import { EventsService } from './events.service';
 @Module({
   imports: [
     ConfigModule,
+    FirebaseAuthModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
