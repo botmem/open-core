@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit, UnauthorizedException } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { createHash, randomBytes } from 'crypto';
+import { keyToMnemonic } from '@botmem/shared';
 import { ConfigService } from '../config/config.service';
 import { UsersService } from './users.service';
 import { MemoryBanksService } from '../memory-banks/memory-banks.service';
@@ -81,8 +82,9 @@ export class FirebaseAuthService implements OnModuleInit {
     const encryptionSalt = salt.toString('base64');
 
     const dek = this.userKeyService.generateDek();
-    const recoveryKey = dek.toString('base64');
-    const recoveryKeyHash = this.hashRecoveryKey(recoveryKey);
+    const recoveryKeyBase64 = dek.toString('base64');
+    const recoveryKeyHash = this.hashRecoveryKey(recoveryKeyBase64);
+    const recoveryKey = keyToMnemonic(recoveryKeyBase64);
 
     const newUser = await this.usersService.createUser(email, passwordHash, name, encryptionSalt);
     await this.usersService.setFirebaseUid(newUser!.id, decoded.uid);

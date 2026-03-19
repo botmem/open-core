@@ -10,6 +10,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import * as bcrypt from 'bcryptjs';
 import { createHash, randomBytes, randomUUID } from 'crypto';
+import { keyToMnemonic, resolveRecoveryKey } from '@botmem/shared';
 import { UsersService } from './users.service';
 import { ConfigService } from '../config/config.service';
 import { MailService } from '../mail/mail.service';
@@ -48,10 +49,12 @@ export class UserAuthService {
     const salt = randomBytes(16);
     const encryptionSalt = salt.toString('base64');
 
-    // Generate random DEK — this IS the recovery key
+    // Generate random DEK — hash is stored against the base64 form
     const dek = this.userKeyService.generateDek();
-    const recoveryKey = dek.toString('base64');
-    const recoveryKeyHash = this.hashRecoveryKey(recoveryKey);
+    const recoveryKeyBase64 = dek.toString('base64');
+    const recoveryKeyHash = this.hashRecoveryKey(recoveryKeyBase64);
+    // Display as mnemonic phrase (easier to write down)
+    const recoveryKey = keyToMnemonic(recoveryKeyBase64);
 
     let user: Awaited<ReturnType<typeof this.usersService.createUser>>;
     try {
@@ -134,9 +137,12 @@ export class UserAuthService {
   /**
    * Verify recovery key and restore DEK into cache.
    */
-  async submitRecoveryKey(userId: string, recoveryKey: string) {
+  async submitRecoveryKey(userId: string, recoveryKeyInput: string) {
     const user = await this.usersService.findById(userId);
     if (!user) throw new UnauthorizedException('User not found');
+
+    // Accept both mnemonic phrases and base64 keys
+    const recoveryKey = resolveRecoveryKey(recoveryKeyInput);
 
     const hash = this.hashRecoveryKey(recoveryKey);
     if (hash !== user.recoveryKeyHash) {
