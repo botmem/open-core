@@ -328,7 +328,7 @@ export class MeService {
       candidates.push({
         id: c.id,
         displayName: cDisplayName,
-        avatars: c.avatars || [],
+        avatars: (this.decryptJsonb(c.avatars) as Array<{ url: string; source: string }>) || [],
         reason,
         identifiers: idents.map((i) => ({
           identifierType: i.identifierType,
@@ -393,7 +393,8 @@ export class MeService {
         identity.name = this.crypto.decrypt(contact.displayName) ?? contact.displayName;
         identity.preferredAvatarIndex = contact.preferredAvatarIndex ?? 0;
         try {
-          identity.avatars = (contact.avatars as Array<{ url: string; source: string }>) || [];
+          identity.avatars =
+            (this.decryptJsonb(contact.avatars) as Array<{ url: string; source: string }>) || [];
         } catch {
           identity.avatars = [];
         }
@@ -601,5 +602,25 @@ export class MeService {
       topEntities,
       recentMemories,
     };
+  }
+
+  private decryptJsonb(value: unknown): unknown {
+    if (value == null) return value;
+    if (typeof value === 'string') {
+      const decrypted = this.crypto.decrypt(value);
+      if (decrypted && decrypted !== value) {
+        try {
+          return JSON.parse(decrypted);
+        } catch {
+          return decrypted;
+        }
+      }
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    }
+    return value;
   }
 }

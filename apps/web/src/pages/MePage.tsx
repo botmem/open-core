@@ -151,7 +151,15 @@ function meReducer(state: MeState, action: MeAction): MeState {
       const data = action.data;
       if (data?.identity) {
         const raw = data.identity.avatars;
-        data.identity.avatars = typeof raw === 'string' ? JSON.parse(raw) : raw || [];
+        if (typeof raw === 'string') {
+          try {
+            data.identity.avatars = JSON.parse(raw);
+          } catch {
+            data.identity.avatars = [];
+          }
+        } else {
+          data.identity.avatars = raw || [];
+        }
       }
       return {
         ...state,
