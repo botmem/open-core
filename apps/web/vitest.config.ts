@@ -35,6 +35,7 @@ export default defineConfig({
         'src/lib/wa-tunnel-relay.ts',
         'src/entry-server.tsx',
         'src/hooks/usePageMeta.ts',
+        'src/hooks/useSearchKeyboard.ts',
       ],
       thresholds: {
         statements: 75,
