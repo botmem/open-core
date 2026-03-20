@@ -656,7 +656,12 @@ export class TypesenseService implements OnModuleInit {
           continue;
         }
       }
-      flat[key] = typeof value === 'object' ? JSON.stringify(value) : value;
+      // Preserve arrays (e.g. people: string[]) — Typesense needs native arrays, not JSON strings
+      flat[key] = Array.isArray(value)
+        ? value
+        : typeof value === 'object'
+          ? JSON.stringify(value)
+          : value;
     }
     return flat;
   }
