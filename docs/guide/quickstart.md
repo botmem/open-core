@@ -17,7 +17,7 @@ docker compose pull     # Ensure you have the latest image
 docker compose up -d    # Starts all services
 ```
 
-This pulls and starts everything: Botmem, PostgreSQL, Redis, and Qdrant. The API and web UI are at `http://localhost:12412`.
+This pulls and starts everything: Botmem, PostgreSQL, Redis, and Typesense. The API and web UI are at `http://localhost:12412`.
 
 ::: warning Clean start
 If you've previously built a local image (`docker compose build`), Docker may use the cached local image instead of the published one. Always run `docker compose pull` first to get the latest release.
@@ -47,14 +47,14 @@ pnpm install
 ### 2. Start Infrastructure
 
 ```bash
-docker compose up -d postgres redis qdrant
+docker compose up -d postgres redis typesense
 ```
 
 This starts only the backing services:
 
 - **PostgreSQL 17** on port `5432`
 - **Redis 7** on port `6379`
-- **Qdrant** on port `6333` (HTTP) and `6334` (gRPC)
+- **Typesense** on port `8108`
 
 ### Configure Environment
 
@@ -142,6 +142,7 @@ Navigate to the Connectors page in the web UI. Each connector has its own setup 
 | WhatsApp        | QR Code    | WhatsApp mobile app                |
 | iMessage        | Local Tool | macOS with iMessage database       |
 | Photos / Immich | API Key    | Immich server URL + API key        |
+| Telegram        | Bot Token  | Telegram Bot API token             |
 | OwnTracks       | API Key    | OwnTracks recorder URL + HTTP auth |
 
 See the [Connectors](/connectors/) section for detailed setup instructions for each source.
@@ -171,7 +172,7 @@ The sync pipeline will:
 3. Generate embeddings via your AI backend
 4. Resolve participants into contacts
 5. Enrich memories with entities and factuality labels
-6. Index everything in Qdrant for semantic search
+6. Index everything in Typesense for semantic search
 
 ## 8. Search Your Memories
 
@@ -189,7 +190,7 @@ curl -X POST http://localhost:12412/api/memories/search \
 If you've run Botmem before, the PostgreSQL volume still has your old data. This can also cause issues when switching between image versions. For a truly clean start:
 
 ```bash
-docker compose down -v   # Removes all volumes (PostgreSQL, Redis, Qdrant data)
+docker compose down -v   # Removes all volumes (PostgreSQL, Redis, Typesense data)
 docker compose pull      # Ensure latest image
 docker compose up -d     # Fresh start
 ```

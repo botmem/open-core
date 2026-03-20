@@ -269,7 +269,7 @@ export function SettingsPage() {
                       RESET VECTOR INDEX
                     </p>
                     <p className="font-mono text-xs text-nb-muted">
-                      Rebuild the Qdrant collection from scratch.
+                      Rebuild the Typesense collection from scratch.
                     </p>
                   </div>
                   <Button

@@ -82,5 +82,5 @@ CORS is configured via the `FRONTEND_URL` environment variable. Only the specifi
 - [ ] `FRONTEND_URL` set to your production domain
 - [ ] PostgreSQL password is strong and not the default
 - [ ] Redis is not exposed to the public internet
-- [ ] Qdrant is not exposed to the public internet
+- [ ] Typesense is not exposed to the public internet
 - [ ] Backups configured for PostgreSQL and Redis

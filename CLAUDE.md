@@ -98,12 +98,11 @@ Connectors are EventEmitters. During sync they emit `data`, `progress`, and `log
 
 BullMQ queues process work asynchronously through Redis:
 
-| Queue      | Worker            | Purpose                                                                                    |
-| ---------- | ----------------- | ------------------------------------------------------------------------------------------ |
-| `sync`     | `SyncProcessor`   | Orchestrates `connector.sync()`, writes to `rawEvents`                                     |
-| `embed`    | `EmbedProcessor`  | Parses raw event, creates Memory, generates embedding, resolves contacts                   |
-| `enrich`   | `EnrichProcessor` | Extracts entities/claims, classifies factuality, computes importance, upserts to Typesense |
-| `backfill` | —                 | Retroactive enrichment of older memories                                                   |
+| Queue    | Worker            | Purpose                                                                                    |
+| -------- | ----------------- | ------------------------------------------------------------------------------------------ |
+| `sync`   | `SyncProcessor`   | Orchestrates `connector.sync()`, writes to `rawEvents`                                     |
+| `embed`  | `EmbedProcessor`  | Parses raw event, creates Memory, generates embedding, resolves contacts                   |
+| `enrich` | `EnrichProcessor` | Extracts entities/claims, classifies factuality, computes importance, upserts to Typesense |
 
 Job statuses: `queued → running → done | failed | cancelled`
 
@@ -117,7 +116,7 @@ Connector.sync()
   → [sync queue] SyncProcessor
   → [embed queue] EmbedProcessor
       ├ Parse raw event payload
-      ├ Create Memory record in SQLite
+      ├ Create Memory record in PostgreSQL
       ├ Generate embedding via Ollama
       ├ Resolve participants → Contacts (dedup by email/phone/handle)
       └ Enqueue enrich job
@@ -137,12 +136,20 @@ Core design: **store everything, label confidence** — never delete memories, c
 ### Scoring formula
 
 ```
+# With reranker (recall intent):
 final = 0.40×semantic + 0.30×rerank + 0.15×recency + 0.10×importance + 0.05×trust
-recency = exp(-0.015 × age_days)
+
+# Without reranker:
+final = 0.40×semantic + 0.25×recency + 0.20×importance + 0.15×trust
+
+# Search recency:    exp(-0.005 × age_days)  — gentle, ~139-day half-life
+# Decay processor:   exp(-0.015 × age_days)  — steeper, ~46-day half-life
 ```
 
+Weights are intent-dependent (`recall` vs `browse`) with per-connector scaling adjustments.
+
 - `semantic` — Typesense vector similarity score (or `rank_fusion_score` from hybrid BM25+vector search)
-- `rerank` — optional second-pass reranker score
+- `rerank` — optional second-pass reranker score (TEI, Ollama, or Jina backends)
 - `recency` — exponential decay from event time
 - `importance` — boosted by repeated recall, direct mention, user pinning
 - `trust` — connector base trust + factuality confidence
@@ -210,14 +217,13 @@ pnpm test         # Run Vitest across all workspaces
 
 ## Conventions
 
-- All IDs are UUIDs (text primary keys in SQLite)
+- All IDs are UUIDs (text primary keys in PostgreSQL)
 - All timestamps are ISO 8601 strings
 - JSON columns stored as text, parsed at application layer
 - Auth context is encrypted at rest in the `accounts` and `connectorCredentials` tables
 - Connector packages are named `@botmem/connector-<name>`
 - Shared types live in `@botmem/shared` — import from there, not from api internals
 - Tests go in `__tests__/` directories adjacent to source, using Vitest
-- SQLite runs in WAL mode for concurrent read performance
 
 ## Design Context
 

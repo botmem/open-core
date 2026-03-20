@@ -58,7 +58,7 @@ The `CleanProcessor` normalizes raw event text — stripping HTML, collapsing wh
 
 ### Stage 3: Embed
 
-The `EmbedProcessor` reads the raw event, creates a Memory record in PostgreSQL, generates a vector embedding via the AI backend (`mxbai-embed-large` 1024d or Gemini 3072d), stores the vector in Qdrant, and resolves participants into contacts. For file-type events (photos, documents), it routes to the File queue instead.
+The `EmbedProcessor` reads the raw event, creates a Memory record in PostgreSQL, generates a vector embedding via the AI backend (`mxbai-embed-large` 1024d or Gemini 3072d), upserts the document into Typesense, and resolves participants into contacts. For file-type events (photos, documents), it routes to the File queue instead.
 
 ### Stage 4: File (optional)
 
@@ -66,26 +66,26 @@ The `FileProcessor` downloads the file, extracts text content (using the VL mode
 
 ### Stage 5: Enrich
 
-The `EnrichProcessor` extracts entities and claims via the text model, classifies factuality (`FACT` / `UNVERIFIED` / `FICTION`), computes importance weights, and creates relationship graph links by finding similar memories in Qdrant.
+The `EnrichProcessor` extracts entities and claims via the text model, classifies factuality (`FACT` / `UNVERIFIED` / `FICTION`), computes importance weights, and creates relationship graph links by finding similar memories in Typesense.
 
 ## Storage Architecture
 
 ```
 +-------------------+     +-------------------+     +-------------------+
-|   PostgreSQL      |     |     Qdrant        |     |     Redis         |
-|   (Drizzle ORM)   |     |  (Vector DB)      |     |  (BullMQ + Cache) |
+|   PostgreSQL      |     |    Typesense      |     |     Redis         |
+|   (Drizzle ORM)   |     |  (Search Engine)  |     |  (BullMQ + Cache) |
 |                   |     |                   |     |                   |
 |  - users          |     |  Collection:      |     |  Queues:          |
 |  - accounts       |     |    memories       |     |    sync           |
 |  - jobs           |     |                   |     |    clean          |
-|  - logs           |     |  Payload:         |     |    embed          |
-|  - rawEvents      |     |    memory_id      |     |    file           |
+|  - logs           |     |  Fields:          |     |    embed          |
+|  - rawEvents      |     |    text           |     |    file           |
 |  - memories       |     |    source_type    |     |    enrich         |
 |  - memoryLinks    |     |    connector_type |     |    backfill       |
 |  - contacts       |     |    event_time     |     |                   |
 |  - contactIds     |     |    account_id     |     |  Recovery key     |
 |  - memoryContacts |     |    user_id        |     |    cache (AES)    |
-|  - apiKeys        |     |                   |     |                   |
+|  - apiKeys        |     |    embedding      |     |                   |
 |  - memoryBanks    |     |                   |     |                   |
 +-------------------+     +-------------------+     +-------------------+
 ```
@@ -94,9 +94,9 @@ The `EnrichProcessor` extracts entities and claims via the text model, classifie
 
 All structured data lives in PostgreSQL 17. The schema is defined with Drizzle ORM. All IDs are UUIDs, all timestamps are ISO 8601 strings, and JSON columns are stored as text. Multi-user with `userId` foreign keys on all user-owned tables.
 
-### Qdrant
+### Typesense
 
-Vector embeddings are stored in a Qdrant collection named `memories` using cosine similarity. Each point carries a payload with `memory_id`, `source_type`, `connector_type`, `event_time`, `account_id`, and `user_id` for filtered search.
+Typesense hosts a `memories` collection with hybrid BM25 + vector search (cosine similarity). Each document carries fields including `text`, `source_type`, `connector_type`, `event_time`, `account_id`, `user_id`, `people`, `entities_text`, and `embedding` (float[]) for filtered search.
 
 ### Redis
 

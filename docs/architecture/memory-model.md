@@ -49,28 +49,32 @@ When a reranker is configured, it provides a second-pass relevance score that si
 
 | Weight (default) | Weight (reranker) | Factor       | Range     | Description                                                            |
 | ---------------- | ----------------- | ------------ | --------- | ---------------------------------------------------------------------- |
-| 0.40             | 0.40              | `semantic`   | 0.0 - 1.0 | Qdrant cosine similarity between query and memory embeddings           |
+| 0.40             | 0.40              | `semantic`   | 0.0 - 1.0 | Typesense vector similarity between query and memory embeddings        |
 | —                | 0.30              | `rerank`     | 0.0 - 1.0 | Second-pass reranker relevance score                                   |
-| 0.25             | 0.15              | `recency`    | 0.0 - 1.0 | Exponential decay from event time: `exp(-0.015 * age_days)`            |
+| 0.25             | 0.15              | `recency`    | 0.0 - 1.0 | Exponential decay from event time: `exp(-0.005 * age_days)` in search  |
 | 0.20             | 0.10              | `importance` | 0.0 - 1.0 | Base 0.5, boosted by entity count: `0.5 + min(entityCount * 0.1, 0.4)` |
 | 0.15             | 0.05              | `trust`      | 0.0 - 1.0 | Connector-specific base trust score                                    |
 
 ### Recency Decay
 
-The recency function uses exponential decay with a half-life of approximately 46 days:
+Search uses a gentle decay rate (`-0.005`) so older memories still surface. The decay processor uses a steeper rate (`-0.015`) for batch importance decay:
 
 ```typescript
-const recency = Math.exp(-0.015 * ageDays);
+// Search scoring
+const recency = Math.exp(-0.005 * ageDays);
+
+// Decay processor (batch job)
+const decayRate = Math.exp(-0.015 * ageDays);
 ```
 
-| Age      | Recency Score |
-| -------- | ------------- |
-| Today    | 1.00          |
-| 1 week   | 0.90          |
-| 1 month  | 0.64          |
-| 3 months | 0.26          |
-| 6 months | 0.07          |
-| 1 year   | 0.004         |
+| Age      | Search Recency | Decay Processor |
+| -------- | -------------- | --------------- |
+| Today    | 1.00           | 1.00            |
+| 1 week   | 0.97           | 0.90            |
+| 1 month  | 0.86           | 0.64            |
+| 3 months | 0.64           | 0.26            |
+| 6 months | 0.41           | 0.07            |
+| 1 year   | 0.16           | 0.004           |
 
 This means recent memories are strongly preferred, but old memories with high semantic relevance can still surface.
 
@@ -153,11 +157,11 @@ Each memory is embedded using the configured AI backend:
 - **Ollama** (default): `mxbai-embed-large` — 1024-dimensional vectors
 - **OpenRouter**: `google/gemini-embedding-001` — 3072-dimensional vectors
 
-Vectors are stored in Qdrant with a cosine similarity index. The embedding text is truncated to 8,000 characters to stay within model context limits.
+Vectors are stored in Typesense with a cosine similarity index. The embedding text is truncated to 8,000 characters to stay within model context limits.
 
-### Qdrant Payload
+### Typesense Document
 
-Each vector point in Qdrant carries metadata for filtered search:
+Each document in Typesense carries metadata for filtered search:
 
 ```json
 {

@@ -150,7 +150,7 @@ export function DataPolicyPage() {
             <div className="mt-4 flex flex-col gap-0">
               <PipelineStep
                 label="CONNECTOR SYNC"
-                description="Data pulled from source (Gmail, Slack, WhatsApp, iMessage, Photos, Locations) via authenticated connector."
+                description="Data pulled from source (Gmail, Slack, WhatsApp, Telegram, iMessage, Photos, Locations) via authenticated connector."
               />
               <PipelineStep
                 label="RAW EVENTS"
@@ -158,7 +158,7 @@ export function DataPolicyPage() {
               />
               <PipelineStep
                 label="EMBEDDING"
-                description="Text content is vectorized into a 1024-dimensional embedding and stored in Qdrant for semantic search."
+                description="Text content is vectorized into a high-dimensional embedding and stored in Typesense for semantic search."
               />
               <PipelineStep
                 label="ENRICHMENT"
@@ -251,8 +251,8 @@ export function DataPolicyPage() {
             <p>When you self-host Botmem, your data never leaves your hardware:</p>
             <ul className="list-none flex flex-col gap-2 mt-2">
               <li>
-                <strong className="text-nb-text">All data stays local.</strong> PostgreSQL, Qdrant,
-                and Redis run on your infrastructure.
+                <strong className="text-nb-text">All data stays local.</strong> PostgreSQL,
+                Typesense, and Redis run on your infrastructure.
               </li>
               <li>
                 <strong className="text-nb-text">AI processing via local Ollama.</strong> Embedding
@@ -347,7 +347,7 @@ export function DataPolicyPage() {
             </p>
             <ul className="list-none flex flex-col gap-1.5 mt-2">
               <li>PostgreSQL records (memories, contacts, raw events, jobs, accounts)</li>
-              <li>Qdrant vector embeddings</li>
+              <li>Typesense vector embeddings</li>
               <li>Redis cache (sessions, encryption key cache)</li>
               <li>All raw event payloads</li>
             </ul>
@@ -362,8 +362,8 @@ export function DataPolicyPage() {
           <SectionCard id="open-source" number="09" title="OPEN SOURCE VERIFICATION">
             <p>
               Every line of encryption code, every data pipeline, every connector &mdash; it&apos;s
-              all open-source under the MIT license. You don&apos;t have to trust our words. Read
-              the code.
+              all open-source under the AGPL-3.0 license. You don&apos;t have to trust our words.
+              Read the code.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <a

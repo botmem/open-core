@@ -190,14 +190,14 @@ export function TermsPage() {
                 rel="noopener noreferrer"
                 className="text-nb-lime hover:underline cursor-pointer"
               >
-                MIT License
+                AGPL-3.0 License
               </a>
               . You are free to use, modify, and distribute the source code in accordance with that
               license.
             </p>
             <p>
-              The MIT License applies to the open-source codebase only. The Pro cloud service is
-              subject to the additional terms described in Section 5 below.
+              The AGPL-3.0 License applies to the open-source codebase only. The Pro cloud service
+              is subject to the additional terms described in Section 5 below.
             </p>
           </Section>
 
@@ -287,7 +287,7 @@ export function TermsPage() {
               of Botmem and are protected by applicable intellectual property laws.
             </p>
             <p>
-              The open-source codebase is licensed under the MIT License and may be used in
+              The open-source codebase is licensed under the AGPL-3.0 License and may be used in
               accordance with that license. This does not grant any rights to the Botmem trademarks
               or Pro-specific infrastructure.
             </p>

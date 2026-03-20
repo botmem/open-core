@@ -368,8 +368,8 @@ const FEATURES: { icon: ReactNode; title: string; desc: string }[] = [
         <path d="M11 12h2" />
       </svg>
     ),
-    title: '6 CONNECTORS',
-    desc: 'Gmail, Slack, WhatsApp, iMessage, Photos, Locations — more coming.',
+    title: '7+ CONNECTORS',
+    desc: 'Gmail, Slack, WhatsApp, Telegram, iMessage, Photos, Locations — and growing.',
   },
   {
     icon: (
@@ -389,7 +389,7 @@ const FEATURES: { icon: ReactNode; title: string; desc: string }[] = [
       </svg>
     ),
     title: 'FULLY LOCAL',
-    desc: 'SQLite + Qdrant + Ollama. Your data never leaves your hardware.',
+    desc: 'PostgreSQL + Typesense + Ollama. Your data never leaves your hardware.',
   },
   {
     icon: (
@@ -604,7 +604,7 @@ const HOW_IT_WORKS_TABS = [
     lines: [
       {
         type: 'cmd' as const,
-        text: 'curl -X POST https://botmem.xyz/api/memory/search \\',
+        text: 'curl -X POST https://botmem.xyz/api/memories/search \\',
       },
       {
         type: 'continued' as const,
@@ -621,7 +621,7 @@ const HOW_IT_WORKS_TABS = [
       { type: 'json' as const, text: '      "text": "Dinner reservation at Nobu..." },' },
       { type: 'json' as const, text: '    ...' },
       { type: 'json' as const, text: '  ],' },
-      { type: 'json' as const, text: '  "count": 3, "took_ms": 48' },
+      { type: 'json' as const, text: '  "count": 3' },
       { type: 'json' as const, text: '}' },
     ],
   },
@@ -831,7 +831,7 @@ function HowItWorks() {
 }
 
 function TechStrip() {
-  const techs = ['NestJS', 'PostgreSQL', 'Qdrant', 'Ollama', 'React', 'BullMQ'];
+  const techs = ['NestJS', 'PostgreSQL', 'Typesense', 'Ollama', 'React', 'BullMQ'];
   return (
     <div className="border-y-4 border-nb-border py-5 overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap justify-center gap-x-6 gap-y-2 font-mono text-sm text-nb-muted tracking-wide">
@@ -851,7 +851,7 @@ function TechStrip() {
 }
 
 const FREE_FEATURES = [
-  'All 6 connectors',
+  'All 7+ connectors',
   'Unlimited memories',
   'Local AI enrichment',
   'Contact graph',
@@ -863,12 +863,10 @@ const FREE_FEATURES = [
 const PRO_FEATURES = [
   'Everything in Free',
   'Cloud-hosted infrastructure',
-  'Managed Qdrant + Redis',
+  'Managed PostgreSQL, Typesense + Redis',
   'Priority enrichment pipeline',
-  'Advanced analytics dashboard',
-  'Full API access + webhooks',
+  'Full API access',
   'Email support',
-  'Automatic backups',
 ];
 
 function PricingSection() {
@@ -1013,8 +1011,8 @@ function SecuritySection() {
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
       ),
-      title: 'ZERO KNOWLEDGE',
-      desc: 'Self-hosted: data never leaves your hardware. Pro: we cannot read your encrypted credentials. Your recovery key stays with you.',
+      title: 'SELF-HOSTED & ENCRYPTED',
+      desc: 'Self-hosted: data never leaves your hardware. Pro: credentials encrypted with your recovery key — we cannot read them. Your key stays with you.',
     },
     {
       icon: (
@@ -1089,7 +1087,7 @@ function OpenSourceCTA() {
           100% <span className="text-nb-lime">OPEN SOURCE</span>
         </h2>
         <p className="font-mono text-sm text-nb-muted mt-4 tracking-widest uppercase">
-          MIT License · Auditable · Extensible
+          AGPL-3.0 · Auditable · Extensible
         </p>
         <p className="font-mono text-sm text-nb-muted mt-3 max-w-lg mx-auto leading-relaxed">
           Self-host on your own hardware for free, or let us run it for you with Botmem Pro. Same
