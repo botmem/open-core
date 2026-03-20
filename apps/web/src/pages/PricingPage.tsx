@@ -46,7 +46,7 @@ function ChevronIcon({ open }: { open: boolean }) {
 }
 
 const FREE_FEATURES = [
-  'All 6 connectors (Gmail, Slack, WhatsApp, iMessage, Photos, Locations)',
+  'All 7+ connectors (Gmail, Slack, WhatsApp, Telegram, iMessage, Photos, Locations)',
   'Unlimited memories',
   'Local AI enrichment via Ollama',
   'Contact graph with auto-deduplication',
@@ -60,11 +60,9 @@ const FREE_FEATURES = [
 const PRO_FEATURES = [
   'Everything in Free',
   'Cloud-hosted infrastructure (zero setup)',
-  'Managed PostgreSQL, Qdrant, and Redis',
+  'Managed PostgreSQL, Typesense, and Redis',
   'Priority enrichment pipeline',
-  'Advanced analytics dashboard',
-  'Full API access with webhooks',
-  'Automatic daily backups',
+  'Full API access',
   'Email support with 24h response time',
   'Early access to new connectors',
 ];
@@ -76,7 +74,7 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: 'CAN I SWITCH FROM SELF-HOSTED TO PRO?',
-    a: 'Yes. Export your data from your self-hosted instance and import it into Pro. We provide migration tools to make the switch seamless.',
+    a: 'Yes. Export your data from your self-hosted instance and import it into Pro. Export tools are coming soon to make the switch seamless.',
   },
   {
     q: 'WHAT HAPPENS IF I CANCEL PRO?',

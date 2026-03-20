@@ -6,7 +6,7 @@ All endpoints require `Authorization: Bearer <token>` header. See [Authenticatio
 
 ## Search Memories
 
-Performs semantic search across all memories using vector similarity in Qdrant.
+Performs semantic search across all memories using hybrid BM25 + vector similarity in Typesense.
 
 ```
 POST /api/memories/search
@@ -262,7 +262,7 @@ POST /api/memories
 
 ## Delete Memory
 
-Removes a memory from both PostgreSQL and Qdrant.
+Removes a memory from both PostgreSQL and Typesense.
 
 ```
 DELETE /api/memories/:id

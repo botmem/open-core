@@ -18,8 +18,8 @@ A production Botmem deployment consists of:
                   +----+----+
                     /  |  \
         +----------+  |  +----------+
-        | PostgreSQL|  |  |  Qdrant  |
-        |   :5432   |  |  |  :6333   |
+        | PostgreSQL|  |  | Typesense|
+        |   :5432   |  |  |  :8108   |
         +-----------+  |  +----------+
                   +----+----+
                   |  Redis  |
@@ -61,7 +61,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      qdrant:
+      typesense:
         condition: service_healthy
 
   postgres:
@@ -91,13 +91,14 @@ services:
       timeout: 3s
       retries: 5
 
-  qdrant:
-    image: qdrant/qdrant:v1.17.0
+  typesense:
+    image: typesense/typesense:27.1
     restart: unless-stopped
     volumes:
-      - qdrant-data:/qdrant/storage
+      - typesense-data:/data
+    command: '--data-dir /data --api-key=${TYPESENSE_API_KEY}'
     healthcheck:
-      test: ['CMD-SHELL', "bash -c 'echo > /dev/tcp/localhost/6333'"]
+      test: ['CMD-SHELL', 'curl -sf http://localhost:8108/health || exit 1']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -116,7 +117,7 @@ services:
 volumes:
   postgres-data:
   redis-data:
-  qdrant-data:
+  typesense-data:
   caddy-data:
   caddy-config:
 ```
@@ -149,7 +150,7 @@ BASE_URL=https://yourdomain.com
 
 # Infrastructure (internal Docker network)
 REDIS_URL=redis://redis:6379
-QDRANT_URL=http://qdrant:6333
+TYPESENSE_URL=http://typesense:8108
 
 # AI Backend
 AI_BACKEND=ollama

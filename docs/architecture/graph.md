@@ -9,6 +9,7 @@ The graph consists of two types of nodes and three types of edges:
 ### Nodes
 
 **Memory nodes** -- each memory is a node in the graph:
+
 ```json
 {
   "id": "memory-uuid",
@@ -24,6 +25,7 @@ The graph consists of two types of nodes and three types of edges:
 ```
 
 **Contact nodes** -- contacts appear as nodes connected to their associated memories:
+
 ```json
 {
   "id": "contact-uuid",
@@ -40,12 +42,12 @@ The graph consists of two types of nodes and three types of edges:
 
 ### Edge Types
 
-| Type | Description | Created By |
-|---|---|---|
-| `related` | Two memories are semantically similar | EnrichProcessor (Qdrant similarity >= 0.8) |
-| `supports` | One memory corroborates another | Future: conflict resolution |
-| `contradicts` | Memories contain conflicting information | Future: conflict resolution |
-| `involves` | A contact is associated with a memory | Contact resolution (all connectors) |
+| Type          | Description                              | Created By                                    |
+| ------------- | ---------------------------------------- | --------------------------------------------- |
+| `related`     | Two memories are semantically similar    | EnrichProcessor (Typesense similarity >= 0.8) |
+| `supports`    | One memory corroborates another          | Future: conflict resolution                   |
+| `contradicts` | Memories contain conflicting information | Future: conflict resolution                   |
+| `involves`    | A contact is associated with a memory    | Contact resolution (all connectors)           |
 
 ### Edge Properties
 
@@ -58,19 +60,19 @@ The graph consists of two types of nodes and three types of edges:
 }
 ```
 
-The `strength` field (0.0 - 1.0) indicates how strong the relationship is. For `related` links, it is the Qdrant cosine similarity score. For `involves` links, it is fixed at 0.7.
+The `strength` field (0.0 - 1.0) indicates how strong the relationship is. For `related` links, it is the Typesense cosine similarity score. For `involves` links, it is fixed at 0.7.
 
 ## How Links Are Created
 
 ### Automatic Similarity Links
 
-During enrichment, the `EnrichProcessor` queries Qdrant for the top 5 most similar memories to the current one. Any result with a cosine similarity >= 0.8 gets a `related` link:
+During enrichment, the `EnrichProcessor` queries Typesense for the top 5 most similar memories to the current one. Any result with a cosine similarity >= 0.8 gets a `related` link:
 
 ```typescript
 const SIMILARITY_THRESHOLD = 0.8;
 const SIMILAR_MEMORY_LIMIT = 5;
 
-const results = await this.qdrant.recommend(memoryId, SIMILAR_MEMORY_LIMIT);
+const results = await this.typesense.recommend(memoryId, SIMILAR_MEMORY_LIMIT);
 
 for (const result of results) {
   if (result.score >= SIMILARITY_THRESHOLD && result.id !== memoryId) {
@@ -89,12 +91,12 @@ for (const result of results) {
 
 When the embed processor resolves participants, it creates entries in the `memory_contacts` table with a role:
 
-| Role | Meaning | Created By |
-|---|---|---|
-| `sender` | The person who sent the message/email | Gmail (From), WhatsApp, iMessage, Slack |
-| `recipient` | The person who received the message | Gmail (To/CC), WhatsApp (DM recipient) |
-| `mentioned` | The person is mentioned in the content | Future: entity-based linking |
-| `participant` | General participation (Google Contacts, photo tags) | Gmail Contacts, Immich |
+| Role          | Meaning                                             | Created By                              |
+| ------------- | --------------------------------------------------- | --------------------------------------- |
+| `sender`      | The person who sent the message/email               | Gmail (From), WhatsApp, iMessage, Slack |
+| `recipient`   | The person who received the message                 | Gmail (To/CC), WhatsApp (DM recipient)  |
+| `mentioned`   | The person is mentioned in the content              | Future: entity-based linking            |
+| `participant` | General participation (Google Contacts, photo tags) | Gmail Contacts, Immich                  |
 
 ## Entity-Based Clustering
 
@@ -105,9 +107,7 @@ const entityClusters = new Map<string, number>();
 
 // If a memory mentions "John Smith" and another does too,
 // they share the same cluster
-const dominantEntity = entities.find(
-  (e) => e.type === 'person' || e.type === 'organization'
-);
+const dominantEntity = entities.find((e) => e.type === 'person' || e.type === 'organization');
 if (dominantEntity) {
   const key = dominantEntity.value.toLowerCase();
   if (!entityClusters.has(key)) {
@@ -129,6 +129,7 @@ curl http://localhost:12412/api/memories/graph
 ```
 
 Returns:
+
 ```json
 {
   "nodes": [...],  // Memory nodes + Contact nodes
@@ -139,6 +140,7 @@ Returns:
 ### Graph Visualization
 
 The web UI renders the graph using `react-force-graph-2d` with:
+
 - Node size based on importance score
 - Node color based on connector type
 - Edge width based on strength
@@ -150,6 +152,7 @@ The web UI renders the graph using `react-force-graph-2d` with:
 ### Tracing Information Flow
 
 Follow how a piece of information moved through your communication channels:
+
 1. An email from John about the budget (Gmail)
 2. A Slack message discussing the same numbers (#finance)
 3. A WhatsApp message to your manager about the decision
