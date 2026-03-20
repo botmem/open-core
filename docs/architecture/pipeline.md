@@ -24,7 +24,7 @@ Connector.sync()
   |-- Create Memory record in PostgreSQL
   |-- Resolve participants -> Contacts (dedup by email/phone/handle)
   |-- Generate embedding via AI backend (mxbai-embed-large 1024d / Gemini 3072d)
-  |-- Store vector in Qdrant
+  |-- Upsert document into Typesense
   |-- Route file events to file queue
   |-- Enqueue enrich job
   |
@@ -47,7 +47,7 @@ Connector.sync()
   |-- Classify factuality
   |     Returns: {label, confidence, rationale}
   |-- Compute importance weights
-  |-- Find similar memories via Qdrant (threshold: 0.8)
+  |-- Find similar memories via Typesense (threshold: 0.8)
   |-- Create graph links (memory_links table)
   |-- Store final weights in memory record
 ```
@@ -94,7 +94,7 @@ The `EmbedProcessor` is the core of the pipeline:
    - **iMessage:** handles email and phone identifiers
    - **Photos:** resolves Immich face tags and downloads thumbnails
 7. **Generate embedding** — calls the AI backend with the text (truncated to 8000 chars)
-8. **Store in Qdrant** — upserts the vector with payload metadata
+8. **Upsert into Typesense** — upserts the document with embedding and metadata
 9. **Update status** — sets `embeddingStatus` to `done`
 10. **Enqueue enrichment** — adds an enrich job to the queue
 
@@ -146,7 +146,7 @@ The `EnrichProcessor` adds intelligence to memories:
    }
    ```
 
-3. **Graph link creation** — queries Qdrant for the top 5 similar memories (by vector similarity). Creates `related` links for any with similarity >= 0.8.
+3. **Graph link creation** — queries Typesense for the top 5 similar memories (by vector similarity). Creates `related` links for any with similarity >= 0.8.
 
 4. **Weight computation** — calculates and stores base weights:
    ```typescript
@@ -177,7 +177,7 @@ curl -X POST http://localhost:12412/api/memories/retry-failed \
 
 - **Embed latency**: ~200-500ms per memory (depending on text length and AI backend response time)
 - **File processing**: ~5-15 seconds for images (VL model), ~1-3 seconds for documents
-- **Enrichment**: ~2-5 seconds per memory (two AI calls + Qdrant search)
+- **Enrichment**: ~2-5 seconds per memory (two AI calls + Typesense search)
 - **Throughput**: with Ollama concurrency 4, ~500-1000 memories/minute; with OpenRouter concurrency 64, significantly higher
 
 ## Monitoring

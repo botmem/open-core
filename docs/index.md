@@ -25,13 +25,13 @@ features:
     details: Vector embeddings power natural-language queries across all your data. Ask "what did John say about the project deadline?" and get ranked, scored results.
   - icon: '🔌'
     title: Multi-Source
-    details: Gmail, Slack, WhatsApp, iMessage, Immich photos, OwnTracks locations — and a plugin SDK to build your own connectors.
+    details: Gmail, Slack, WhatsApp, Telegram, iMessage, Immich photos, OwnTracks locations — and a Connector SDK to build your own.
   - icon: '🤖'
     title: Agent-Ready
     details: Expose your memory to AI agents via REST API and CLI. Claude, GPT, and any agent can query your personal knowledge base.
   - icon: '🔒'
     title: Encrypted & Private
-    details: AES-256-GCM encryption at rest with a personal recovery key. Self-host on your hardware, or use the managed Pro tier — either way, your data stays yours.
+    details: AES-256-GCM encryption at rest with a personal recovery key. Self-host on your hardware, or use the managed Pro tier (coming soon) — either way, your data stays yours.
   - icon: '🧩'
     title: Extensible
     details: Build custom connectors with the Connector SDK. Add new data sources in under 200 lines of TypeScript.
@@ -55,7 +55,7 @@ cd botmem
 # Configure environment
 cp .env.example .env    # Edit .env — set OLLAMA_BASE_URL to your Ollama host
 
-# Start everything (Botmem + PostgreSQL + Redis + Qdrant)
+# Start everything (Botmem + PostgreSQL + Redis + Typesense)
 docker compose up -d
 ```
 
@@ -63,4 +63,4 @@ The API and web UI serve on `http://localhost:12412`. Sign up, connect your firs
 
 For development, see the [quickstart guide](/guide/quickstart).
 
-Want someone else to handle the infrastructure? [Botmem Pro](https://botmem.xyz) ($14.99/mo) runs the same open-source code with managed hosting and preconfigured AI.
+Want someone else to handle the infrastructure? [Botmem Pro](https://botmem.xyz) ($14.99/mo, coming soon) will run the same open-source code with managed hosting and preconfigured AI.
